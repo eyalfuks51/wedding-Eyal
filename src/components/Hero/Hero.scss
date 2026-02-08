@@ -70,8 +70,8 @@
       }
 
       @include mobile {
-        width: 140px;
-        transform: translate(-18%, 50%);
+        width: 130px;
+        transform: translate(-8%, 30%);
       }
     }
 
@@ -87,7 +87,7 @@
       }
 
       @include mobile {
-        width: 180px;
+        width: 200px;
         transform: translate(45%, 20%);
       }
     }
