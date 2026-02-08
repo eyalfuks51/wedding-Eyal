@@ -123,6 +123,8 @@
     background: transparent;
     border: 2px solid $primary;
     color: $primary;
+    font-size:  $font-size-base;
+
 
     &:hover {
       background: rgba($primary, 0.1);

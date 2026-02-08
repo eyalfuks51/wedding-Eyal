@@ -55,7 +55,7 @@ function Hero() {
 
       // Venue: fade-in + rise
       tl.fromTo('.hero__venue',
-        { opacity: 0, y: 10 },
+        { opacity: 0, y: 0 },
         { opacity: 1, y: 0, duration: 0.4 },
         '-=0.5'
       );
