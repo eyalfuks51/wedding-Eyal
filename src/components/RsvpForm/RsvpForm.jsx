@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { submitRsvp } from '../../lib/supabase';
 import './RsvpForm.scss';
 
@@ -12,6 +12,17 @@ function RsvpForm() {
   });
   const [status, setStatus] = useState('idle'); // idle, loading, success, error
   const [errorMessage, setErrorMessage] = useState('');
+  const sectionRef = useRef(null);
+
+  const scrollToSection = () => {
+    sectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleUpdate = () => {
+    setStatus('idle');
+    setFormData((prev) => ({ ...prev, attending: null }));
+    scrollToSection();
+  };
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -67,6 +78,7 @@ function RsvpForm() {
       });
 
       setStatus('success');
+      scrollToSection();
     } catch (error) {
       setStatus('error');
       setErrorMessage(error.message || 'אירעה שגיאה. אנא נסו שוב.');
@@ -83,11 +95,11 @@ function RsvpForm() {
           <div className="rsvp__success">
             <div className="rsvp__success-icon">✓</div>
             <h2 className="rsvp__success-title">
-              {formData.attending ? 'תודה רבה!' : 'קיבלנו!'}
+              {formData.attending ? 'תודה רבה' : 'קיבלנו!'}
             </h2>
             <p className="rsvp__success-text">
               {formData.attending
-                ? 'הפרטים שלכם עודכנו נתראה באירוע'
+                ? '!הפרטים שלכם עודכנו, מתרגשים לחגוג איתכם'
                 : 'הפרטים שלכם עודכנו! תודה שעדכנתם אותנו.'}
             </p>
           </div>
@@ -106,7 +118,7 @@ function RsvpForm() {
         <h2 className="rsvp__title">אשרו הגעה</h2>
      
     <p className="rsvp__explanation">
-    <p className="bold">נשמח לדעת אם תגיעו, כמה תהיו, והאם באים עם רכב.</p>
+    <p className="bold">נשמח לדעת אם תגיעו, כמה תהיו, <br /> והאם באים עם רכב.</p>
       ♥  אנחנו רוכשים כרטיסי חניה מראש, תוכלו לעדכן את התשובה שלכם עד שמונה ימים לפני החתונה. 
       <br />
      זכרו לבקש את הכרטיס שלכם כשתגיעו למקום.</p>

@@ -28,8 +28,11 @@ function Hero() {
       {
         opacity: 1, scale: 1, y: 0,
         duration: 0.8,
-        stagger: 0.2,
-        ease: 'back.out(1.7)'
+        stagger:  {
+          each: 0.2,
+          from: 'end',
+        },
+        ease: 'back.out(1.7)',
       }
     );
   }, []);
