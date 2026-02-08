@@ -36,3 +36,13 @@ export const submitRsvp = async (rsvpData) => {
 
   return data;
 };
+
+export const fetchAllGuests = async () => {
+  if (!supabase) throw new Error('Supabase is not configured');
+  const { data, error } = await supabase
+    .from('invitations')
+    .select('*')
+    .order('updated_at', { ascending: false });
+  if (error) throw new Error('שגיאה בטעינת רשימת האורחים');
+  return data;
+};

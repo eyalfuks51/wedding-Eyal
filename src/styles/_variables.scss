@@ -1,12 +1,13 @@
 // Color Palette
-$primary: #A00409;      // Deep burgundy/red
-$primary-dark: #700307; // Darker primary (for hover states)
-$background: #E0D4C4;   // Warm cream
+$primary: #800b21;      // Deep burgundy/red
+$primary-dark: #700307;
+$secondary: #c23548; // Darker primary (for hover states)
+$background: #fffefd;   // Warm cream
 $accent: #FACBB9;       // Soft peach
 $accent-light: #FDE5DB; // Lighter accent
 
 // Text colors
-$text-dark: #2C2C2C;
+$text-dark: #800b21;
 $text-light: #FFFFFF;
 
 // Spacing
@@ -17,7 +18,9 @@ $spacing-lg: 3rem;
 $spacing-xl: 4rem;
 
 // Typography
-$font-family: 'Heebo', 'Rubik', sans-serif;
+$font-family: 'Polin', 'Heebo', sans-serif;
+$font-polin-regular: 400;
+$font-polin-bold: 700;
 $font-size-sm: 0.875rem;
 $font-size-base: 1rem;
 $font-size-lg: 1.25rem;

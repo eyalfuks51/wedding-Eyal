@@ -3,7 +3,9 @@
 
 .rsvp {
   @include section-padding;
-  background: linear-gradient(180deg, $background 0%, $accent-light 100%);
+  background: $background;
+  position: relative;
+  text-align: center;
 
   &__container {
     max-width: 500px;
@@ -16,24 +18,24 @@
     color: $primary;
     text-align: center;
     margin-bottom: $spacing-sm;
+    font-family: danidin;
 
     @include mobile {
-      font-size: $font-size-2xl;
+      font-size: $font-size-4xl;
     }
   }
 
-  &__subtitle {
+  &__explanation {
     font-size: $font-size-base;
-    color: rgba($text-dark, 0.7);
     text-align: center;
     margin-bottom: $spacing-lg;
+    padding-inline-start: $spacing-sm;
+    padding-inline-end: $spacing-sm;
   }
 
   &__form {
-    background: $text-light;
-    border-radius: $border-radius-lg;
-    padding: $spacing-lg;
-    box-shadow: $box-shadow-lg;
+    padding-inline-start: $spacing-lg;
+    padding-inline-end: $spacing-lg;
   }
 
   &__field {
@@ -186,8 +188,6 @@
     text-align: center;
     padding: $spacing-xl;
     background: $text-light;
-    border-radius: $border-radius-lg;
-    box-shadow: $box-shadow-lg;
   }
 
   &__success-icon {

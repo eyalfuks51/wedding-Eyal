@@ -75,7 +75,9 @@ function RsvpForm() {
 
   if (status === 'success') {
     return (
-      <section className="rsvp">
+      <section className="rsvp red-border">
+        <img src="/frame.png" alt="" className="frame-border-top" />
+        <img src="/frame.png" alt="" className="frame-border-bottom" />
         <div className="rsvp__container">
           <div className="rsvp__success">
             <div className="rsvp__success-icon">✓</div>
@@ -94,14 +96,19 @@ function RsvpForm() {
   }
 
   return (
-    <section className="rsvp">
+    <section className="rsvp red-border">
+      <img src="/frame.png" alt="" className="frame-border-top" />
+      <img src="/frame.png" alt="" className="frame-border-bottom" />
       <div className="rsvp__container">
-        <h2 className="rsvp__title">אישור הגעה</h2>
-        <p className="rsvp__subtitle">נשמח לדעת אם תוכלו להצטרף אלינו</p>
-
+        <h2 className="rsvp__title">אשרו הגעה</h2>
+     
+    <p className="rsvp__explanation">
+    <p className="bold">נשמח לדעת אם תגיעו, כמה תהיו, והאם באים עם רכב.</p>
+      ♥  אנחנו רוכשים כרטיסי חניה מראש, תוכלו לעדכן את התשובה שלכם עד שמונה ימים לפני החתונה. 
+      <br />
+     זכרו לבקש את הכרטיס שלכם כשתגיעו למקום.</p>
         <form className="rsvp__form" onSubmit={handleSubmit}>
           <div className="rsvp__field">
-            <label htmlFor="name" className="rsvp__label">שם מלא</label>
             <input
               type="text"
               id="name"
@@ -109,13 +116,12 @@ function RsvpForm() {
               value={formData.name}
               onChange={handleInputChange}
               className="rsvp__input"
-              placeholder="הזינו את שמכם"
+              placeholder="שם מלא"
               disabled={status === 'loading'}
             />
           </div>
 
           <div className="rsvp__field">
-            <label htmlFor="phone" className="rsvp__label">טלפון</label>
             <input
               type="tel"
               id="phone"
@@ -123,7 +129,7 @@ function RsvpForm() {
               value={formData.phone}
               onChange={handleInputChange}
               className="rsvp__input"
-              placeholder="050-0000000"
+              placeholder="מספר פלאפון"
               disabled={status === 'loading'}
             />
           </div>
@@ -137,7 +143,7 @@ function RsvpForm() {
                 onClick={() => handleAttendingClick(true)}
                 disabled={status === 'loading'}
               >
-                מגיע/ה
+               בטח שאגיע!
               </button>
               <button
                 type="button"
@@ -145,7 +151,7 @@ function RsvpForm() {
                 onClick={() => handleAttendingClick(false)}
                 disabled={status === 'loading'}
               >
-                לא מגיע/ה
+               לצערי לא
               </button>
             </div>
           </div>
@@ -196,7 +202,7 @@ function RsvpForm() {
             className="rsvp__submit"
             disabled={status === 'loading' || formData.attending === null}
           >
-            {status === 'loading' ? 'שולח...' : 'שלח אישור'}
+            {status === 'loading' ? 'שולח...' : 'שליחת אישור'}
           </button>
         </form>
       </div>

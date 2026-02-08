@@ -1,8 +1,31 @@
 @use 'variables' as *;
 
 // Import Google Fonts
-@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&family=Rubik:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&family=Heebo:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Rubik:wght@300;400;500;600;700&display=swap');
 
+@font-face {
+  font-family: 'Danidin';
+  src: url('./fotns/Danidin-CondensedBold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Polin';
+  src: url('./fotns/Polin-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Polin';
+  src: url('./fotns/Polin-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
 *,
 *::before,
 *::after {
@@ -47,6 +70,28 @@ input, select, textarea {
 }
 
 // Utility classes
+// Shared frame border styles
+.frame-border-top {
+  position: absolute;
+  top: 10px;
+  left: 0;
+  width: 100%;
+  pointer-events: none;
+  object-fit: fit;
+  z-index: 1;
+}
+
+.frame-border-bottom {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  width: 100%;
+  pointer-events: none;
+  object-fit: fit;
+  z-index: 1;
+  rotate: 180deg;
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -57,4 +102,10 @@ input, select, textarea {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+.red-border {
+  border-width: 0.5rem;
+  border-color: $primary;
+  border-style: solid;
 }

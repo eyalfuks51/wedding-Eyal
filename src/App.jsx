@@ -8,7 +8,6 @@ function App() {
   return (
     <div className="app">
       <Hero />
-      <Details />
       <RsvpForm />
       <Map />
       <footer className="app__footer">
