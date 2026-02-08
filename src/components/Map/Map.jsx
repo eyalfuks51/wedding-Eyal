@@ -15,8 +15,8 @@ function Map() {
     <section className="map red-border">
       <img src="/frame.png" alt="" className="frame-border-top" />
       <img src="/frame.png" alt="" className="frame-border-bottom" />
-      <img src="/whiteflower.png" alt="" className="map__decoration hero__decoration--top-left" />
-      <img src="/redbolbol.png" alt="" className="map__decoration hero__decoration--bottom-right" />
+      <img src="/whiteflower.png" alt="" className="map__decoration map__decoration--top-left" />
+      <img src="/redbolbol.png" alt="" className="map__decoration map__decoration--bottom-right" />
 
       <div className="map__container">
         <h2 className="map__title">דרכי הגעה</h2>
