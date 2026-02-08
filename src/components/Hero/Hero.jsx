@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import './Hero.scss';
 
 import danceSVG from'../../timeline/dance.svg'
@@ -19,26 +20,85 @@ function TimelineItem({ icon, time, label }) {
 }
 
 function Hero() {
-  const timelineRef = useRef(null);
+  const sectionRef = useRef(null);
 
   useEffect(() => {
-    const icons = timelineRef.current.querySelectorAll('.hero__timeline-icon img');
-    gsap.fromTo(icons,
-      { opacity: 0, scale: 0.3, y: 30 },
-      {
-        opacity: 1, scale: 1, y: 0,
-        duration: 0.8,
-        stagger:  {
-          each: 0.2,
-          from: 'end',
-        },
-        ease: 'back.out(1.7)',
-      }
-    );
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
+
+      // Quote: fade-in + rise
+      tl.fromTo('.hero__quote',
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 1 }
+      );
+
+      // Names: fade-in + scale
+      tl.fromTo('.hero__names',
+        { opacity: 0, scale: 0.95 },
+        { opacity: 1, scale: 1, duration: 0.8 },
+        '-=0.7'
+      );
+
+      // Invitation text: fade-in + rise
+      tl.fromTo('.hero__invitation',
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 0.8 },
+        '-=0.5'
+      );
+
+      // Date: fade-in + scale
+      tl.fromTo('.hero__date',
+        { opacity: 0, scale: 0.9 },
+        { opacity: 1, scale: 1, duration: 0.8 },
+        '-=0.5'
+      );
+
+      // Venue: fade-in + rise
+      tl.fromTo('.hero__venue',
+        { opacity: 0, y: 10 },
+        { opacity: 1, y: 0, duration: 0.4 },
+        '-=0.5'
+      );
+
+      // Timeline icons: ScrollTrigger so they animate when scrolled into view
+      const icons = sectionRef.current.querySelectorAll('.hero__timeline-icon img');
+      gsap.fromTo(icons,
+        { opacity: 0, scale: 0.3, y: 30 },
+        {
+          opacity: 1, scale: 1, y: 0,
+          duration: 0.8,
+          stagger: { each: 0.2, from: 'end' },
+          ease: 'back.out(1.7)',
+          scrollTrigger: {
+            trigger: '.hero__timeline',
+            start: 'top 85%',
+            once: true,
+          },
+        }
+      );
+
+      // Footer text: fade-in + rise with ScrollTrigger
+      gsap.fromTo('.hero__footer-text',
+        { opacity: 0, y: 20 },
+        {
+          opacity: 1, y: 0,
+          duration: 0.8,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: '.hero__footer-text',
+            start: 'top 85%',
+            once: true,
+          },
+        }
+      );
+
+    }, sectionRef);
+
+    return () => ctx.revert();
   }, []);
 
   return (
-    <section className="hero">
+    <section className="hero" ref={sectionRef}>
       <div className="hero__frame">
         <img src="/frame.png" alt="" className="hero__frame-border-top" />
         <img src="/frame.png" alt="" className="hero__frame-border-bottom" />
@@ -67,7 +127,7 @@ function Hero() {
           <p className="hero__venue-address">גלריה נור, תל אביב יפו</p>
         </div>
 
-        <div className="hero__timeline" ref={timelineRef}>
+        <div className="hero__timeline">
           <TimelineItem
             icon={danceSVG}
             time="22:00"

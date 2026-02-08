@@ -1,4 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { submitRsvp } from '../../lib/supabase';
 import './RsvpForm.scss';
 
@@ -17,6 +19,44 @@ function RsvpForm() {
   const scrollToSection = () => {
     sectionRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  useEffect(() => {
+    if (status === 'success') return;
+
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({
+        defaults: { ease: 'power2.out' },
+        scrollTrigger: {
+          trigger: '.rsvp',
+          start: 'top 80%',
+          once: true,
+        },
+      });
+
+      // Title: fade-in + rise
+      tl.fromTo('.rsvp__title',
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 0.8 }
+      );
+
+      // Explanation text: fade-in + rise
+      tl.fromTo('.rsvp__explanation',
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 0.8 },
+        '-=0.6'
+      );
+
+      // Form fields: stagger fade-in + rise
+      tl.fromTo('.rsvp__field, .rsvp__attendance, .rsvp__submit',
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 0.8, stagger: 0.15 },
+        '-=0.5'
+      );
+
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, [status]);
 
   const handleUpdate = () => {
     setStatus('idle');
@@ -87,7 +127,7 @@ function RsvpForm() {
 
   if (status === 'success') {
     return (
-      <section className="rsvp red-border">
+      <section className="rsvp red-border" ref={sectionRef}>
         <img src="/frame.png" alt="" className="frame-border-top" />
         <img src="/frame.png" alt="" className="frame-border-bottom" />
 
@@ -109,17 +149,17 @@ function RsvpForm() {
   }
 
   return (
-    <section className="rsvp red-border">
+    <section className="rsvp red-border" ref={sectionRef}>
       <img src="/frame.png" alt="" className="frame-border-top" />
       <img src="/frame.png" alt="" className="frame-border-bottom" />
       <img src="/bolbolflower.png" alt="" className="rsvp__decoration rsvp__decoration--top-left" />
       <img src="/doubleDisco.png" alt="" className="rsvp__decoration rsvp__decoration--bottom-right" />
       <div className="rsvp__container">
         <h2 className="rsvp__title">אשרו הגעה</h2>
-     
+
     <p className="rsvp__explanation">
     <p className="bold">נשמח לדעת אם תגיעו, כמה תהיו, <br /> והאם באים עם רכב.</p>
-      ♥  אנחנו רוכשים כרטיסי חניה מראש, תוכלו לעדכן את התשובה שלכם עד שמונה ימים לפני החתונה. 
+      ♥  אנחנו רוכשים כרטיסי חניה מראש, תוכלו לעדכן את התשובה שלכם עד שמונה ימים לפני החתונה.
       <br />
      זכרו לבקש את הכרטיס שלכם כשתגיעו למקום.</p>
         <form className="rsvp__form" onSubmit={handleSubmit}>
