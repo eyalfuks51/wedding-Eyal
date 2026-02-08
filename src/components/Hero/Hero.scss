@@ -259,7 +259,7 @@
     font-family: $font-family;
     font-size: $font-size-base;
     color: $text-dark;
-    direction: rtl;
+    direction: ltr;
 
     @include mobile {
       font-size: $font-size-sm;
@@ -292,4 +292,8 @@
 
 .bold {
   font-weight: 600;
+}
+
+.waiting {
+  // color: $secondary;
 }

@@ -90,7 +90,7 @@ function Hero() {
 
         </p>
         ♥
-        <p className="bold">
+        <p className="bold waiting">
           מחכים לראותכם ולשמוח ביחד
           <br />
           ניר, הדר והמשפחות המאושרות

@@ -5,6 +5,9 @@
   @include section-padding;
   background: $text-light;
   position: relative;
+  padding-inline-start: 2rem;
+  padding-inline-end: 2rem;
+
 
   &__container {
     max-width: 800px;
@@ -16,48 +19,39 @@
     font-weight: 300;
     color: $primary;
     text-align: center;
-    margin-bottom: $spacing-xl;
+    margin-bottom: $spacing-sm;
     position: relative;
+    font-family: danidin;
 
-    &::after {
-      content: '';
-      position: absolute;
-      bottom: -$spacing-sm;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 60px;
-      height: 2px;
-      background: $primary;
-    }
 
     @include mobile {
-      font-size: $font-size-2xl;
+      font-size: $font-size-4xl;
     }
   }
 
   &__content {
-    background: $background;
-    border-radius: $border-radius-lg;
     overflow: hidden;
-    box-shadow: $box-shadow;
+ 
   }
 
   &__info {
-    padding: $spacing-lg;
+    // padding: $spacing-lg;
+    gap: 1rem;
+    display: flex;
+    flex-direction: column;
     text-align: center;
   }
 
   &__venue-name {
-    font-size: $font-size-xl;
-    font-weight: 600;
+    font-size: $font-size-lg;
+    font-weight: bold;
     color: $primary;
-    margin-bottom: $spacing-xs;
   }
 
   &__address {
-    font-size: $font-size-base;
-    color: rgba($text-dark, 0.8);
-    margin-bottom: $spacing-md;
+    font-size: $font-size-lg;
+    font-weight: bold;
+    color: $secondary;
   }
 
   &__navigate-btn {
@@ -74,11 +68,16 @@
   }
 
   &__embed {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 2rem;
+    margin-top:2rem;
     iframe {
       display: block;
-      width: 100%;
+      width: 90%;
       height: 300px;
-
+      border-radius: 8px;
       @include tablet {
         height: 250px;
       }
