@@ -160,7 +160,7 @@
 
   // ── Large date ──
   &__date {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Gravitas One', serif;
     font-size: 5rem;
     font-weight: 700;
     color: $primary;
@@ -173,7 +173,7 @@
     }
 
     @include mobile {
-      font-size: 3.5rem;
+      font-size: 2.6rem;
       margin-bottom: 0;
     }
   }
@@ -189,7 +189,7 @@
   }
 
   &__venue-name {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Gravitas One', serif;
     font-size: $font-size-2xl;
     font-weight: 700;
     color: $primary;
@@ -254,13 +254,12 @@
   }
 
   &__timeline-time {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Gravitas One', serif;
     font-size: $font-size-xl;
-    font-weight: 700;
     color: $text-dark;
 
     @include mobile {
-      font-size: $font-size-lg;
+      font-size: $font-size-base;
     }
   }
 
