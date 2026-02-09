@@ -15,6 +15,9 @@
     font-size: $font-size-base;
     font-weight: 300;
     letter-spacing: 0.05em;
+    max-width: 700px;
+    justify-self: center;
+    width: 100%;
   }
 
   &__footer-logo {
