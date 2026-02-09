@@ -11,7 +11,7 @@
 
   // ── White card with scalloped border ──
   &__frame {
-    background: #fff;
+    background:$background;
     max-width: 700px;
     width: 100%;
     text-align: center;
@@ -70,8 +70,8 @@
       }
 
       @include mobile {
-        width: 110px;
-        transform: translate(-8%, 30%);
+        width: 90px;
+        transform: translate(-8%, 50%);
       }
     }
 
@@ -87,7 +87,7 @@
       }
 
       @include mobile {
-        width: 200px;
+        width: 130px;
         transform: translate(48%, 20%);
       }
     }
