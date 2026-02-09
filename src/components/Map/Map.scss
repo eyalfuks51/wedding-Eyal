@@ -53,8 +53,16 @@
 
 
   &__container {
-    max-width: 800px;
+    max-width: 700px;
     margin: 0 auto;
+
+    @include tablet {
+      max-width: 600px;
+    }
+
+    @include mobile {
+      max-width: 100%;
+    }
   }
 
   &__title {

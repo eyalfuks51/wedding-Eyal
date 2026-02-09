@@ -31,6 +31,12 @@
   .developed-by {
     display: flex;
     align-items: center;
+    justify-content: center;
     margin-top: 1rem; 
+
+    &__link {
+      display: flex;
+      justify-content: center;
+    }
   }
 }

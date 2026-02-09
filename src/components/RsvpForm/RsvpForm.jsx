@@ -4,7 +4,9 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { submitRsvp } from '../../lib/supabase';
 import './RsvpForm.scss';
 
+
 function RsvpForm() {
+  gsap.registerPlugin(ScrollTrigger);
   const [formData, setFormData] = useState({
     name: '',
     phone: '',

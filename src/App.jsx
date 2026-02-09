@@ -17,7 +17,8 @@ function App() {
       <Map />
       <footer className="app__footer" >
         <p className="greeting">בהתרגשות רבה, מחכים לראותכם!</p>
-        <p>ההזמנה פותחה באהבה על ידי  <a href="https://www.moriz.studio/" target="_blank" rel="noopener noreferrer">
+        <p className="developed-by">ההזמנה פותחה באהבה על ידי  
+          <a href="https://www.moriz.studio/" target="_blank" rel="noopener noreferrer" className="developed-by__link">
           <img src={Logo} alt="logo" className="app__footer-logo" />
         </a>
         </p>

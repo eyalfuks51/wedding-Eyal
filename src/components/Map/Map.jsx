@@ -4,6 +4,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import './Map.scss';
 
 function Map() {
+  gsap.registerPlugin(ScrollTrigger);
   const sectionRef = useRef(null);
 
   // TODO: Update these with actual venue details
