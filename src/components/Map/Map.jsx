@@ -23,7 +23,7 @@ function Map() {
         defaults: { ease: 'power2.out' },
         scrollTrigger: {
           trigger: '.map',
-          start: 'top 80%',
+          start: 'top top',
           once: true,
         },
       });
@@ -39,13 +39,6 @@ function Map() {
         { opacity: 0, y: 20 },
         { opacity: 1, y: 0, duration: 0.8, stagger: 0.15 },
         '-=0.5'
-      );
-
-      // Map iframe: fade-in last
-      tl.fromTo('.map__embed',
-        { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 1 },
-        '-=0.3'
       );
 
       // Decorative flowers: subtle parallax
