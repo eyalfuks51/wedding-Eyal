@@ -11,7 +11,18 @@ export const supabase = supabaseUrl && supabaseAnonKey
   ? createClient(supabaseUrl, supabaseAnonKey)
   : null;
 
-export const submitRsvp = async (rsvpData) => {
+export const fetchEventBySlug = async (slug) => {
+  if (!supabase) throw new Error('Supabase is not configured');
+  const { data, error } = await supabase
+    .from('events')
+    .select('id, slug, content_config')
+    .eq('slug', slug)
+    .single();
+  if (error) throw error;
+  return data;
+};
+
+export const submitRsvp = async (rsvpData, eventId) => {
   if (!supabase) {
     console.error('Supabase is not configured');
     throw new Error('שירות האישורים אינו זמין כרגע');
@@ -20,7 +31,7 @@ export const submitRsvp = async (rsvpData) => {
   const { data, error } = await supabase
     .from('arrival_permits')
     .upsert([{
-      event_id: '1f7cddc3-ef64-4b8a-a5c8-12f5b64d6b6e',
+      event_id: eventId,
       full_name: rsvpData.name,
       phone: rsvpData.phone,
       attending: rsvpData.attending,

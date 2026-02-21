@@ -5,7 +5,7 @@ import { submitRsvp } from '../../lib/supabase';
 import './RsvpForm.scss';
 
 
-function RsvpForm() {
+function RsvpForm({ eventId }) {
   gsap.registerPlugin(ScrollTrigger);
   const [formData, setFormData] = useState({
     name: '',
@@ -118,7 +118,7 @@ function RsvpForm() {
         guest_count: formData.attending ? parseInt(formData.guest_count, 10) : 0,
         needs_parking: formData.attending ? formData.needs_parking : false,
       };
-      await submitRsvp(rsvpPayload);
+      await submitRsvp(rsvpPayload, eventId);
 
       setStatus('success');
       scrollToSection();

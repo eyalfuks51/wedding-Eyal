@@ -3,19 +3,12 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import './Map.scss';
 
-function Map() {
+function Map({ config }) {
   gsap.registerPlugin(ScrollTrigger);
   const sectionRef = useRef(null);
 
-  // TODO: Update these with actual venue details
-  const venueDetails = {
-    subtitle: 'גלריה נור נמצאת במרכז השוק היווני ביפו, בין סמטאות העיר העתיקה.',
-    address: 'פנחס בן יאיר 5, תל אביב',
-    embedUrl: 'https://maps.google.com/maps?q=Pinkhas+Ben+Yair+5+Tel+Aviv&output=embed',
-  };
-
-  // Google Maps navigation URL
-  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(venueDetails.address)}`;
+  const embedUrl = `https://maps.google.com/maps?q=${config.venue_maps_query}&output=embed`;
+  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(config.venue_address_full)}`;
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -74,20 +67,20 @@ function Map() {
 
         <div className="map__content">
           <div className="map__info">
-            <h3 className="map__venue-name">{venueDetails.subtitle}</h3>
+            <h3 className="map__venue-name">{config.venue_address}</h3>
             <div>
               <span className="bold">הגעה ברכבת:</span>
-              <p>ניתן להגיע ברכבת הקלה R1 ולרדת בתחנת שלמה, שנמצאת במרחק של כ-4 דקות הליכה מהמקום.</p>
+              <p>ניתן להגיע ברכבת הקלה {config.train_line} ולרדת בתחנת {config.train_station}, שנמצאת במרחק של כ-{config.train_walk_minutes} דקות הליכה מהמקום.</p>
             </div>
 
             <div>
               <span className="bold">הגעה ברכב:</span>
               <p>אם בחרתם להגיע ברכב, עדכנו אותנו כדי שנוכל להיערך עם כרטיסי חניה עבורכם. תוכלו גם לא לעדכן, ולהסתדר עם חניה באופן עצמאי.
-              החניה היא בחניון ״חצרות יפו״, שנמצא במרחק של כ-5 דקות הליכה מהמקום.</p>
+              החניה היא בחניון ״{config.parking_lot}״, שנמצא במרחק של כ-{config.parking_walk_minutes} דקות הליכה מהמקום.</p>
             </div>
 
             <span className="bold">אתם מוזמנים לפנות אלינו בכל שאלה נוספת ונשמח לעזור!</span>
-            <p className="map__address">{venueDetails.address}</p>
+            <p className="map__address">{config.venue_address_full}</p>
             <a
               href={mapsUrl}
               target="_blank"
@@ -100,7 +93,7 @@ function Map() {
 
           <div className="map__embed">
             <iframe
-              src={venueDetails.embedUrl}
+              src={embedUrl}
               width="100%"
               height="300"
               style={{ border: 0 }}

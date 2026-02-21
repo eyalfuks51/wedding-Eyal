@@ -3,9 +3,11 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import './Hero.scss';
 
-import danceSVG from'../../timeline/dance.svg'
+import danceSVG from '../../timeline/dance.svg';
 import marrySVG from '../../timeline/marry.svg';
 import foodSVG from '../../timeline/food.svg';
+
+const ICONS = { food: foodSVG, marry: marrySVG, dance: danceSVG };
 
 function TimelineItem({ icon, time, label }) {
   return (
@@ -19,7 +21,7 @@ function TimelineItem({ icon, time, label }) {
   );
 }
 
-function Hero() {
+function Hero({ config }) {
   const sectionRef = useRef(null);
 
   useEffect(() => {
@@ -105,59 +107,41 @@ function Hero() {
         <img src="/discoflower.png" alt="" className="hero__decoration hero__decoration--top-left" />
         <img src="/whiteflower.png" alt="" className="hero__decoration hero__decoration--bottom-right" />
 
-        <p className="hero__quote">
-          You are the sunshine of my life,
-          That&rsquo;s why I&rsquo;ll always be around...
-          <br />
-          {/* <p className="hero__quote-subtext"> STEVE WONDER</p> */}
+        <p className="hero__quote" style={{ whiteSpace: 'pre-line' }}>
+          {config.quote}
         </p>
 
-        <h1 className="hero__names">הדר וניר</h1>
+        <h1 className="hero__names">{config.couple_names}</h1>
 
         <p className="hero__invitation">
-          מתרגשים להזמין אתכם לחגוג את החתונה שלנו
+          {config.invitation_text}
           <br />
-          שתתקיים ביום רביעי, כ&quot;ב באדר תשפ&quot;ו
+          שתתקיים {config.day_of_week}, {config.date_hebrew}
         </p>
 
-        <div className="hero__date">11 03 2026</div>
+        <div className="hero__date">{config.date_display}</div>
 
         <div className="hero__venue">
-          <h2 className="hero__venue-name">Noor Jaffa</h2>
-          <p className="hero__venue-address">גלריה נור, תל אביב יפו</p>
+          <h2 className="hero__venue-name">{config.venue_name}</h2>
+          <p className="hero__venue-address">{config.venue_address}</p>
         </div>
 
         <div className="hero__timeline">
-          <TimelineItem
-            icon={danceSVG}
-            time="22:00"
-            label="!רוקדים"
-          />
-          <TimelineItem
-            icon={marrySVG}
-            time="21:30"
-            label="מתחתנים"
-          />
-          <TimelineItem
-            icon={foodSVG}
-            time="19:30"
-            label="אוכלים"
-          />
+          {[...(config.schedule ?? [])].reverse().map((item) => (
+            <TimelineItem
+              key={item.time}
+              icon={ICONS[item.icon]}
+              time={item.time}
+              label={item.label}
+            />
+          ))}
         </div>
+
         <div className="hero__footer-text">
-
-        <p>
-        החתונה היא חתונה הפוכה,
-        <br />
-        קודם אוכלים ואחר כך מתחתנים. מומלץ להגיע בזמן
-
-        </p>
-        ♥
-        <p className="bold waiting">
-          מחכים לראותכם ולשמוח ביחד
-          <br />
-          ניר, הדר והמשפחות המאושרות
-        </p>
+          <p style={{ whiteSpace: 'pre-line' }}>{config.footer_note}</p>
+          <p style={{ whiteSpace: 'pre-line' }} className="bold waiting">
+            {config.closing_message}
+          </p>
         </div>
 
       </div>
