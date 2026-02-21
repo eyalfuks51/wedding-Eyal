@@ -1,23 +1,41 @@
 # Project Context: Wedding RSVP Platform
 **Current Stack:** React frontend, Supabase backend.
-**Current Phase:** Migrating a single-tenant React project to a new Supabase project and fixing broken integrations.
+**Current Phase:** Multi-tenant SaaS architecture. The platform supports multiple events, each with their own guest list and Google Sheet.
 
-**Database Schema (Table: arrival_permits):**
+**Database Schema:**
+
+**Table: `events`**
+- `id` (uuid, primary key)
+- `slug` (text)
+- `google_sheet_id` (text)
+
+**Table: `arrival_permits`**
 - `id` (int8, primary key)
 - `created_at` (timestamptz)
+- `event_id` (uuid, foreign key → events.id)
 - `full_name` (text)
-- `phone` (text) -> **Needs to be set as UNIQUE for upsert logic.**
+- `phone` (text)
 - `attending` (bool)
 - `needs_parking` (bool)
 - `guests_count` (int2)
 - `updated_at` (timestamptz)
+- **Composite UNIQUE constraint on `(event_id, phone)`**
 
-**Current Issues to Solve:**
-1. **Supabase RLS Policies:** Data insertion is failing, likely due to Row Level Security. The app needs to allow unauthenticated (public) users to submit their RSVP. If a user submits again with the same phone number, it should UPDATE the existing row (Upsert) rather than fail or create a duplicate.
-2. **Google Sheets Sync:** The previous setup synced data to a Google Sheet and updated existing rows based on the phone number. I need to recreate this pipeline. 
+**Test Event ID:** `1f7cddc3-ef64-4b8a-a5c8-12f5b64d6b6e`
 
-**Task:** Please provide the SQL commands to configure the correct RLS policies for public insert/upsert. Then, guide me on the best way to implement the Google Sheets sync directly from Supabase (e.g., using a Database Webhook triggering a Google Apps Script, or a Supabase Edge Function).
+**Architecture:**
+- The React frontend hardcodes the test `event_id` for now. Future: derive from URL slug.
+- On RSVP submit, the frontend upserts into `arrival_permits` with `onConflict: 'event_id,phone'`.
+- A Supabase Database Webhook triggers the `sync-to-sheets` Edge Function on INSERT/UPDATE.
+- The Edge Function looks up the `google_sheet_id` from the `events` table using the `event_id` from the webhook payload, then syncs the record to the correct Google Sheet.
 
-**Attached Code Context:**
-I have provided the relevant React codebase. Please analyze the components (especially the RSVP form and Supabase client calls). 
-Based on how the code currently sends data to Supabase (insert vs. upsert), help me write the exact SQL policies for RLS to allow unauthenticated users to submit and update their RSVP.
+**RLS Policies (`arrival_permits`):**
+- Allow anon INSERT (WITH CHECK true)
+- Allow anon UPDATE (USING true, WITH CHECK true)
+- Allow anon SELECT (USING true)
+
+**Google Sheets Sync (Edge Function: `sync-to-sheets`):**
+- Reads `event_id` from webhook record
+- Queries `events` table for `google_sheet_id` using the Supabase service role client
+- Authenticates with Google Service Account (env vars: `GOOGLE_SERVICE_ACCOUNT_EMAIL`, `GOOGLE_PRIVATE_KEY`)
+- Upserts the row: searches column B for the phone number, updates the row if found, appends a new row if not

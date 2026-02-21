@@ -20,13 +20,14 @@ export const submitRsvp = async (rsvpData) => {
   const { data, error } = await supabase
     .from('arrival_permits')
     .upsert([{
+      event_id: '1f7cddc3-ef64-4b8a-a5c8-12f5b64d6b6e',
       full_name: rsvpData.name,
       phone: rsvpData.phone,
       attending: rsvpData.attending,
       guests_count: rsvpData.guest_count,
       needs_parking: rsvpData.needs_parking,
       updated_at: new Date().toISOString(),
-    }], { onConflict: 'phone' })
+    }], { onConflict: 'event_id,phone' })
     .select();
 
   if (error) {
