@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(cd /c/dev/github/personal/Wedding-Eyal && npm install react-router-dom 2>&1)"
+      "Bash(cd /c/dev/github/personal/Wedding-Eyal && npm install react-router-dom 2>&1)",
+      "Bash(cd /c/dev/github/personal/Wedding-Eyal && npm run build 2>&1)"
     ]
   }
 }

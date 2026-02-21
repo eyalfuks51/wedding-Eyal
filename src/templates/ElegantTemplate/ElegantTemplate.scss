@@ -1,0 +1,315 @@
+// ─────────────────────────────────────────────
+// ElegantTemplate — deep navy + warm gold theme
+// Uses fonts already loaded globally:
+//   Gravitas One, Dancing Script, Heebo, Polin
+// ─────────────────────────────────────────────
+
+$navy:       #1b1b2f;
+$navy-deep:  #111120;
+$gold:       #c9a84c;
+$gold-muted: rgba(201, 168, 76, 0.35);
+$cream:      #f0ece4;
+$cream-muted: rgba(240, 236, 228, 0.65);
+$parchment:  #f8f5ef;
+
+.elegant {
+  min-height: 100dvh;
+  background: $parchment;
+  direction: rtl;
+
+  // ── Hero ──────────────────────────────────────
+  &__hero {
+    background: $navy;
+    padding: 5rem 2rem 4rem;
+    display: flex;
+    justify-content: center;
+  }
+
+  &__hero-inner {
+    max-width: 660px;
+    width: 100%;
+    text-align: center;
+  }
+
+  &__quote {
+    font-family: 'Dancing Script', cursive;
+    font-size: 1.5rem;
+    color: $gold;
+    direction: ltr;
+    line-height: 1.5;
+    white-space: pre-line;
+    margin-bottom: 1.5rem;
+
+    @media (max-width: 480px) { font-size: 1.2rem; }
+  }
+
+  &__names {
+    font-family: 'Gravitas One', serif;
+    font-size: 5rem;
+    color: $cream;
+    line-height: 1.05;
+    letter-spacing: 0.02em;
+    margin-bottom: 1rem;
+
+    @media (max-width: 480px) { font-size: 3.2rem; }
+  }
+
+  &__invitation {
+    font-family: 'Heebo', sans-serif;
+    font-size: 1rem;
+    color: $cream-muted;
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+  }
+
+  // date block: dow / number / hebrew stacked
+  &__date-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+    margin: 1.5rem 0;
+  }
+
+  &__date-dow {
+    font-family: 'Heebo', sans-serif;
+    font-size: 0.85rem;
+    color: $gold;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  &__date-number {
+    font-family: 'Gravitas One', serif;
+    font-size: 3.8rem;
+    color: $cream;
+    letter-spacing: 0.18em;
+    direction: ltr;
+    line-height: 1.1;
+
+    @media (max-width: 480px) { font-size: 2.6rem; }
+  }
+
+  &__date-heb {
+    font-family: 'Heebo', sans-serif;
+    font-size: 0.8rem;
+    color: rgba(240, 236, 228, 0.45);
+    direction: rtl;
+  }
+
+  &__venue {
+    font-family: 'Heebo', sans-serif;
+    font-size: 0.95rem;
+    color: $cream-muted;
+    letter-spacing: 0.04em;
+    margin-bottom: 1rem;
+  }
+
+  &__bullet {
+    color: $gold;
+    margin: 0 0.3rem;
+  }
+
+  // thin gold divider with a centred ornament
+  &__divider {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 1.75rem auto;
+    width: 180px;
+
+    &::before,
+    &::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: $gold-muted;
+    }
+
+    // centre diamond ornament via a span added in JSX
+  }
+
+  &__divider-gem {
+    color: $gold;
+    font-size: 0.55rem;
+    line-height: 1;
+  }
+
+  // ── Schedule row ──────────────────────────────
+  &__schedule {
+    display: flex;
+    justify-content: center;
+    gap: 2.5rem;
+    margin: 0.5rem 0 1.5rem;
+    direction: ltr;
+
+    @media (max-width: 480px) { gap: 1.5rem; }
+  }
+
+  &__schedule-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  &__schedule-icon {
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+    // SVGs have built-in colours; they read fine on the dark bg
+    // If you want a gold tint: filter: sepia(1) saturate(2) hue-rotate(5deg);
+
+    @media (max-width: 480px) { width: 34px; height: 34px; }
+  }
+
+  &__schedule-time {
+    font-family: 'Gravitas One', serif;
+    font-size: 1.05rem;
+    color: $gold;
+  }
+
+  &__schedule-label {
+    font-family: 'Heebo', sans-serif;
+    font-size: 0.82rem;
+    color: $cream-muted;
+    direction: rtl;
+  }
+
+  &__footer-note {
+    font-family: 'Heebo', sans-serif;
+    font-size: 0.88rem;
+    color: rgba(240, 236, 228, 0.5);
+    line-height: 1.7;
+    white-space: pre-line;
+    margin-top: 1rem;
+  }
+
+  &__closing {
+    font-family: 'Heebo', sans-serif;
+    font-size: 0.95rem;
+    color: $gold;
+    font-weight: 600;
+    line-height: 1.8;
+    white-space: pre-line;
+    margin-top: 0.75rem;
+  }
+
+  // ── RSVP wrapper — overrides for brand fit ────
+  &__rsvp-wrapper {
+    // Swap the burgundy border for gold
+    .red-border {
+      border-color: $gold;
+    }
+
+    // Hide the frame-border images & flowers (they're wedding-default decor)
+    .frame-border-top,
+    .frame-border-bottom,
+    .rsvp__decoration {
+      display: none;
+    }
+  }
+
+  // ── Directions ────────────────────────────────
+  &__directions {
+    background: $navy;
+    color: $cream;
+    padding: 4rem 2rem;
+    display: flex;
+    justify-content: center;
+    border-top: 3px solid $gold;
+    border-bottom: 3px solid $gold;
+  }
+
+  &__directions-inner {
+    max-width: 660px;
+    width: 100%;
+    text-align: center;
+  }
+
+  &__section-title {
+    font-family: 'Gravitas One', serif;
+    font-size: 2rem;
+    color: $cream;
+    margin-bottom: 0.25rem;
+  }
+
+  &__transport-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    margin: 1.25rem 0;
+  }
+
+  &__transport-label {
+    font-family: 'Heebo', sans-serif;
+    font-size: 0.72rem;
+    color: $gold;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+
+  &__transport-value {
+    font-family: 'Heebo', sans-serif;
+    font-size: 0.95rem;
+    color: $cream-muted;
+  }
+
+  &__address {
+    font-family: 'Heebo', sans-serif;
+    font-size: 0.9rem;
+    color: rgba(240, 236, 228, 0.4);
+    margin-top: 1.5rem;
+  }
+
+  &__nav-btn {
+    display: inline-block;
+    margin-top: 1.5rem;
+    padding: 0.55rem 1.8rem;
+    border: 1px solid $gold;
+    color: $gold;
+    font-family: 'Heebo', sans-serif;
+    font-size: 0.9rem;
+    text-decoration: none;
+    letter-spacing: 0.06em;
+    transition: background 0.2s, color 0.2s;
+
+    &:hover {
+      background: $gold;
+      color: $navy;
+      text-decoration: none;
+    }
+  }
+
+  // ── Footer ────────────────────────────────────
+  &__footer {
+    background: $navy-deep;
+    color: rgba(240, 236, 228, 0.4);
+    text-align: center;
+    padding: 1.75rem 2rem 2.5rem;
+  }
+
+  &__developed-by {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-family: 'Heebo', sans-serif;
+    font-size: 0.82rem;
+  }
+
+  &__footer-link {
+    display: flex;
+    align-items: center;
+    color: inherit;
+
+    &:hover { text-decoration: none; }
+  }
+
+  &__footer-logo {
+    width: 55px;
+    opacity: 0.6;
+    margin-right: 0.25rem;
+  }
+}

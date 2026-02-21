@@ -1,10 +1,13 @@
 import { useParams } from 'react-router-dom';
 import { useEvent } from '../hooks/useEvent';
-import WeddingTemplate from '../templates/WeddingTemplate/WeddingTemplate';
+import WeddingDefaultTemplate from '../templates/WeddingDefaultTemplate/WeddingDefaultTemplate';
+import ElegantTemplate from '../templates/ElegantTemplate/ElegantTemplate';
 import NotFoundPage from './NotFoundPage';
 
+// Register new templates here. The key must match event.template_id in the DB.
 const TEMPLATES = {
-  'wedding-default': WeddingTemplate,
+  'wedding-default': WeddingDefaultTemplate,
+  'elegant':         ElegantTemplate,
 };
 
 function LoadingSpinner() {
@@ -22,8 +25,11 @@ function EventPage() {
   if (loading) return <LoadingSpinner />;
   if (notFound || !event) return <NotFoundPage />;
 
-  const Template = TEMPLATES[event.template_id] ?? WeddingTemplate;
-  return <Template event={event} config={event.content_config} />;
+  // Fallback to WeddingDefaultTemplate when template_id is null / not registered
+  const Template = TEMPLATES[event.template_id] ?? WeddingDefaultTemplate;
+  const config = event.content_config ?? {};
+
+  return <Template event={event} config={config} />;
 }
 
 export default EventPage;
