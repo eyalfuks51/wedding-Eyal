@@ -111,13 +111,14 @@ function RsvpForm() {
     setErrorMessage('');
 
     try {
-      await submitRsvp({
+      const rsvpPayload = {
         name: formData.name.trim(),
         phone: formData.phone.trim().replace(/\D/g, ''),
         attending: formData.attending,
         guest_count: formData.attending ? parseInt(formData.guest_count, 10) : 0,
         needs_parking: formData.attending ? formData.needs_parking : false,
-      });
+      };
+      await submitRsvp(rsvpPayload);
 
       setStatus('success');
       scrollToSection();

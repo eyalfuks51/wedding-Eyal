@@ -18,7 +18,7 @@ export const submitRsvp = async (rsvpData) => {
   }
 
   const { data, error } = await supabase
-    .from('invitations')
+    .from('arrival_permits')
     .upsert([{
       full_name: rsvpData.name,
       phone: rsvpData.phone,
@@ -40,7 +40,7 @@ export const submitRsvp = async (rsvpData) => {
 export const fetchAllGuests = async () => {
   if (!supabase) throw new Error('Supabase is not configured');
   const { data, error } = await supabase
-    .from('invitations')
+    .from('arrival_permits')
     .select('*')
     .order('updated_at', { ascending: false });
   if (error) throw new Error('שגיאה בטעינת רשימת האורחים');
