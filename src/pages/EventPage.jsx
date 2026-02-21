@@ -26,6 +26,7 @@ function EventPage() {
   if (notFound || !event) return <NotFoundPage />;
 
   // Fallback to WeddingDefaultTemplate when template_id is null / not registered
+  console.log('Current Template ID:', event.template_id);
   const Template = TEMPLATES[event.template_id] ?? WeddingDefaultTemplate;
   const config = event.content_config ?? {};
 

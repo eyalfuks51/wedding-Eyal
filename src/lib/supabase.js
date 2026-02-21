@@ -15,7 +15,7 @@ export const fetchEventBySlug = async (slug) => {
   if (!supabase) throw new Error('Supabase is not configured');
   const { data, error } = await supabase
     .from('events')
-    .select('id, slug, content_config')
+    .select('id, slug, template_id, content_config')
     .eq('slug', slug)
     .single();
   if (error) throw error;

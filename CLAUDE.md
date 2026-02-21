@@ -75,30 +75,56 @@ All fields are optional — every component guards against missing values.
 
 ---
 
-## Template Registry
+## Template Strategy — AI-Assisted Template Generation
 
-Templates live in `src/templates/`. To add a new template:
-1. Create `src/templates/MyTemplate/MyTemplate.jsx` (+ optional `.scss`)
-2. Register it in `src/pages/EventPage.jsx`
-3. Set `template_id = 'my-template'` on the event row in Supabase
+### Core principle
+Templates are **not** generic renderers that swap image paths from the database.
+Each template is a **dedicated, hardcoded React component** — hand-crafted for a specific set of visual assets and a specific design aesthetic.
 
-| `template_id` | Component | Description |
-|---|---|---|
-| `wedding-default` | `WeddingDefaultTemplate` | Classic warm-red / cream, decorative flowers & frame borders, GSAP animations |
-| `elegant` | `ElegantTemplate` | Deep navy + gold, serif typography, minimal — no decorative images |
+**What is always hardcoded inside a template:**
+- All image assets (hero photos, decorative elements, logos) — imported directly from `public/` or bundled via Vite
+- Color palette, typography, spacing (in the template's own `.scss`)
+- Layout structure and any decorative HTML elements
+
+**What always comes from `content_config` (text / data only):**
+- Couple names, quote, invitation text, date fields
+- Venue name, address, maps query
+- Schedule items (time + label; the `icon` string maps to a hardcoded SVG import inside the template)
+- Footer note, closing message, transport details
+
+This split means: swapping a template never breaks a layout due to mismatched image aspect ratios or contrast issues, because the images are baked into the template itself.
+
+---
+
+### Workflow for adding a new template
+
+1. **Eyal drops assets** into `public/templates/<template-name>/` (e.g. `boho-bg.jpg`, `boho-flower.png`)
+2. **Eyal writes a prompt** describing the desired aesthetic (fonts, color palette, layout structure, which assets go where)
+3. **Claude clones the closest existing template** as a starting point (usually `ElegantTemplate` for minimal layouts, `WeddingDefaultTemplate` for decorative ones)
+4. **Claude rewrites the SCSS** for the new palette / fonts / layout, replacing all hardcoded asset references with the new files
+5. **Claude registers** `'boho': BohoTemplate` in `EventPage.jsx` and updates this file
+
+---
+
+### Template Registry
+
+| `template_id` | Component | Assets folder | Description |
+|---|---|---|---|
+| `wedding-default` | `WeddingDefaultTemplate` | `public/` (shared) | Warm burgundy/cream, decorative flowers, frame-border images, GSAP scroll animations |
+| `elegant` | `ElegantTemplate` | none (CSS-only decor) | Deep navy + gold, Gravitas One / Dancing Script, minimal — no decorative images |
 
 **Template contract** — every template receives:
 ```ts
 { event: { id, slug, template_id, content_config }, config: content_config ?? {} }
 ```
-Templates must handle `config` being `{}` (all fields optional / missing).
+Templates must handle `config` being `{}` (every field is optional — never crash on missing data).
 
-**Template dispatch (EventPage.jsx):**
+**Template dispatch (`EventPage.jsx`):**
 ```jsx
 const TEMPLATES = {
   'wedding-default': WeddingDefaultTemplate,
   'elegant':         ElegantTemplate,
-  // add future templates here ↑
+  // ← register new templates here
 };
 const Template = TEMPLATES[event.template_id] ?? WeddingDefaultTemplate;
 const config   = event.content_config ?? {};
