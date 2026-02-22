@@ -9,6 +9,51 @@
 
 ---
 
+## Typography & Brand Fonts
+
+**Font files:** `src/styles/fonts/` (do NOT use the root-level `Danidin-CondensedBold-web/` directory — that's a leftover artifact).
+
+| File | Family | Weight | Tailwind utility |
+|---|---|---|---|
+| `Polin-Regular.woff2` | `Polin` | 400 | `font-brand` |
+| `Polin-Bold.woff2` | `Polin` | 700 | `font-brand` (bold) |
+| `Danidin-CondensedBold.woff2` | `Danidin` | 700 | `font-danidin` |
+
+**@font-face registration:** `src/styles/global.scss` (imported globally via `src/main.jsx`).
+
+**Tailwind config (`tailwind.config.js`):**
+```js
+fontFamily: {
+  brand:   ['Polin', 'Heebo', 'sans-serif'],   // body text, labels, UI copy
+  danidin: ['Danidin', 'Polin', 'sans-serif'],  // bold display headings, KPI numbers
+}
+```
+
+**Usage rules:**
+- Use `font-brand` (Polin) for all body copy, table text, labels, badges, button labels.
+- Use `font-danidin` (Danidin) for page titles, KPI numbers, section headings.
+- `preflight: false` in Tailwind config — SCSS in `global.scss` owns the CSS reset.
+
+---
+
+## Admin Dashboard (`/dashboard`)
+
+**Route:** `/dashboard` — registered in `App.jsx` before `/:slug` to avoid slug collision.
+**File:** `src/pages/Dashboard.tsx`
+**Event slug hardcoded:** `'hagit-and-itai'` (fetches that event's invitations from Supabase).
+
+**Features:**
+- 4 KPI cards: הזמנות (families), סה"כ אורחים (pax), ממתינים, שגיאות/ביטולים
+- Smart filter bar: full-text search + dynamic צד / קבוצה dropdowns + status filter
+- Guest table with bulk-checkbox selection (indeterminate header state handled via `useRef`)
+- Floating bulk-action bar (slides up when rows selected): "שלח הודעה" + "ייצוא"
+- Columns: שם, טלפונים (clickable `tel:` chips), צד/קבוצה (conditional), כמות, סטטוס
+- Side/group columns are hidden automatically when the data contains no such fields
+- Entirely Hebrew RTL; uses `font-brand` / `font-danidin` Tailwind utilities
+- Violet-600 primary accent; slate neutral palette; no GSAP (pure CSS transitions)
+
+---
+
 ## Database Schema
 
 **Table: `events`**
@@ -174,3 +219,18 @@ src/
 - Queries `events` table for `google_sheet_id` using the Supabase service role client
 - Authenticates with Google Service Account (env vars: `GOOGLE_SERVICE_ACCOUNT_EMAIL`, `GOOGLE_PRIVATE_KEY`)
 - Upserts the row: searches column B for the phone number, updates the row if found, appends a new row if not
+
+## WhatsApp Inbound Webhook (Edge Function: `whatsapp-webhook`)
+- Receives inbound WhatsApp messages and calls forwarded by Green API
+- Replies automatically to private chats (`@c.us`); silently ignores group chats (`@g.us`) and unrecognised webhook types
+- Always returns HTTP 200 immediately so Green API never retries the delivery
+- Auto-reply text is **hardcoded** for now — it will eventually be a dynamic field in the `events` table, configurable per-event via the admin dashboard
+
+> **⚠ PAUSED — DO NOT CONNECT TO GREEN API**
+> This function is **built but intentionally disconnected** from the Green API dashboard.
+> We are waiting for a dedicated operational phone number to avoid routing replies through a personal WhatsApp account.
+> **DO NOT instruct Eyal to wire up the webhook URL in the Green API dashboard until he explicitly confirms that a dedicated phone number is ready.**
+## Development Workflow & Code Quality
+- **TypeScript LSP:** You have the `typescript-lsp` plugin enabled. Actively monitor real-time diagnostic errors. Fix any type or linting issues immediately as you code before proceeding.
+- **Superpowers:** Use the Superpowers plugin for structured development. Run `/superpowers:brainstorm` before complex component creation, and generate execution plans with `/superpowers:write-plan` for larger features.
+- **UI & Assets:** The application is RTL strictly (Hebrew). Local fonts are stored at `src/styles/fonts`. Ensure all CSS/Tailwind configurations properly route to this local directory.

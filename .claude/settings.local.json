@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(cd /c/dev/github/personal/Wedding-Eyal && npm install react-router-dom 2>&1)",
-      "Bash(cd /c/dev/github/personal/Wedding-Eyal && npm run build 2>&1)"
+      "Bash(cd /c/dev/github/personal/Wedding-Eyal && npm run build 2>&1)",
+      "Bash(ls:*)",
+      "Bash(cd /c/dev/github/personal/Wedding-Eyal && npm install lucide-react && npm install -D tailwindcss@3 postcss autoprefixer 2>&1)"
     ]
   }
 }

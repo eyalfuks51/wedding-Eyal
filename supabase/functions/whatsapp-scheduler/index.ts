@@ -103,6 +103,46 @@ async function dispatchWhatsApp(
 // Helpers
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Operating hours check — always evaluated in Asia/Jerusalem timezone.
+//
+//  Sun–Thu  │ 09:00 – 20:59  (base rule)
+//  Friday   │ 09:00 – 13:59  (Erev Shabbat cut-off at 14:00)
+//  Saturday │ 20:00 – 20:59  (post-Shabbat window only)
+// ---------------------------------------------------------------------------
+
+function isWithinOperatingHours(): boolean {
+  const now = new Date();
+
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Jerusalem",
+    weekday: "short",
+    hour: "numeric",
+    hour12: false,
+  }).formatToParts(now);
+
+  const dayStr = parts.find((p) => p.type === "weekday")?.value ?? "Sun";
+  const hourStr = parts.find((p) => p.type === "hour")?.value ?? "0";
+
+  const dayMap: Record<string, number> = {
+    Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6,
+  };
+
+  const day = dayMap[dayStr] ?? 0;
+  const hour = parseInt(hourStr, 10) % 24; // guard: some engines emit "24" at midnight
+
+  if (day === 6) {
+    // Saturday (Shabbat): only the narrow post-Shabbat window
+    return hour === 20; // 20:00–20:59
+  }
+  if (day === 5) {
+    // Friday (Erev Shabbat): block from 14:00 onwards
+    return hour >= 9 && hour <= 13; // 09:00–13:59
+  }
+  // Sunday–Thursday: base window
+  return hour >= 9 && hour <= 20; // 09:00–20:59
+}
+
 function isCooledDown(
   lastSentAt: string | null,
   daysBetween: number,
@@ -143,6 +183,21 @@ serve(async (req) => {
   console.log(
     `[whatsapp-scheduler] eventIdFilter=${eventIdFilter ?? "ALL"} | forceRun=${forceRun}`,
   );
+
+  // --- Operating hours gate ---
+  if (forceRun) {
+    console.log(
+      "[whatsapp-scheduler] force_run=true — bypassing time/day restrictions.",
+    );
+  } else if (!isWithinOperatingHours()) {
+    console.log(
+      "[whatsapp-scheduler] Outside operating hours (Shabbat/Night) - sleeping",
+    );
+    return new Response(
+      JSON.stringify({ success: true, skipped: "outside_operating_hours" }),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  }
 
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,

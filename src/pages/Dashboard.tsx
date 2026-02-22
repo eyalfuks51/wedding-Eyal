@@ -1,0 +1,666 @@
+import { useState, useEffect, useMemo, useRef } from 'react';
+import {
+  Search,
+  Users,
+  CheckCircle2,
+  Clock,
+  XCircle,
+  ChevronDown,
+  Send,
+  Download,
+  Phone,
+} from 'lucide-react';
+import { supabase } from '../lib/supabase';
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type RsvpStatus = 'pending' | 'attending' | 'declined';
+
+interface Invitation {
+  id: string;
+  group_name: string | null;
+  phone_numbers: string[] | null;
+  rsvp_status: RsvpStatus | null;
+  confirmed_pax: number | null;
+  invited_pax: number | null;
+  messages_sent_count: number | null;
+  is_automated: boolean | null;
+  side: string | null;
+  group: string | null;
+}
+
+interface Kpis {
+  totalFamilies: number;
+  confirmedFamilies: number;
+  totalPaxInvited: number;
+  totalPaxConfirmed: number;
+  pending: number;
+  declined: number;
+}
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const SLUG = 'hagit-and-itai';
+
+// dot: Tailwind bg-* class for the coloured indicator dot inside the badge
+const STATUS_MAP: Record<string, { label: string; classes: string; dot: string }> = {
+  attending: { label: 'מגיע',    classes: 'bg-emerald-100 text-emerald-700', dot: 'bg-emerald-500' },
+  pending:   { label: 'ממתין',   classes: 'bg-amber-100   text-amber-600',   dot: 'bg-amber-400'   },
+  declined:  { label: 'לא מגיע', classes: 'bg-rose-100    text-rose-700',    dot: 'bg-rose-500'    },
+};
+
+// ─── Micro-components ─────────────────────────────────────────────────────────
+
+function Spinner() {
+  return (
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center" dir="rtl">
+      <div className="text-center space-y-3">
+        <div className="w-10 h-10 border-4 border-violet-600 border-t-transparent rounded-full animate-spin mx-auto" />
+        <p className="text-sm text-slate-400 font-brand">טוען נתונים...</p>
+      </div>
+    </div>
+  );
+}
+
+function ErrorView({ message }: { message: string }) {
+  return (
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center" dir="rtl">
+      <div className="bg-white rounded-2xl border border-red-200 shadow-sm p-8 max-w-xs w-full mx-4 text-center">
+        <XCircle className="w-10 h-10 text-red-400 mx-auto mb-3" />
+        <p className="font-medium text-slate-700 font-brand">שגיאה בטעינת הנתונים</p>
+        <p className="text-sm text-slate-400 font-brand mt-1.5">{message}</p>
+      </div>
+    </div>
+  );
+}
+
+// ── KPI Card ──────────────────────────────────────────────────────────────────
+
+interface KpiCardProps {
+  icon: React.ReactNode;
+  iconBg: string;
+  title: string;
+  value: string | number;
+  sub: string;
+  /** 0–1 ratio. When provided, renders a thin animated progress bar. */
+  progress?: number;
+  /** Tailwind bg-* class for the progress fill. Defaults to bg-violet-500. */
+  progressColor?: string;
+}
+
+function KpiCard({
+  icon,
+  iconBg,
+  title,
+  value,
+  sub,
+  progress,
+  progressColor = 'bg-violet-500',
+}: KpiCardProps) {
+  // Clamp to [0, 100] to guard against bad ratios (e.g. pax-confirmed > pax-invited)
+  const pct: number | null =
+    progress !== undefined
+      ? Math.min(100, Math.max(0, Math.round(progress * 100)))
+      : null;
+
+  return (
+    <article className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex items-start gap-4 hover:shadow-md transition-shadow duration-200">
+      <div className={`shrink-0 rounded-xl p-2.5 ${iconBg}`}>{icon}</div>
+      <div className="min-w-0 flex-1">
+        <p className="text-xs text-slate-500 font-brand leading-none mb-2">{title}</p>
+        <p className="text-[1.6rem] font-bold text-slate-800 font-danidin leading-none tracking-tight">
+          {value}
+        </p>
+        <p className="text-xs text-slate-400 font-brand mt-2 truncate">{sub}</p>
+
+        {/* Progress bar — only rendered when a ratio is supplied */}
+        {pct !== null && (
+          <div className="mt-3 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all duration-700 ease-out ${progressColor}`}
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+        )}
+      </div>
+    </article>
+  );
+}
+
+// ── Status Badge ──────────────────────────────────────────────────────────────
+
+function StatusBadge({ status }: { status: string | null }) {
+  const cfg = STATUS_MAP[status ?? ''] ?? {
+    label: 'לא ידוע',
+    classes: 'bg-slate-100 text-slate-500',
+    dot: 'bg-slate-400',
+  };
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium font-brand whitespace-nowrap ${cfg.classes}`}
+    >
+      <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${cfg.dot}`} />
+      {cfg.label}
+    </span>
+  );
+}
+
+// ── Select Filter ─────────────────────────────────────────────────────────────
+
+interface SelectFilterProps {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+  options: string[];
+  labels?: Record<string, string>;
+}
+
+function SelectFilter({ value, onChange, placeholder, options, labels }: SelectFilterProps) {
+  return (
+    <div className="relative shrink-0">
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        className="appearance-none pr-3 pl-8 py-2.5 text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent cursor-pointer transition-shadow font-brand"
+      >
+        <option value="">{placeholder}</option>
+        {options.map(opt => (
+          <option key={opt} value={opt}>{labels?.[opt] ?? opt}</option>
+        ))}
+      </select>
+      <ChevronDown className="absolute inset-y-0 left-2.5 my-auto w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+    </div>
+  );
+}
+
+// ─── Dashboard ────────────────────────────────────────────────────────────────
+
+export default function Dashboard() {
+  const [invitations, setInvitations] = useState<Invitation[]>([]);
+  const [eventSlug, setEventSlug]     = useState('');
+  const [loading, setLoading]         = useState(true);
+  const [error, setError]             = useState<string | null>(null);
+
+  // Filters
+  const [search, setSearch]             = useState('');
+  const [sideFilter, setSideFilter]     = useState('');
+  const [groupFilter, setGroupFilter]   = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+
+  // Row selection
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const selectAllRef = useRef<HTMLInputElement>(null);
+
+  // ── Data fetching ────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    if (!supabase) {
+      setError('Supabase is not configured');
+      setLoading(false);
+      return;
+    }
+    const sb = supabase;
+
+    async function load() {
+      try {
+        const { data: ev, error: evErr } = await sb
+          .from('events')
+          .select('id, slug')
+          .eq('slug', SLUG)
+          .single();
+        if (evErr) throw evErr;
+
+        setEventSlug(ev.slug);
+
+        const { data: inv, error: invErr } = await sb
+          .from('invitations')
+          .select('*')
+          .eq('event_id', ev.id)
+          .order('group_name', { ascending: true });
+        if (invErr) throw invErr;
+
+        setInvitations((inv ?? []) as Invitation[]);
+      } catch (e: unknown) {
+        setError(e instanceof Error ? e.message : 'שגיאה לא ידועה');
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
+  // ── Derived data ─────────────────────────────────────────────────────────
+
+  const sides = useMemo(() => {
+    const s = new Set<string>();
+    invitations.forEach(i => { if (i.side) s.add(i.side); });
+    return [...s].sort();
+  }, [invitations]);
+
+  const groups = useMemo(() => {
+    const g = new Set<string>();
+    invitations.forEach(i => { if (i.group) g.add(i.group); });
+    return [...g].sort();
+  }, [invitations]);
+
+  const filtered = useMemo(() => {
+    return invitations.filter(inv => {
+      if (search) {
+        const q = search.toLowerCase();
+        const nameOk  = inv.group_name?.toLowerCase().includes(q) ?? false;
+        const phoneOk = inv.phone_numbers?.some(p => p.includes(q)) ?? false;
+        if (!nameOk && !phoneOk) return false;
+      }
+      if (sideFilter   && inv.side        !== sideFilter)   return false;
+      if (groupFilter  && inv.group       !== groupFilter)  return false;
+      if (statusFilter && inv.rsvp_status !== statusFilter) return false;
+      return true;
+    });
+  }, [invitations, search, sideFilter, groupFilter, statusFilter]);
+
+  const kpi: Kpis = useMemo(() => ({
+    totalFamilies:     invitations.length,
+    confirmedFamilies: invitations.filter(i => i.rsvp_status === 'attending').length,
+    totalPaxInvited:   invitations.reduce((s, i) => s + (i.invited_pax  ?? 0), 0),
+    totalPaxConfirmed: invitations.reduce((s, i) => s + (i.confirmed_pax ?? 0), 0),
+    pending:           invitations.filter(i => i.rsvp_status === 'pending').length,
+    declined:          invitations.filter(i => i.rsvp_status === 'declined').length,
+  }), [invitations]);
+
+  // ── Selection ────────────────────────────────────────────────────────────
+
+  const filteredIds = useMemo(() => filtered.map(i => i.id), [filtered]);
+  const allChecked  = filteredIds.length > 0 && filteredIds.every(id => selected.has(id));
+  const someChecked = filteredIds.some(id => selected.has(id));
+
+  useEffect(() => {
+    if (!selectAllRef.current) return;
+    selectAllRef.current.indeterminate = someChecked && !allChecked;
+  }, [someChecked, allChecked]);
+
+  const toggleAll = () => {
+    setSelected(prev => {
+      const next = new Set(prev);
+      if (allChecked) filteredIds.forEach(id => next.delete(id));
+      else            filteredIds.forEach(id => next.add(id));
+      return next;
+    });
+  };
+
+  const toggleRow = (id: string) => {
+    setSelected(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  // ── Column visibility ────────────────────────────────────────────────────
+
+  const hasSideOrGroup = invitations.some(i => i.side || i.group);
+  const hasInvitedPax  = invitations.some(i => i.invited_pax != null && i.invited_pax > 0);
+
+  // ── Render guards ────────────────────────────────────────────────────────
+
+  if (loading) return <Spinner />;
+  if (error)   return <ErrorView message={error} />;
+
+  const colSpan = hasSideOrGroup ? 6 : 5;
+
+  // Safe ratios — avoid division by zero
+  const familyConfirmRate = kpi.totalFamilies > 0 ? kpi.confirmedFamilies / kpi.totalFamilies : 0;
+  const paxConfirmRate    = kpi.totalPaxInvited  > 0 ? kpi.totalPaxConfirmed / kpi.totalPaxInvited : undefined;
+  const pendingRate       = kpi.totalFamilies > 0 ? kpi.pending  / kpi.totalFamilies : 0;
+  const declinedRate      = kpi.totalFamilies > 0 ? kpi.declined / kpi.totalFamilies : 0;
+
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-brand" dir="rtl">
+
+      {/* ══════════════════════════════════════════════════════════════════
+          HEADER
+      ══════════════════════════════════════════════════════════════════ */}
+      <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-sm border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center shrink-0">
+              <Users className="w-4 h-4 text-white" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-base font-bold text-slate-800 font-danidin leading-none">
+                ניהול הזמנות
+              </h1>
+              <p className="text-xs text-slate-400 font-brand mt-0.5 truncate">
+                {eventSlug || SLUG}
+              </p>
+            </div>
+          </div>
+
+          <button
+            className="shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 active:bg-violet-800 text-white text-sm font-medium font-brand rounded-xl transition-colors shadow-sm"
+          >
+            <Download className="w-4 h-4" />
+            ייצוא
+          </button>
+
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        {/* ════════════════════════════════════════════════════════════════
+            KPI CARDS — with animated progress bars
+        ════════════════════════════════════════════════════════════════ */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+
+          <KpiCard
+            icon={<Users className="w-5 h-5 text-violet-600" />}
+            iconBg="bg-violet-50"
+            title="הזמנות"
+            value={`${kpi.confirmedFamilies} / ${kpi.totalFamilies}`}
+            sub="משפחות אישרו הגעה"
+            progress={familyConfirmRate}
+            progressColor="bg-violet-500"
+          />
+
+          <KpiCard
+            icon={<CheckCircle2 className="w-5 h-5 text-emerald-600" />}
+            iconBg="bg-emerald-50"
+            title='סה"כ אורחים'
+            value={kpi.totalPaxConfirmed}
+            sub={
+              kpi.totalPaxInvited > 0
+                ? `מתוך ${kpi.totalPaxInvited} מוזמנים`
+                : 'אורחים מאושרים'
+            }
+            progress={paxConfirmRate}
+            progressColor="bg-emerald-500"
+          />
+
+          <KpiCard
+            icon={<Clock className="w-5 h-5 text-amber-500" />}
+            iconBg="bg-amber-50"
+            title="ממתינים לתשובה"
+            value={kpi.pending}
+            sub="הזמנות שטרם נענו"
+            progress={pendingRate}
+            progressColor="bg-amber-400"
+          />
+
+          <KpiCard
+            icon={<XCircle className="w-5 h-5 text-rose-500" />}
+            iconBg="bg-rose-50"
+            title="שגיאות / ביטולים"
+            value={kpi.declined}
+            sub="לא מגיעים"
+            progress={declinedRate}
+            progressColor="bg-rose-500"
+          />
+
+        </div>
+
+        {/* ════════════════════════════════════════════════════════════════
+            FILTER / ACTION BAR
+        ════════════════════════════════════════════════════════════════ */}
+        <section className="bg-white rounded-lg border border-slate-200 shadow-sm px-4 py-3.5 mb-6">
+          <div className="flex flex-wrap items-center gap-3">
+
+            {/* Search */}
+            <div className="relative flex-1 min-w-52">
+              <Search className="absolute inset-y-0 right-3 my-auto w-4 h-4 text-slate-400 pointer-events-none" />
+              <input
+                type="search"
+                placeholder="חפש שם או טלפון..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="w-full pr-9 pl-3 py-2.5 text-sm text-slate-700 placeholder:text-slate-400 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-shadow font-brand"
+              />
+            </div>
+
+            {sides.length > 0 && (
+              <SelectFilter
+                value={sideFilter}
+                onChange={setSideFilter}
+                placeholder="כל הצדדים"
+                options={sides}
+              />
+            )}
+
+            {groups.length > 0 && (
+              <SelectFilter
+                value={groupFilter}
+                onChange={setGroupFilter}
+                placeholder="כל הקבוצות"
+                options={groups}
+              />
+            )}
+
+            <SelectFilter
+              value={statusFilter}
+              onChange={setStatusFilter}
+              placeholder="כל הסטטוסים"
+              options={['attending', 'pending', 'declined']}
+              labels={{ attending: 'מגיעים', pending: 'ממתינים', declined: 'לא מגיעים' }}
+            />
+
+            <span className="text-xs text-slate-400 font-brand mr-auto">
+              {filtered.length === invitations.length
+                ? `${invitations.length} הזמנות`
+                : `${filtered.length} מתוך ${invitations.length}`}
+            </span>
+
+          </div>
+        </section>
+
+        {/* ════════════════════════════════════════════════════════════════
+            GUEST TABLE
+        ════════════════════════════════════════════════════════════════ */}
+        <section className="bg-white shadow-sm rounded-lg border border-slate-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[640px] text-sm">
+
+              {/* ── Table header ────────────────────────────────────────── */}
+              <thead>
+                <tr className="bg-slate-50 border-b border-slate-200">
+
+                  <th className="w-12 px-4 py-3.5 text-right">
+                    <input
+                      ref={selectAllRef}
+                      type="checkbox"
+                      checked={allChecked}
+                      onChange={toggleAll}
+                      className="w-4 h-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500 cursor-pointer"
+                    />
+                  </th>
+
+                  <th className="px-4 py-3.5 text-right font-semibold text-slate-400 text-xs tracking-wider whitespace-nowrap">
+                    שם
+                  </th>
+                  <th className="px-4 py-3.5 text-right font-semibold text-slate-400 text-xs tracking-wider whitespace-nowrap">
+                    טלפונים
+                  </th>
+
+                  {hasSideOrGroup && (
+                    <th className="px-4 py-3.5 text-right font-semibold text-slate-400 text-xs tracking-wider whitespace-nowrap">
+                      צד / קבוצה
+                    </th>
+                  )}
+
+                  <th className="px-4 py-3.5 text-right font-semibold text-slate-400 text-xs tracking-wider whitespace-nowrap">
+                    כמות
+                  </th>
+                  <th className="px-4 py-3.5 text-right font-semibold text-slate-400 text-xs tracking-wider whitespace-nowrap">
+                    סטטוס
+                  </th>
+
+                </tr>
+              </thead>
+
+              {/* ── Table body ──────────────────────────────────────────── */}
+              <tbody className="divide-y divide-slate-100">
+
+                {filtered.length === 0 ? (
+                  <tr>
+                    <td colSpan={colSpan} className="py-20 text-center">
+                      <Users className="w-8 h-8 text-slate-200 mx-auto mb-2.5" />
+                      <p className="text-slate-400 text-sm font-brand">
+                        {invitations.length === 0 ? 'אין הזמנות עדיין' : 'לא נמצאו תוצאות'}
+                      </p>
+                    </td>
+                  </tr>
+                ) : (
+                  filtered.map(inv => {
+                    const isSelected = selected.has(inv.id);
+                    const sideGroup  = [inv.side, inv.group].filter(Boolean).join(' / ');
+
+                    return (
+                      <tr
+                        key={inv.id}
+                        onClick={() => toggleRow(inv.id)}
+                        className={`cursor-pointer transition-colors duration-100 ${
+                          isSelected ? 'bg-violet-50' : 'hover:bg-slate-50'
+                        }`}
+                      >
+
+                        {/* Checkbox */}
+                        <td className="px-4 py-4" onClick={e => e.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => toggleRow(inv.id)}
+                            className="w-4 h-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500 cursor-pointer"
+                          />
+                        </td>
+
+                        {/* Name — semibold for strong visual anchor */}
+                        <td className="px-4 py-4">
+                          <span className="font-semibold text-slate-800 font-brand">
+                            {inv.group_name ?? '—'}
+                          </span>
+                        </td>
+
+                        {/* Phone chips */}
+                        <td className="px-4 py-4">
+                          <div className="flex flex-wrap gap-1.5">
+                            {(inv.phone_numbers ?? []).length > 0
+                              ? (inv.phone_numbers ?? []).map(phone => (
+                                <a
+                                  key={phone}
+                                  href={`tel:${phone}`}
+                                  onClick={e => e.stopPropagation()}
+                                  className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-xs font-brand transition-colors"
+                                >
+                                  <Phone className="w-3 h-3" />
+                                  {phone}
+                                </a>
+                              ))
+                              : <span className="text-slate-300 text-xs">—</span>
+                            }
+                          </div>
+                        </td>
+
+                        {/* Side / Group */}
+                        {hasSideOrGroup && (
+                          <td className="px-4 py-4 text-slate-500 text-sm font-brand whitespace-nowrap">
+                            {sideGroup || '—'}
+                          </td>
+                        )}
+
+                        {/* Pax count */}
+                        <td className="px-4 py-4 whitespace-nowrap">
+                          <span className="font-semibold text-slate-800 font-brand">
+                            {inv.confirmed_pax ?? '?'}
+                          </span>
+                          {hasInvitedPax && inv.invited_pax != null && (
+                            <span className="text-slate-400 text-xs font-brand">
+                              {' '}/ {inv.invited_pax}
+                            </span>
+                          )}
+                        </td>
+
+                        {/* Status */}
+                        <td className="px-4 py-4">
+                          <StatusBadge status={inv.rsvp_status} />
+                        </td>
+
+                      </tr>
+                    );
+                  })
+                )}
+
+              </tbody>
+
+            </table>
+          </div>
+
+          {/* Table footer */}
+          {filtered.length > 0 && (
+            <div className="px-4 py-2.5 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
+              <span className="text-xs text-slate-400 font-brand">
+                {filtered.length} שורות
+              </span>
+              {selected.size > 0 && (
+                <span className="text-xs text-violet-600 font-brand font-medium">
+                  {selected.size} נבחרו
+                </span>
+              )}
+            </div>
+          )}
+
+        </section>
+
+      </main>
+
+      {/* ════════════════════════════════════════════════════════════════════
+          FLOATING BULK ACTION BAR
+      ════════════════════════════════════════════════════════════════════ */}
+      <div
+        className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 ease-out ${
+          selected.size > 0
+            ? 'opacity-100 translate-y-0'
+            : 'opacity-0 translate-y-4 pointer-events-none'
+        }`}
+        aria-live="polite"
+      >
+        <div className="bg-slate-900 text-white rounded-2xl shadow-2xl border border-white/10 px-5 py-3 flex items-center gap-4 backdrop-blur-sm">
+
+          <div className="flex items-center gap-2.5 shrink-0">
+            <div className="w-6 h-6 bg-violet-500 rounded-lg flex items-center justify-center">
+              <span className="text-xs font-bold font-danidin leading-none">
+                {selected.size}
+              </span>
+            </div>
+            <span className="text-sm font-medium font-brand whitespace-nowrap">
+              פעולות על הבחירה
+            </span>
+          </div>
+
+          <div className="w-px h-5 bg-white/15 shrink-0" />
+
+          <div className="flex items-center gap-2">
+
+            <button className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-violet-600 hover:bg-violet-500 active:bg-violet-700 rounded-xl text-xs font-medium font-brand transition-colors whitespace-nowrap">
+              <Send className="w-3.5 h-3.5" />
+              שלח הודעה
+            </button>
+
+            <button className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-xl text-xs font-medium font-brand transition-colors whitespace-nowrap">
+              <Download className="w-3.5 h-3.5" />
+              ייצוא
+            </button>
+
+            <button
+              onClick={() => setSelected(new Set())}
+              className="p-1.5 text-white/40 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+              aria-label="בטל בחירה"
+            >
+              <XCircle className="w-4 h-4" />
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+  );
+}

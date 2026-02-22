@@ -1,0 +1,6 @@
+/* Tailwind utility layer — imported in main.jsx alongside global.scss.
+   preflight is disabled in tailwind.config.js to avoid conflicts with the
+   existing SCSS reset in global.scss. */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
