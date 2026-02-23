@@ -777,6 +777,7 @@ function MessageHistorySheet({ invitation, logs, loading, onClose }: MessageHist
   // Format ISO timestamp → DD/MM/YYYY HH:mm
   const formatTs = (iso: string) => {
     const d = new Date(iso);
+    if (isNaN(d.getTime())) return '—';
     const pad = (n: number) => String(n).padStart(2, '0');
     return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
   };
@@ -811,8 +812,8 @@ function MessageHistorySheet({ invitation, logs, loading, onClose }: MessageHist
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-3">
 
           {loading && (
-            <div className="flex justify-center py-12">
-              <div className="w-8 h-8 border-4 border-violet-600 border-t-transparent rounded-full animate-spin" />
+            <div role="status" aria-label="טוען היסטוריית הודעות" className="flex justify-center py-12">
+              <div aria-hidden="true" className="w-8 h-8 border-4 border-violet-600 border-t-transparent rounded-full animate-spin" />
             </div>
           )}
 
@@ -838,7 +839,7 @@ function MessageHistorySheet({ invitation, logs, loading, onClose }: MessageHist
               </div>
 
               {/* Message content */}
-              <p className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed line-clamp-4">
+              <p className="text-sm text-slate-700 leading-relaxed line-clamp-4">
                 {log.content}
               </p>
 
@@ -1490,7 +1491,7 @@ export default function Dashboard() {
                         </td>
 
                         {/* Msg Status */}
-                        <td className="px-4 py-4">
+                        <td className="px-4 py-4" onClick={e => e.stopPropagation()}>
                           <MsgStatusBadge
                             log={latestMsgLogs.get(inv.id)}
                             onClick={() => setDrawerInvitation(inv)}
