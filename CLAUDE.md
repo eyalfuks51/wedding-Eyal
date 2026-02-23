@@ -47,78 +47,70 @@ fontFamily: {
 - Smart filter bar: full-text search + dynamic צד / קבוצה dropdowns + status filter
 - Guest table with bulk-checkbox selection (indeterminate header state handled via `useRef`)
 - Floating bulk-action bar (slides up when rows selected): "שלח הודעה" + "ייצוא"
-- Columns: שם, טלפונים (clickable `tel:` chips), צד/קבוצה (conditional), כמות, סטטוס
+- Columns: שם, טלפונים (clickable `tel:` chips), צד/קבוצה (conditional), כמות, סטטוס, **סטטוס הודעה**
 - Side/group columns are hidden automatically when the data contains no such fields
+- **Message History:** clicking a `MsgStatusBadge` in the "סטטוס הודעה" column opens `MessageHistorySheet` — a `<Sheet side="left">` drawer with a newest-first timeline of all `message_logs` for that guest
 - Entirely Hebrew RTL; uses `font-brand` / `font-danidin` Tailwind utilities
 - Violet-600 primary accent; slate neutral palette; no GSAP (pure CSS transitions)
+
+**Message History data flow:**
+- Batch fetch: one `message_logs` query for all invitation IDs after table loads → `Map<invitation_id, MessageLog>` for O(1) badge lookup
+- Lazy fetch: per-invitation full history fetched only when drawer opens; `ignored` cancellation flag prevents stale updates on rapid re-open
+- Badge states: amber=ממתין בתור, emerald=נשלח, rose=נכשל, slate=טרם נשלח
 
 ---
 
 ## Database Schema
 
+> **🚨 CRITICAL RULE: SCHEMA SYNC**
+> Any changes made to the Supabase database schema (new tables, columns, or type changes) MUST be immediately documented in this section before writing any frontend or backend code. Do not guess column names.
+
 **Table: `events`**
-| Column | Type | Notes |
-|---|---|---|
-| `id` | uuid (PK) | |
-| `slug` | text | URL identifier, e.g. `mor-and-eyal` |
-| `google_sheet_id` | text | Target Google Sheet for RSVP sync |
-| `template_id` | text | Controls which React template renders. See registry below. |
-| `content_config` | jsonb | All per-event display content |
+Central configuration for each wedding.
+- `id` (uuid, PK)
+- `slug` (text, UNIQUE) — URL identifier
+- `partner1_name`, `partner2_name` (text)
+- `event_date` (date)
+- `google_sheet_id` (text)
+- `content_config` (jsonb) — UI text, maps, and `whatsapp_templates` (singular/plural variants)
+- `template_id` (text) — Renders the specific React template
+- `automation_config` (jsonb) — Settings for reminders and limits
 
-**SQL to add these columns (run once per environment):**
-```sql
-ALTER TABLE events ADD COLUMN content_config JSONB;
--- template_id column (if not yet present):
-ALTER TABLE events ADD COLUMN template_id TEXT DEFAULT 'wedding-default';
-```
-
-**`content_config` JSONB schema:**
-```jsonc
-{
-  "couple_names":        "string",
-  "quote":               "string  // may contain \n",
-  "invitation_text":     "string",
-  "date_display":        "string  // e.g. '11 03 2026'",
-  "date_hebrew":         "string  // e.g. 'כ\"ב באדר תשפ\"ו'",
-  "day_of_week":         "string  // e.g. 'ביום רביעי'",
-  "footer_note":         "string  // may contain \n",
-  "closing_message":     "string  // may contain \n",
-  "venue_name":          "string",
-  "venue_address":       "string  // short form, shown under venue name",
-  "venue_address_full":  "string  // full street address for Google Maps link",
-  "venue_maps_query":    "string  // URL-safe query for Google Maps embed iframe",
-  "schedule": [
-    { "time": "19:30", "label": "אוכלים",    "icon": "food"  },
-    { "time": "21:30", "label": "מתחתנים",   "icon": "marry" },
-    { "time": "22:00", "label": "!רוקדים",   "icon": "dance" }
-  ],
-  "train_line":           "string  // e.g. 'R1'",
-  "train_station":        "string",
-  "train_walk_minutes":   "number",
-  "parking_lot":          "string",
-  "parking_walk_minutes": "number"
-}
-```
-All fields are optional — every component guards against missing values.
+**Table: `invitations`**
+The source of truth for the Admin Dashboard. Represents a family/group invited to the event.
+- `id` (uuid, PK)
+- `event_id` (uuid, FK → events.id)
+- `group_name` (text) — E.g., "אייל ומור"
+- `phone_numbers` (text[]) — Array of phone numbers for this group
+- `invited_pax` (integer) — Determines singular/plural messaging logic
+- `confirmed_pax` (integer) — How many actually RSVP'd
+- `rsvp_status` (text) — e.g., 'pending'
+- `is_automated` (boolean), `messages_sent_count` (integer), `last_message_sent_at` (timestamptz)
+- `side`, `guest_group` (varchar) — For dashboard filtering
 
 **Table: `arrival_permits`**
-- `id` (int8, primary key)
-- `created_at` (timestamptz)
-- `event_id` (uuid, foreign key → events.id)
+The actual RSVP submissions from the frontend form.
+- `id` (bigint, PK)
+- `event_id` (uuid, FK → events.id)
 - `full_name` (text)
+- `phone` (text) — Unique per event (Constraint: `arrival_permits_event_phone_unique`)
+- `attending` (boolean), `needs_parking` (boolean)
+- `guests_count` (smallint) — Actual number of attending guests
+
+**Database Triggers & Edge Functions**
+- `sheets_sync_trigger`: Fires on `INSERT` or `UPDATE` on `arrival_permits`. Sends a webhook to the `sync-to-sheets` edge function to update Google Sheets.
+**Table: `message_logs`**
+The central queue and historical log for all WhatsApp messages.
+- `id` (uuid, PK)
+- `event_id` (uuid, FK → events.id)
+- `invitation_id` (uuid, FK → invitations.id)
 - `phone` (text)
-- `attending` (bool)
-- `needs_parking` (bool)
-- `guests_count` (int2)
-- `updated_at` (timestamptz)
-- **Composite UNIQUE constraint on `(event_id, phone)`**
-
-**Test Event:**
-- ID: `1f7cddc3-ef64-4b8a-a5c8-12f5b64d6b6e`
-- Slug: `mor-and-eyal`
-- template_id: `wedding-default`
-
----
+- `message_type` (text) — e.g., 'icebreaker', 'nudge', 'custom'
+- `content` (text) — The actual personalized message text
+- `status` (text) — 'pending' (in queue), 'processing', 'sent', 'failed'
+- `error_log` (text)
+- `scheduled_for` (timestamptz) — When it should be sent
+- `sent_at` (timestamptz) — Exact time of successful send
 
 ## Template Strategy — AI-Assisted Template Generation
 
@@ -205,6 +197,9 @@ src/
     Hero/Hero.jsx                             accepts config prop (all fields optional)
     RsvpForm/RsvpForm.jsx                     accepts eventId prop
     Map/Map.jsx                               accepts config prop (all fields optional)
+    ui/
+      glass-card.tsx                          GlassCard family (glassmorphism card primitives)
+      sheet.tsx                               Sheet drawer primitive (@radix-ui/react-dialog)
   lib/
     supabase.js                               fetchEventBySlug(), submitRsvp(data, eventId)
 ```
@@ -221,11 +216,24 @@ src/
 - Upserts the row: searches column B for the phone number, updates the row if found, appends a new row if not
 
 ## Phase 2: WhatsApp Automation & Scheduler (Active)
-- **Infrastructure:** Green API is connected for OUTBOUND messages. The custom Scheduler handles message queues securely.
-- **Inbound Webhook:** PAUSED. The auto-reply Edge Function is temporarily disconnected to prevent auto-replying from a personal testing device.
-- **Recipient Logic:** The system iterates over the phone numbers array for each RSVP record and dispatches the message to all listed numbers.
-- **Custom Messages (Bulk Action):** The Admin Dashboard allows bulk-selecting guests to send custom messages. The UI supports dynamic variables (e.g., `{{name}}`), which are interpolated per-record before being pushed to the Scheduler.
-- **Future Scope:** CSV/Excel import functionality for bulk loading guest lists directly into the database.
+- **Infrastructure:** Outbound messages sent via Green API. A custom Scheduler (`supabase/functions/whatsapp-scheduler/`) processes `message_logs` rows with `status='pending'`, respects operating hours (Asia/Jerusalem timezone, Shabbat-aware), and marks rows `sent` or `failed`. Inbound auto-replies are currently PAUSED.
+- **Message History UI (✅ complete):** Dashboard shows a "סטטוס הודעה" badge column and a `MessageHistorySheet` drawer with full per-guest send history.
+
+**Track A: Automated Message Funnel (Background)**
+- **Icebreaker:** Initial broadcast with the event link.
+- **Gentle Nudge:** Periodic follow-ups sent ONLY to 'pending' (ממתינים) status.
+- **Ultimatum:** Final notice sent to 'pending' guests just before the venue's deadline.
+- **Logistics:** Venue navigation and details sent X hours before the event, only to confirmed attendees.
+- **Hangover:** Post-event gratitude sent to attendees the day after.
+
+**Track B: Manual Custom Messages (Dashboard UI)**
+- **Bulk Actions:** Admins can select specific guests via the table checkboxes to trigger a manual broadcast.
+- **Send Modal:** A dedicated UI that allows admins to either:
+  1. Load a pre-configured template from the funnel (and tweak it on the fly).
+  2. Write a completely custom, free-text message from scratch.
+- **Dynamic Variables:** All manual/custom messages support interpolation (e.g., `{{name}}`) which is resolved per-record before pushing to the Scheduler.
+
+**Data Schema Update:** The `events.content_config` JSONB column includes a `whatsapp_templates` object storing the default text for all funnel stages.
 ## Development Workflow & Code Quality
 - **TypeScript LSP:** You have the `typescript-lsp` plugin enabled. Actively monitor real-time diagnostic errors. Fix any type or linting issues immediately as you code before proceeding.
 - **Superpowers:** Use the Superpowers plugin for structured development. Run `/superpowers:brainstorm` before complex component creation, and generate execution plans with `/superpowers:write-plan` for larger features.
