@@ -220,16 +220,12 @@ src/
 - Authenticates with Google Service Account (env vars: `GOOGLE_SERVICE_ACCOUNT_EMAIL`, `GOOGLE_PRIVATE_KEY`)
 - Upserts the row: searches column B for the phone number, updates the row if found, appends a new row if not
 
-## WhatsApp Inbound Webhook (Edge Function: `whatsapp-webhook`)
-- Receives inbound WhatsApp messages and calls forwarded by Green API
-- Replies automatically to private chats (`@c.us`); silently ignores group chats (`@g.us`) and unrecognised webhook types
-- Always returns HTTP 200 immediately so Green API never retries the delivery
-- Auto-reply text is **hardcoded** for now — it will eventually be a dynamic field in the `events` table, configurable per-event via the admin dashboard
-
-> **⚠ PAUSED — DO NOT CONNECT TO GREEN API**
-> This function is **built but intentionally disconnected** from the Green API dashboard.
-> We are waiting for a dedicated operational phone number to avoid routing replies through a personal WhatsApp account.
-> **DO NOT instruct Eyal to wire up the webhook URL in the Green API dashboard until he explicitly confirms that a dedicated phone number is ready.**
+## Phase 2: WhatsApp Automation & Scheduler (Active)
+- **Infrastructure:** Green API is connected for OUTBOUND messages. The custom Scheduler handles message queues securely.
+- **Inbound Webhook:** PAUSED. The auto-reply Edge Function is temporarily disconnected to prevent auto-replying from a personal testing device.
+- **Recipient Logic:** The system iterates over the phone numbers array for each RSVP record and dispatches the message to all listed numbers.
+- **Custom Messages (Bulk Action):** The Admin Dashboard allows bulk-selecting guests to send custom messages. The UI supports dynamic variables (e.g., `{{name}}`), which are interpolated per-record before being pushed to the Scheduler.
+- **Future Scope:** CSV/Excel import functionality for bulk loading guest lists directly into the database.
 ## Development Workflow & Code Quality
 - **TypeScript LSP:** You have the `typescript-lsp` plugin enabled. Actively monitor real-time diagnostic errors. Fix any type or linting issues immediately as you code before proceeding.
 - **Superpowers:** Use the Superpowers plugin for structured development. Run `/superpowers:brainstorm` before complex component creation, and generate execution plans with `/superpowers:write-plan` for larger features.
