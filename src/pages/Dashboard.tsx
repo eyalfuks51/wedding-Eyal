@@ -320,7 +320,7 @@ function AddGuestModal({
               <button
                 onClick={onClose}
                 disabled={saving}
-                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-white/60 rounded-lg transition-colors"
+                className="p-2 rounded-xl bg-white/20 hover:bg-white/40 text-slate-600 border border-white/40 transition-all shadow-sm outline-none"
                 aria-label="סגור"
               >
                 <XCircle className="w-5 h-5" />
@@ -361,22 +361,24 @@ function AddGuestModal({
                         value={phone}
                         onChange={e => setPhone(idx, e.target.value)}
                         placeholder="050-000-0000"
-                        className="flex-1 px-3 py-2.5 text-sm text-slate-800 bg-white border border-slate-200/70 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent placeholder:text-slate-400"
+                        className="flex-1 px-3 py-2.5 text-sm text-slate-800 bg-white border border-white/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent placeholder:text-slate-400 shadow-sm"
                         disabled={saving}
                         dir="ltr"
                         autoFocus={idx === 0}
                       />
-                      {/* Remove button — only on additional phones */}
-                      {idx > 0 && (
+                      {idx > 0 ? (
                         <button
                           type="button"
                           onClick={() => removePhone(idx)}
                           disabled={saving}
-                          className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors shrink-0"
+                          className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 border border-rose-500/20 transition-all shadow-sm outline-none"
                           aria-label="הסר טלפון"
                         >
                           <X className="w-4 h-4" />
                         </button>
+                      ) : (
+                        /* Invisible spacer — matches X button size for perfect alignment */
+                        <div className="w-10 h-10 flex-shrink-0" />
                       )}
                     </div>
                   ))}
@@ -387,7 +389,7 @@ function AddGuestModal({
                     type="button"
                     onClick={addPhone}
                     disabled={saving}
-                    className="mt-2.5 inline-flex items-center gap-1 text-xs font-medium text-violet-600 hover:text-violet-800 disabled:opacity-40 transition-colors font-brand"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-xl bg-violet-500/10 hover:bg-violet-500/20 text-violet-700 border border-violet-500/20 transition-all shadow-sm mt-1 outline-none disabled:opacity-40 font-brand"
                   >
                     <span className="text-sm leading-none font-bold">+</span>
                     טלפון נוסף
@@ -459,14 +461,14 @@ function AddGuestModal({
                 type="button"
                 onClick={onClose}
                 disabled={saving}
-                className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 hover:bg-white/60 rounded-xl transition-colors"
+                className="px-6 py-2.5 rounded-xl bg-slate-500/10 hover:bg-slate-500/20 text-slate-700 border border-slate-500/20 font-medium transition-all shadow-sm outline-none disabled:opacity-40"
               >
                 ביטול
               </button>
               <button
                 type="submit"
                 disabled={saving}
-                className="inline-flex items-center gap-2 px-5 py-2 bg-violet-600 hover:bg-violet-700 disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-medium rounded-xl transition-colors shadow-sm"
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-medium shadow-md transition-all border-none outline-none disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {saving ? (
                   <>
