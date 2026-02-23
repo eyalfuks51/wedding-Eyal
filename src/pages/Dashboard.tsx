@@ -13,6 +13,14 @@ import {
   X,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import {
+  GlassCard,
+  GlassCardHeader,
+  GlassCardTitle,
+  GlassCardAction,
+  GlassCardContent,
+  GlassCardFooter,
+} from '@/components/ui/glass-card';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -305,26 +313,32 @@ function AddGuestModal({
         className="fixed inset-0 z-50 flex items-center justify-center p-4"
         onClick={e => e.stopPropagation()}
       >
-        <div className="glass-panel w-full max-w-md font-brand" dir="rtl">
+        {/* GlassCard replaces the old solid-white container */}
+        <GlassCard className="w-full max-w-md font-brand" dir="rtl">
 
-          {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-white/40">
-            <h2 id="modal-title" className="text-lg font-bold text-slate-800 font-danidin">
-              הוספת מוזמן
-            </h2>
-            <button
-              onClick={onClose}
-              disabled={saving}
-              className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-white/60 rounded-lg transition-colors"
-              aria-label="סגור"
+          {/* ── Header ─────────────────────────────────────────────── */}
+          <GlassCardHeader className="border-b border-white/40">
+            <GlassCardTitle
+              id="modal-title"
+              className="text-lg font-bold text-slate-800 font-danidin"
             >
-              <XCircle className="w-5 h-5" />
-            </button>
-          </div>
+              הוספת מוזמן
+            </GlassCardTitle>
+            <GlassCardAction>
+              <button
+                onClick={onClose}
+                disabled={saving}
+                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-white/60 rounded-lg transition-colors"
+                aria-label="סגור"
+              >
+                <XCircle className="w-5 h-5" />
+              </button>
+            </GlassCardAction>
+          </GlassCardHeader>
 
-          {/* Form */}
+          {/* ── Form ───────────────────────────────────────────────── */}
           <form onSubmit={handleSubmit} noValidate>
-            <div className="px-6 py-5 space-y-4">
+            <GlassCardContent className="py-5 space-y-4">
 
               {/* group_name */}
               <div>
@@ -445,10 +459,10 @@ function AddGuestModal({
                 </p>
               )}
 
-            </div>
+            </GlassCardContent>
 
-            {/* Footer actions */}
-            <div className="flex items-center justify-between px-6 py-4 border-t border-white/40 bg-white/30 rounded-b-2xl">
+            {/* ── Footer ─────────────────────────────────────────── */}
+            <GlassCardFooter className="justify-between py-4 border-t border-white/40 bg-white/30 rounded-b-2xl">
               <button
                 type="button"
                 onClick={onClose}
@@ -469,10 +483,10 @@ function AddGuestModal({
                   </>
                 ) : 'שמור'}
               </button>
-            </div>
+            </GlassCardFooter>
           </form>
 
-        </div>
+        </GlassCard>
       </div>
     </>
   );
