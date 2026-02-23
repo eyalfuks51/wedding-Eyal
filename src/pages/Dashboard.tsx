@@ -10,6 +10,7 @@ import {
   Download,
   Phone,
   UserPlus,
+  X,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -40,8 +41,8 @@ interface Kpis {
 }
 
 // Modal form shape — declared at module level so AddGuestModal can reference it
-const EMPTY_FORM = { group_name: '', phone: '', side: '', group: '', invited_pax: 1 } as const;
-type FormFields  = { group_name: string; phone: string; side: string; group: string; invited_pax: number };
+const EMPTY_FORM = { group_name: '', phones: [''], side: '', group: '', invited_pax: 1 };
+type FormFields  = { group_name: string; phones: string[]; side: string; group: string; invited_pax: number };
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -207,13 +208,42 @@ function AddGuestModal({
 
   if (!isOpen) return null;
 
-  const handleField = (field: keyof FormFields, value: string | number) =>
-    setForm({ ...form, [field]: value });
+  // Scalar field helper (everything except the phones array)
+  const handleField = (
+    field: Exclude<keyof FormFields, 'phones'>,
+    value: string | number
+  ) => setForm({ ...form, [field]: value } as FormFields);
+
+  // Phone array helpers
+  const setPhone    = (idx: number, value: string) => {
+    const phones = [...form.phones];
+    phones[idx]  = value;
+    setForm({ ...form, phones });
+  };
+  const addPhone    = () => setForm({ ...form, phones: [...form.phones, ''] });
+  const removePhone = (idx: number) =>
+    setForm({ ...form, phones: form.phones.filter((_, i) => i !== idx) });
+
+  // Normalise a single raw phone string to international format
+  const normalisePhone = (raw: string): string => {
+    const digits = raw.replace(/\D/g, '');
+    return digits.startsWith('0') ? '972' + digits.slice(1) : digits;
+  };
 
   const validate = (): string | null => {
     if (!form.group_name.trim()) return 'נא להזין שם';
-    const digits = form.phone.replace(/\D/g, '');
-    if (digits.length < 9 || digits.length > 10) return 'נא להזין מספר טלפון תקין (9–10 ספרות)';
+    // First phone is mandatory
+    const firstDigits = form.phones[0].replace(/\D/g, '');
+    if (firstDigits.length < 9 || firstDigits.length > 10)
+      return 'נא להזין מספר טלפון תקין (9–10 ספרות)';
+    // Validate any additional non-empty phones
+    for (let i = 1; i < form.phones.length; i++) {
+      const raw = form.phones[i].trim();
+      if (!raw) continue; // empty additional fields are filtered out
+      const d = raw.replace(/\D/g, '');
+      if (d.length < 9 || d.length > 10)
+        return `טלפון ${i + 1}: נא להזין מספר תקין (9–10 ספרות)`;
+    }
     if (form.invited_pax < 1) return 'מספר המוזמנים חייב להיות לפחות 1';
     return null;
   };
@@ -227,15 +257,17 @@ function AddGuestModal({
     setSaving(true);
     setFormError(null);
 
-    const digits     = form.phone.replace(/\D/g, '');
-    const normalised = digits.startsWith('0') ? '972' + digits.slice(1) : digits;
+    // Filter out blank additional entries, then normalise all
+    const phone_numbers = form.phones
+      .filter(p => p.trim().length > 0)
+      .map(normalisePhone);
 
     const { data, error } = await supabase
       .from('invitations')
       .insert({
         event_id:            eventId,
         group_name:          form.group_name.trim(),
-        phone_numbers:       [normalised],
+        phone_numbers,
         side:                form.side  || null,
         group:               form.group.trim() || null,
         invited_pax:         form.invited_pax,
@@ -310,20 +342,51 @@ function AddGuestModal({
                 />
               </div>
 
-              {/* phone */}
+              {/* phone numbers — dynamic list */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">
                   טלפון <span className="text-rose-500">*</span>
                 </label>
-                <input
-                  type="tel"
-                  value={form.phone}
-                  onChange={e => handleField('phone', e.target.value)}
-                  placeholder="050-000-0000"
-                  className="w-full px-3 py-2.5 text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent placeholder:text-slate-400"
-                  disabled={saving}
-                  dir="ltr"
-                />
+                <div className="space-y-2">
+                  {form.phones.map((phone, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <input
+                        type="tel"
+                        value={phone}
+                        onChange={e => setPhone(idx, e.target.value)}
+                        placeholder="050-000-0000"
+                        className="flex-1 px-3 py-2.5 text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent placeholder:text-slate-400"
+                        disabled={saving}
+                        dir="ltr"
+                        autoFocus={idx === 0}
+                      />
+                      {/* Remove button — only on additional phones */}
+                      {idx > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => removePhone(idx)}
+                          disabled={saving}
+                          className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors shrink-0"
+                          aria-label="הסר טלפון"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                {/* Add phone button — hidden when 5 phones already entered */}
+                {form.phones.length < 5 && (
+                  <button
+                    type="button"
+                    onClick={addPhone}
+                    disabled={saving}
+                    className="mt-2.5 inline-flex items-center gap-1 text-xs font-medium text-violet-600 hover:text-violet-800 disabled:opacity-40 transition-colors font-brand"
+                  >
+                    <span className="text-sm leading-none font-bold">+</span>
+                    טלפון נוסף
+                  </button>
+                )}
               </div>
 
               {/* side + group — 2-column row */}
