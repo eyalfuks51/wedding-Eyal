@@ -15,6 +15,8 @@ const SheetOverlay = React.forwardRef<
     ref={ref}
     className={cn(
       'fixed inset-0 z-50 bg-black/40 backdrop-blur-sm',
+      'transition-opacity duration-300',
+      'data-[state=open]:opacity-100 data-[state=closed]:opacity-0',
       className,
     )}
     {...props}
@@ -25,10 +27,10 @@ SheetOverlay.displayName = 'SheetOverlay';
 type Side = 'left' | 'right' | 'top' | 'bottom';
 
 const SIDE_CLASSES: Record<Side, string> = {
-  left:   'inset-y-0 left-0 h-full w-80 sm:w-96 border-r',
-  right:  'inset-y-0 right-0 h-full w-80 sm:w-96 border-l',
-  top:    'inset-x-0 top-0 w-full border-b',
-  bottom: 'inset-x-0 bottom-0 w-full border-t',
+  left:   'inset-y-0 left-0 h-full w-80 sm:w-96 border-r border-slate-200 data-[state=open]:translate-x-0 data-[state=closed]:-translate-x-full',
+  right:  'inset-y-0 right-0 h-full w-80 sm:w-96 border-l border-slate-200 data-[state=open]:translate-x-0 data-[state=closed]:translate-x-full',
+  top:    'inset-x-0 top-0 w-full border-b border-slate-200 data-[state=open]:translate-y-0 data-[state=closed]:-translate-y-full',
+  bottom: 'inset-x-0 bottom-0 w-full border-t border-slate-200 data-[state=open]:translate-y-0 data-[state=closed]:translate-y-full',
 };
 
 interface SheetContentProps
