@@ -305,17 +305,17 @@ function AddGuestModal({
         className="fixed inset-0 z-50 flex items-center justify-center p-4"
         onClick={e => e.stopPropagation()}
       >
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md font-brand" dir="rtl">
+        <div className="glass-panel w-full max-w-md font-brand" dir="rtl">
 
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-white/40">
             <h2 id="modal-title" className="text-lg font-bold text-slate-800 font-danidin">
               הוספת מוזמן
             </h2>
             <button
               onClick={onClose}
               disabled={saving}
-              className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+              className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-white/60 rounded-lg transition-colors"
               aria-label="סגור"
             >
               <XCircle className="w-5 h-5" />
@@ -336,7 +336,7 @@ function AddGuestModal({
                   value={form.group_name}
                   onChange={e => handleField('group_name', e.target.value)}
                   placeholder="משפחת כהן"
-                  className="w-full px-3 py-2.5 text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent placeholder:text-slate-400"
+                  className="w-full px-3 py-2.5 text-sm text-slate-800 bg-white border border-slate-200/70 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent placeholder:text-slate-400"
                   disabled={saving}
                   autoFocus
                 />
@@ -355,7 +355,7 @@ function AddGuestModal({
                         value={phone}
                         onChange={e => setPhone(idx, e.target.value)}
                         placeholder="050-000-0000"
-                        className="flex-1 px-3 py-2.5 text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent placeholder:text-slate-400"
+                        className="flex-1 px-3 py-2.5 text-sm text-slate-800 bg-white border border-slate-200/70 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent placeholder:text-slate-400"
                         disabled={saving}
                         dir="ltr"
                         autoFocus={idx === 0}
@@ -397,7 +397,7 @@ function AddGuestModal({
                     <select
                       value={form.side}
                       onChange={e => handleField('side', e.target.value)}
-                      className="w-full appearance-none pr-3 pl-7 py-2.5 text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent cursor-pointer"
+                      className="w-full appearance-none pr-3 pl-7 py-2.5 text-sm text-slate-800 bg-white border border-slate-200/70 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent cursor-pointer"
                       disabled={saving}
                     >
                       <option value="">ללא</option>
@@ -416,7 +416,7 @@ function AddGuestModal({
                     value={form.group}
                     onChange={e => handleField('group', e.target.value)}
                     placeholder="עבודה, צבא..."
-                    className="w-full px-3 py-2.5 text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent placeholder:text-slate-400"
+                    className="w-full px-3 py-2.5 text-sm text-slate-800 bg-white border border-slate-200/70 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent placeholder:text-slate-400"
                     disabled={saving}
                   />
                 </div>
@@ -433,14 +433,14 @@ function AddGuestModal({
                   max={20}
                   value={form.invited_pax}
                   onChange={e => handleField('invited_pax', Math.max(1, parseInt(e.target.value, 10) || 1))}
-                  className="w-24 px-3 py-2.5 text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent text-center"
+                  className="w-24 px-3 py-2.5 text-sm text-slate-800 bg-white border border-slate-200/70 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent text-center"
                   disabled={saving}
                 />
               </div>
 
               {/* Inline error */}
               {formError && (
-                <p className="text-sm text-rose-600 font-brand bg-rose-50 px-3 py-2 rounded-xl">
+                <p className="text-sm text-rose-600 font-brand bg-rose-50/90 px-3 py-2 rounded-xl">
                   {formError}
                 </p>
               )}
@@ -448,12 +448,12 @@ function AddGuestModal({
             </div>
 
             {/* Footer actions */}
-            <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 bg-slate-50/50 rounded-b-2xl">
+            <div className="flex items-center justify-between px-6 py-4 border-t border-white/40 bg-white/30 rounded-b-2xl">
               <button
                 type="button"
                 onClick={onClose}
                 disabled={saving}
-                className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors"
+                className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 hover:bg-white/60 rounded-xl transition-colors"
               >
                 ביטול
               </button>
