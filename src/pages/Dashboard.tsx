@@ -793,13 +793,20 @@ export default function Dashboard() {
       setLatestMsgLogs(new Map());
       return;
     }
+    let ignored = false;
     const ids = invitations.map(i => i.id);
     supabase
       .from('message_logs')
       .select('id, invitation_id, phone, message_type, content, status, error_log, scheduled_for, sent_at, created_at')
       .in('invitation_id', ids)
       .order('created_at', { ascending: false })
-      .then(({ data }) => {
+      .then(({ data, error: err }) => {
+        if (ignored) return;
+        if (err) {
+          console.error('[Dashboard] batch message_logs fetch failed:', err.message);
+          setLatestMsgLogs(new Map());
+          return;
+        }
         const map = new Map<string, MessageLog>();
         (data ?? []).forEach(log => {
           // Keep only the first (newest) log encountered per invitation
@@ -807,6 +814,8 @@ export default function Dashboard() {
         });
         setLatestMsgLogs(map);
       });
+    return () => { ignored = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- supabase is a stable module-level singleton
   }, [invitations]);
 
   // ── Derived data ──────────────────────────────────────────────────────────
