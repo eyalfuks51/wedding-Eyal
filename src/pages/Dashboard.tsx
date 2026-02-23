@@ -192,6 +192,34 @@ function StatusBadge({ status }: { status: string | null }) {
   );
 }
 
+// ── Msg Status Badge ──────────────────────────────────────────────────────
+
+const MSG_STATUS_MAP = {
+  pending: { label: 'ממתין בתור', classes: 'bg-amber-100 text-amber-700 border-amber-200' },
+  sent:    { label: 'נשלח',       classes: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
+  failed:  { label: 'נכשל',       classes: 'bg-rose-100 text-rose-700 border-rose-200' },
+  none:    { label: 'טרם נשלח',   classes: 'bg-slate-100 text-slate-500 border-slate-200' },
+} as const;
+
+interface MsgStatusBadgeProps {
+  log:     MessageLog | undefined;
+  onClick: () => void;
+}
+
+function MsgStatusBadge({ log, onClick }: MsgStatusBadgeProps) {
+  const key = (log?.status ?? 'none') as keyof typeof MSG_STATUS_MAP;
+  const cfg = MSG_STATUS_MAP[key] ?? MSG_STATUS_MAP.none;
+  return (
+    <button
+      type="button"
+      onClick={e => { e.stopPropagation(); onClick(); }}
+      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium font-brand border whitespace-nowrap hover:opacity-80 transition-opacity ${cfg.classes}`}
+    >
+      {cfg.label}
+    </button>
+  );
+}
+
 // ── Select Filter ─────────────────────────────────────────────────────────────
 
 interface SelectFilterProps {
@@ -1006,7 +1034,7 @@ export default function Dashboard() {
   if (loading) return <Spinner />;
   if (error)   return <ErrorView message={error} />;
 
-  const colSpan = hasSideOrGroup ? 6 : 5;
+  const colSpan = hasSideOrGroup ? 7 : 6;
 
   // Safe ratios — avoid division by zero
   const familyConfirmRate = kpi.totalFamilies > 0 ? kpi.confirmedFamilies / kpi.totalFamilies : 0;
@@ -1235,6 +1263,9 @@ export default function Dashboard() {
                   <th className="px-4 py-3.5 text-right font-semibold text-slate-400 text-xs tracking-wider whitespace-nowrap">
                     סטטוס
                   </th>
+                  <th className="px-4 py-3.5 text-right font-semibold text-slate-400 text-xs tracking-wider whitespace-nowrap">
+                    סטטוס הודעה
+                  </th>
 
                 </tr>
               </thead>
@@ -1324,6 +1355,14 @@ export default function Dashboard() {
                         {/* Status */}
                         <td className="px-4 py-4">
                           <StatusBadge status={inv.rsvp_status} />
+                        </td>
+
+                        {/* Msg Status */}
+                        <td className="px-4 py-4" onClick={e => e.stopPropagation()}>
+                          <MsgStatusBadge
+                            log={latestMsgLogs.get(inv.id)}
+                            onClick={() => setDrawerInvitation(inv)}
+                          />
                         </td>
 
                       </tr>
