@@ -13,6 +13,7 @@ import {
   X,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { useEvent } from '../hooks/useEvent';
 import {
   GlassCard,
   GlassCardHeader,
@@ -36,7 +37,20 @@ interface Invitation {
   messages_sent_count: number | null;
   is_automated: boolean | null;
   side: string | null;
-  group: string | null;
+  guest_group: string | null;
+}
+
+interface MessageLog {
+  id:            string;
+  invitation_id: string;
+  phone:         string;
+  message_type:  string;
+  content:       string;
+  status:        'pending' | 'sent' | 'failed';
+  error_log:     string | null;
+  scheduled_for: string | null;
+  sent_at:       string | null;
+  created_at:    string;
 }
 
 interface Kpis {
@@ -49,8 +63,27 @@ interface Kpis {
 }
 
 // Modal form shape — declared at module level so AddGuestModal can reference it
-const EMPTY_FORM = { group_name: '', phones: [''], side: '', group: '', invited_pax: 1 };
-type FormFields  = { group_name: string; phones: string[]; side: string; group: string; invited_pax: number };
+const EMPTY_FORM = { group_name: '', phones: [''], side: '', guest_group: '', invited_pax: 1 };
+type FormFields  = { group_name: string; phones: string[]; side: string; guest_group: string; invited_pax: number };
+
+interface EventData {
+  id: string;
+  slug: string;
+  content_config: Record<string, unknown> | null;
+}
+
+interface BulkMessageGuest {
+  id: string;
+  group_name: string | null;
+  phone_numbers: string[] | null;
+  invited_pax?: number | null;
+}
+
+interface BulkMessagePayload {
+  guests: BulkMessageGuest[];
+  messageType: 'template' | 'custom';
+  content: string;
+}
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -277,7 +310,7 @@ function AddGuestModal({
         group_name:          form.group_name.trim(),
         phone_numbers,
         side:                form.side  || null,
-        group:               form.group.trim() || null,
+        guest_group:         form.guest_group.trim() || null,
         invited_pax:         form.invited_pax,
         confirmed_pax:       0,
         rsvp_status:         'pending',
@@ -421,8 +454,8 @@ function AddGuestModal({
                   <label className="block text-sm font-medium text-slate-700 mb-1.5">קבוצה</label>
                   <input
                     type="text"
-                    value={form.group}
-                    onChange={e => handleField('group', e.target.value)}
+                    value={form.guest_group}
+                    onChange={e => handleField('guest_group', e.target.value)}
                     placeholder="עבודה, צבא..."
                     className="w-full px-3 py-2.5 text-sm text-slate-800 bg-white border border-slate-200/70 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent placeholder:text-slate-400"
                     disabled={saving}
@@ -485,14 +518,226 @@ function AddGuestModal({
   );
 }
 
+// ── Send WhatsApp Modal ───────────────────────────────────────────────────────
+
+const TEMPLATE_LABELS: Record<string, string> = {
+  icebreaker: 'פתיחה ראשונית',
+  nudge:      'תזכורת עדינה',
+  ultimatum:  'תזכורת אחרונה',
+  logistics:  'מידע לוגיסטי',
+  hangover:   'תודה לאחר האירוע',
+};
+
+interface SendWhatsAppModalProps {
+  isOpen:          boolean;
+  onClose:         () => void;
+  selectedGuests:  BulkMessageGuest[];
+  eventConfig:     Record<string, unknown>;
+  onSend:          (payload: BulkMessagePayload) => void;
+}
+
+function SendWhatsAppModal({
+  isOpen, onClose, selectedGuests, eventConfig, onSend,
+}: SendWhatsAppModalProps) {
+  const [messageType,       setMessageType]       = useState<'template' | 'custom'>('template');
+  const [selectedTemplate,  setSelectedTemplate]  = useState('');
+  const [customText,        setCustomText]         = useState('');
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [isOpen, onClose]);
+
+  // Reset state when modal opens
+  useEffect(() => {
+    if (isOpen) { setSelectedTemplate(''); setCustomText(''); setMessageType('template'); }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  const templates = (eventConfig.whatsapp_templates as Record<string, { singular?: string; plural?: string }>) ?? {};
+  const templateKeys = Object.keys(templates);
+  const coupleNames  = (eventConfig.couple_names as string) || 'אנחנו';
+
+  // Live preview — first selected guest, respects singular/plural
+  const previewGuest = selectedGuests[0];
+  const isPlural     = (previewGuest?.invited_pax ?? 1) > 1;
+  const rawPreview   = messageType === 'template' && selectedTemplate
+    ? ((isPlural ? templates[selectedTemplate]?.plural : templates[selectedTemplate]?.singular) ?? '')
+    : customText;
+  const preview = rawPreview
+    .replace(/{{name}}/g,         previewGuest?.group_name || 'אורח')
+    .replace(/{{couple_names}}/g, coupleNames)
+    .replace(/{{link}}/g,         '[קישור לאירוע]')
+    .replace(/{{waze_link}}/g,    '[קישור לוויז]');
+
+  const canSend = messageType === 'custom' ? customText.trim().length > 0 : selectedTemplate !== '';
+
+  const handleSend = () => {
+    if (!canSend) return;
+    onSend({
+      guests:      selectedGuests,
+      messageType,
+      content:     messageType === 'template' ? selectedTemplate : customText,
+    });
+    onClose();
+  };
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="whatsapp-modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }}
+      onClick={onClose}
+    >
+      <GlassCard className="w-full max-w-lg font-brand" dir="rtl" onClick={e => e.stopPropagation()}>
+
+        <GlassCardHeader className="border-b border-white/40">
+          <div>
+            <GlassCardTitle id="whatsapp-modal-title" className="text-lg font-bold text-slate-800 font-danidin">
+              שליחת הודעת WhatsApp
+            </GlassCardTitle>
+            <p className="text-xs text-slate-500 font-brand mt-0.5">
+              {selectedGuests.length} נמענים נבחרו
+            </p>
+          </div>
+          <GlassCardAction>
+            <button
+              onClick={onClose}
+              className="p-2 rounded-xl bg-white/20 hover:bg-white/40 text-slate-600 border border-white/40 transition-all shadow-sm outline-none"
+              aria-label="סגור"
+            >
+              <XCircle className="w-5 h-5" />
+            </button>
+          </GlassCardAction>
+        </GlassCardHeader>
+
+        <GlassCardContent className="py-5 space-y-4">
+
+          {/* ── Mode toggle ──────────────────────────────────────── */}
+          <div className="flex gap-2">
+            {(['template', 'custom'] as const).map(mode => (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => setMessageType(mode)}
+                className={`flex-1 py-2 px-3 rounded-xl text-sm font-medium border transition-all ${
+                  messageType === mode
+                    ? 'bg-violet-600 text-white border-violet-600 shadow-sm'
+                    : 'bg-white/50 text-slate-600 border-white/60 hover:bg-white/70'
+                }`}
+              >
+                {mode === 'template' ? 'תבנית מוגדרת' : 'הודעה חופשית'}
+              </button>
+            ))}
+          </div>
+
+          {/* ── Template selector ────────────────────────────────── */}
+          {messageType === 'template' && (
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">בחר תבנית</label>
+              {templateKeys.length === 0 ? (
+                <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5">
+                  לא הוגדרו תבניות ב-<code className="font-mono text-xs">content_config.whatsapp_templates</code>
+                </p>
+              ) : (
+                <div className="relative">
+                  <select
+                    value={selectedTemplate}
+                    onChange={e => setSelectedTemplate(e.target.value)}
+                    className="w-full appearance-none pr-3 pl-8 py-2.5 text-sm text-slate-800 bg-white border border-slate-200/70 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent cursor-pointer"
+                  >
+                    <option value="">— בחר תבנית —</option>
+                    {templateKeys.map(key => (
+                      <option key={key} value={key}>
+                        {TEMPLATE_LABELS[key] ?? key}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute inset-y-0 left-2.5 my-auto w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── Custom textarea ──────────────────────────────────── */}
+          {messageType === 'custom' && (
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                הודעה חופשית
+                <span className="text-slate-400 font-normal mr-2 text-xs">
+                  — ניתן להשתמש ב-&#123;&#123;name&#125;&#125;, &#123;&#123;link&#125;&#125;
+                </span>
+              </label>
+              <textarea
+                value={customText}
+                onChange={e => setCustomText(e.target.value)}
+                rows={4}
+                placeholder="כתוב כאן את ההודעה שלך..."
+                className="w-full px-3 py-2.5 text-sm text-slate-800 bg-white border border-slate-200/70 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent placeholder:text-slate-400 resize-none"
+                dir="rtl"
+              />
+            </div>
+          )}
+
+          {/* ── Live preview ─────────────────────────────────────── */}
+          {preview && previewGuest && (
+            <div>
+              <p className="text-xs font-medium text-slate-500 mb-1.5">
+                תצוגה מקדימה — {previewGuest.group_name}
+                {selectedGuests.length > 1 && (
+                  <span className="text-slate-400 font-normal"> (+{selectedGuests.length - 1} נוספים)</span>
+                )}
+              </p>
+              <div className="bg-emerald-50 border border-emerald-200/70 rounded-xl px-3 py-2.5 text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
+                {preview}
+              </div>
+            </div>
+          )}
+
+        </GlassCardContent>
+
+        <GlassCardFooter className="justify-between py-4 border-t border-white/40 rounded-b-2xl">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-6 py-2.5 rounded-xl bg-slate-500/10 hover:bg-slate-500/20 text-slate-700 border border-slate-500/20 font-medium transition-all shadow-sm outline-none"
+          >
+            ביטול
+          </button>
+          <button
+            type="button"
+            onClick={handleSend}
+            disabled={!canSend}
+            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium shadow-md transition-all border-none outline-none disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <Send className="w-4 h-4" />
+            שלח ל-{selectedGuests.length} נמענים
+          </button>
+        </GlassCardFooter>
+
+      </GlassCard>
+    </div>
+  );
+}
+
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 
 export default function Dashboard() {
   const [invitations, setInvitations] = useState<Invitation[]>([]);
-  const [eventSlug, setEventSlug]     = useState('');
-  const [eventId, setEventId]         = useState('');
-  const [loading, setLoading]         = useState(true);
-  const [error, setError]             = useState<string | null>(null);
+
+  // ── Event data via hook (consistent with app architecture) ────────────────
+  const { event: rawEvent, loading: eventLoading, notFound } =
+    useEvent(SLUG) as { event: EventData | null; loading: boolean; notFound: boolean };
+  const event = rawEvent;
+
+  // ── Invitations loading/error (separate from event loading) ───────────────
+  const [invLoading, setInvLoading] = useState(false);
+  const [invError,   setInvError]   = useState<string | null>(null);
 
   // Filters
   const [search, setSearch]             = useState('');
@@ -505,50 +750,64 @@ export default function Dashboard() {
   const selectAllRef = useRef<HTMLInputElement>(null);
 
   // ── Add-guest modal ───────────────────────────────────────────────────────
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen]             = useState(false);
+  const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
   const [form, setForm]               = useState<FormFields>({ ...EMPTY_FORM });
   const [saving, setSaving]           = useState(false);
   const [formError, setFormError]     = useState<string | null>(null);
   const [toast, setToast]             = useState<string | null>(null);
+  const [toastVariant, setToastVariant] = useState<'success' | 'error'>('success');
 
-  // ── Data fetching ─────────────────────────────────────────────────────────
+  // ── Message history drawer ────────────────────────────────────────────────
+  const [latestMsgLogs,    setLatestMsgLogs]    = useState<Map<string, MessageLog>>(new Map());
+  const [drawerInvitation, setDrawerInvitation] = useState<Invitation | null>(null);
+  const [drawerLogs,       setDrawerLogs]       = useState<MessageLog[]>([]);
+  const [drawerLoading,    setDrawerLoading]    = useState(false);
+
+  // ── Invitations fetch — runs once event.id is available ──────────────────
 
   useEffect(() => {
-    if (!supabase) {
-      setError('Supabase is not configured');
-      setLoading(false);
+    if (!event?.id || !supabase) return;
+    const sb = supabase;
+    const id = event.id;
+
+    setInvLoading(true);
+    setInvError(null);
+
+    sb.from('invitations')
+      .select('*')
+      .eq('event_id', id)
+      .order('group_name', { ascending: true })
+      .then(({ data, error: err }) => {
+        if (err) setInvError(err.message);
+        else setInvitations((data ?? []) as Invitation[]);
+        setInvLoading(false);
+      });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [event?.id]);
+
+  // Batch-fetch the most-recent message_log for every invitation in one query.
+  // Reduces client-side to Map<invitation_id, MessageLog> for O(1) badge lookup.
+  useEffect(() => {
+    if (!supabase || invitations.length === 0) {
+      setLatestMsgLogs(new Map());
       return;
     }
-    const sb = supabase;
-
-    async function load() {
-      try {
-        const { data: ev, error: evErr } = await sb
-          .from('events')
-          .select('id, slug')
-          .eq('slug', SLUG)
-          .single();
-        if (evErr) throw evErr;
-
-        setEventSlug(ev.slug);
-        setEventId(ev.id);
-
-        const { data: inv, error: invErr } = await sb
-          .from('invitations')
-          .select('*')
-          .eq('event_id', ev.id)
-          .order('group_name', { ascending: true });
-        if (invErr) throw invErr;
-
-        setInvitations((inv ?? []) as Invitation[]);
-      } catch (e: unknown) {
-        setError(e instanceof Error ? e.message : 'שגיאה לא ידועה');
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, []);
+    const ids = invitations.map(i => i.id);
+    supabase
+      .from('message_logs')
+      .select('id, invitation_id, phone, message_type, content, status, error_log, scheduled_for, sent_at, created_at')
+      .in('invitation_id', ids)
+      .order('created_at', { ascending: false })
+      .then(({ data }) => {
+        const map = new Map<string, MessageLog>();
+        (data ?? []).forEach(log => {
+          // Keep only the first (newest) log encountered per invitation
+          if (!map.has(log.invitation_id)) map.set(log.invitation_id, log as MessageLog);
+        });
+        setLatestMsgLogs(map);
+      });
+  }, [invitations]);
 
   // ── Derived data ──────────────────────────────────────────────────────────
 
@@ -560,7 +819,7 @@ export default function Dashboard() {
 
   const groups = useMemo(() => {
     const g = new Set<string>();
-    invitations.forEach(i => { if (i.group) g.add(i.group); });
+    invitations.forEach(i => { if (i.guest_group) g.add(i.guest_group); });
     return [...g].sort();
   }, [invitations]);
 
@@ -573,7 +832,7 @@ export default function Dashboard() {
         if (!nameOk && !phoneOk) return false;
       }
       if (sideFilter   && inv.side        !== sideFilter)   return false;
-      if (groupFilter  && inv.group       !== groupFilter)  return false;
+      if (groupFilter  && inv.guest_group  !== groupFilter)  return false;
       if (statusFilter && inv.rsvp_status !== statusFilter) return false;
       return true;
     });
@@ -590,7 +849,11 @@ export default function Dashboard() {
 
   // ── Selection ─────────────────────────────────────────────────────────────
 
-  const filteredIds = useMemo(() => filtered.map(i => i.id), [filtered]);
+  const filteredIds         = useMemo(() => filtered.map(i => i.id), [filtered]);
+  const selectedGuestsArray = useMemo(
+    () => filtered.filter(inv => selected.has(inv.id)),
+    [filtered, selected]
+  );
   const allChecked  = filteredIds.length > 0 && filteredIds.every(id => selected.has(id));
   const someChecked = filteredIds.some(id => selected.has(id));
 
@@ -634,8 +897,100 @@ export default function Dashboard() {
 
   // ── Column visibility ─────────────────────────────────────────────────────
 
-  const hasSideOrGroup = invitations.some(i => i.side || i.group);
+  const hasSideOrGroup = invitations.some(i => i.side || i.guest_group);
   const hasInvitedPax  = invitations.some(i => i.invited_pax != null && i.invited_pax > 0);
+
+  // ── WhatsApp bulk message ─────────────────────────────────────────────────
+
+  const handleSendBulkMessage = async (payload: BulkMessagePayload) => {
+    if (!event || !supabase) return;
+    const { guests, messageType, content } = payload;
+    const { whatsapp_templates, couple_names, waze_link } = (event.content_config ?? {}) as Record<string, unknown>;
+
+    // Safety: bail early if template mode is requested but no templates are configured
+    if (messageType === 'template' && !whatsapp_templates) {
+      console.error('handleSendBulkMessage: whatsapp_templates is missing from event.content_config. Aborting.');
+      return;
+    }
+
+    const eventLink = `https://yourdomain.com/${event.slug}`;
+
+    // message_type value: the template key (e.g. 'icebreaker') for template sends, 'custom' otherwise
+    const messageTypeValue = messageType === 'template' ? content : 'custom';
+
+    const messageLogs: Array<{
+      event_id:      string;
+      invitation_id: string;
+      phone:         string;
+      message_type:  string;
+      content:       string;
+      status:        string;
+    }> = [];
+
+    guests.forEach(guest => {
+      const isPlural = (guest.invited_pax ?? 1) > 1;
+      let rawMessage = '';
+
+      // 1. שליפת טקסט הבסיס (לפי יחיד/רבים או טקסט חופשי)
+      if (messageType === 'template') {
+        const templates = whatsapp_templates as Record<string, { singular?: string; plural?: string }> | undefined;
+        const templateObj = templates?.[content];
+        rawMessage = (isPlural ? templateObj?.plural : templateObj?.singular) ?? '';
+
+        if (!rawMessage) {
+          console.error(`Template "${content}" not found for guest ${guest.group_name}`);
+          return; // מדלגים על האורח אם אין תבנית תקינה
+        }
+      } else {
+        rawMessage = content;
+      }
+
+      // 2. אינטרפולציה - החלפת המשתנים הדינמיים
+      const personalizedMessage = rawMessage
+        .replace(/{{name}}/g,         guest.group_name || 'אורח')
+        .replace(/{{couple_names}}/g, (couple_names as string) || 'אנחנו')
+        .replace(/{{link}}/g,         eventLink)
+        .replace(/{{waze_link}}/g,    (waze_link as string) || '');
+
+      // 3. phone_numbers is already a string[] in the DB — one row per phone
+      (guest.phone_numbers ?? []).filter(Boolean).forEach((phone: string) => {
+        messageLogs.push({
+          event_id:      event.id,
+          invitation_id: guest.id,
+          phone,
+          message_type:  messageTypeValue,
+          content:       personalizedMessage,
+          status:        'pending',
+        });
+      });
+    });
+
+    if (messageLogs.length === 0) return;
+
+    // 4. Bulk insert into message_logs — the scheduler picks up 'pending' rows
+    const { error: insertError } = await supabase
+      .from('message_logs')
+      .insert(messageLogs);
+
+    if (insertError) {
+      console.error('Error inserting into message_logs:', insertError);
+      setToastVariant('error');
+      setToast(`שגיאה בהוספה לתור: ${insertError.message}`);
+      setTimeout(() => setToast(null), 4000);
+      return;
+    }
+
+    setToastVariant('success');
+    setToast(`ההודעות נוספו לתור בהצלחה ✓`);
+    setTimeout(() => setToast(null), 3000);
+    setSelected(new Set());
+    setIsMessageModalOpen(false);
+  };
+
+  // ── Derived loading / error ───────────────────────────────────────────────
+
+  const loading = eventLoading || invLoading;
+  const error   = notFound ? 'אירוע לא נמצא' : invError;
 
   // ── Render guards ─────────────────────────────────────────────────────────
 
@@ -660,7 +1015,7 @@ export default function Dashboard() {
         isOpen={isModalOpen}
         onClose={closeModal}
         onSuccess={handleGuestAdded}
-        eventId={eventId}
+        eventId={event?.id ?? ''}
         saving={saving}
         setSaving={setSaving}
         formError={formError}
@@ -669,8 +1024,18 @@ export default function Dashboard() {
         setForm={setForm}
       />
 
+      <SendWhatsAppModal
+        isOpen={isMessageModalOpen}
+        onClose={() => setIsMessageModalOpen(false)}
+        selectedGuests={selectedGuestsArray}
+        eventConfig={event?.content_config ?? {}}
+        onSend={handleSendBulkMessage}
+      />
+
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 bg-emerald-600 text-white text-sm font-medium font-brand px-4 py-2.5 rounded-xl shadow-lg">
+        <div className={`fixed bottom-6 right-6 z-50 text-white text-sm font-medium font-brand px-4 py-2.5 rounded-xl shadow-lg ${
+          toastVariant === 'error' ? 'bg-rose-600' : 'bg-emerald-600'
+        }`}>
           {toast}
         </div>
       )}
@@ -690,7 +1055,7 @@ export default function Dashboard() {
                 ניהול הזמנות
               </h1>
               <p className="text-xs text-slate-400 font-brand mt-0.5 truncate">
-                {eventSlug || SLUG}
+                {event?.slug || SLUG}
               </p>
             </div>
           </div>
@@ -880,7 +1245,7 @@ export default function Dashboard() {
                 ) : (
                   filtered.map(inv => {
                     const isSelected = selected.has(inv.id);
-                    const sideGroup  = [inv.side, inv.group].filter(Boolean).join(' / ');
+                    const sideGroup  = [inv.side, inv.guest_group].filter(Boolean).join(' / ');
 
                     return (
                       <tr
@@ -1008,7 +1373,10 @@ export default function Dashboard() {
 
           <div className="flex items-center gap-2">
 
-            <button className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-violet-600 hover:bg-violet-500 active:bg-violet-700 rounded-xl text-xs font-medium font-brand transition-colors whitespace-nowrap">
+            <button
+              onClick={() => setIsMessageModalOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-violet-600 hover:bg-violet-500 active:bg-violet-700 rounded-xl text-xs font-medium font-brand transition-colors whitespace-nowrap"
+            >
               <Send className="w-3.5 h-3.5" />
               שלח הודעה
             </button>
