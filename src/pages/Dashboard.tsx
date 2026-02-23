@@ -207,8 +207,9 @@ interface MsgStatusBadgeProps {
 }
 
 function MsgStatusBadge({ log, onClick }: MsgStatusBadgeProps) {
-  const key = (log?.status ?? 'none') as keyof typeof MSG_STATUS_MAP;
-  const cfg = MSG_STATUS_MAP[key] ?? MSG_STATUS_MAP.none;
+  const key: keyof typeof MSG_STATUS_MAP =
+    log?.status && log.status in MSG_STATUS_MAP ? log.status : 'none';
+  const cfg = MSG_STATUS_MAP[key];
   return (
     <button
       type="button"
@@ -1358,7 +1359,7 @@ export default function Dashboard() {
                         </td>
 
                         {/* Msg Status */}
-                        <td className="px-4 py-4" onClick={e => e.stopPropagation()}>
+                        <td className="px-4 py-4">
                           <MsgStatusBadge
                             log={latestMsgLogs.get(inv.id)}
                             onClick={() => setDrawerInvitation(inv)}
