@@ -3,51 +3,39 @@ import { cn } from '@/lib/utils';
 /**
  * GlassCard family — Liquid-glass card primitives.
  *
- * The glass surface properties (background, backdrop-filter, border) are
- * applied via INLINE STYLES on the root element. This bypasses the CSS
- * @layer cascade entirely — Tailwind utilities sit inside @layer utilities
- * but the project's global.scss is unlayered, meaning unlayered CSS always
- * wins over @layer styles regardless of specificity. Inline styles sit above
- * everything in the cascade, so this is the only reliable approach.
- *
- * Sub-components are explicitly bg-transparent so the parent glass shows
- * through without any opaque band interrupting the surface.
+ * BACKGROUND TRANSPARENCY STRATEGY
+ * ---------------------------------
+ * global.scss is unlayered CSS. The CSS @layer spec says unlayered styles
+ * always win over @layer styles, so every Tailwind bg-* class can be beaten
+ * by the global * { } reset. To guarantee transparency on child elements we
+ * force background: transparent via inline style on every sub-component.
+ * Only the outer GlassCard shell carries the actual glass surface.
  */
-
-const GLASS_STYLE: React.CSSProperties = {
-  background: 'rgba(255, 255, 255, 0.25)',
-  backdropFilter: 'blur(40px) saturate(1.8)',
-  WebkitBackdropFilter: 'blur(40px) saturate(1.8)',
-  border: '1px solid rgba(255, 255, 255, 0.55)',
-  boxShadow: [
-    '0 8px 32px rgba(0, 0, 0, 0.14)',
-    '0 2px 8px rgba(0, 0, 0, 0.08)',
-    'inset 0 1px 0 rgba(255, 255, 255, 0.90)',
-  ].join(', '),
-};
 
 function GlassCard({ className, style, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="glass-card"
       className={cn(
+        'bg-white/30 backdrop-blur-2xl border border-white/50 shadow-2xl',
         'flex flex-col rounded-2xl text-slate-900',
         className,
       )}
-      style={{ ...GLASS_STYLE, ...style }}
+      style={style}
       {...props}
     />
   );
 }
 
-function GlassCardHeader({ className, ...props }: React.ComponentProps<'div'>) {
+function GlassCardHeader({ className, style, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="glass-card-header"
       className={cn(
-        'flex items-center justify-between gap-2 px-6 py-4 bg-transparent',
+        'flex items-center justify-between gap-2 px-6 py-4',
         className,
       )}
+      style={{ background: 'transparent', ...style }}
       {...props}
     />
   );
@@ -83,21 +71,23 @@ function GlassCardAction({ className, ...props }: React.ComponentProps<'div'>) {
   );
 }
 
-function GlassCardContent({ className, ...props }: React.ComponentProps<'div'>) {
+function GlassCardContent({ className, style, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="glass-card-content"
-      className={cn('px-6 bg-transparent', className)}
+      className={cn('px-6', className)}
+      style={{ background: 'transparent', ...style }}
       {...props}
     />
   );
 }
 
-function GlassCardFooter({ className, ...props }: React.ComponentProps<'div'>) {
+function GlassCardFooter({ className, style, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="glass-card-footer"
-      className={cn('flex items-center px-6 bg-transparent', className)}
+      className={cn('flex items-center px-6', className)}
+      style={{ background: 'transparent', ...style }}
       {...props}
     />
   );
