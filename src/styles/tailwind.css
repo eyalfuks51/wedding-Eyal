@@ -5,29 +5,5 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer components {
-  /**
-   * .glass-panel — Liquid-glass surface token.
-   *
-   * Renders a semi-transparent frosted card that works against both the
-   * dim black modal backdrop and lighter page backgrounds.
-   *
-   * Key properties (derived from reference screenshot):
-   *   - 72 % white background so underlying content colour bleeds through
-   *   - 24 px blur + 180 % saturation amplify the colours beneath
-   *   - Thin white border reads as a bright specular edge, not a hard line
-   *   - Three-layer shadow: diffuse outer + close outer + inset top highlight
-   *     (the inner highlight is what makes it read as genuine glass)
-   */
-  .glass-panel {
-    background: rgba(255, 255, 255, 0.72);
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.55);
-    border-radius: 1rem; /* 16 px — matches rounded-2xl */
-    box-shadow:
-      0 8px 32px rgba(0, 0, 0, 0.12),
-      0 2px 8px  rgba(0, 0, 0, 0.06),
-      inset 0 1px 0 rgba(255, 255, 255, 0.90);
-  }
-}
+/* Glass surface properties live in GlassCard as inline styles (src/components/ui/glass-card.tsx)
+   to guarantee they are never overridden by unlayered CSS in global.scss. */

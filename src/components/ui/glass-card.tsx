@@ -3,29 +3,38 @@ import { cn } from '@/lib/utils';
 /**
  * GlassCard family — Liquid-glass card primitives.
  *
- * Visual recipe (light / wedding-appropriate):
- *   bg-white/40        — 40 % white: translucent enough to see the page
- *                        content bleed through the frosted surface
- *   backdrop-blur-2xl  — 40 px blur: heavy frosting effect
- *   border-white/50    — bright specular edge, not a hard grey line
- *   shadow-2xl         — deep drop shadow for elevation
- *   text-slate-900     — Hebrew labels stay dark and readable
+ * The glass surface properties (background, backdrop-filter, border) are
+ * applied via INLINE STYLES on the root element. This bypasses the CSS
+ * @layer cascade entirely — Tailwind utilities sit inside @layer utilities
+ * but the project's global.scss is unlayered, meaning unlayered CSS always
+ * wins over @layer styles regardless of specificity. Inline styles sit above
+ * everything in the cascade, so this is the only reliable approach.
  *
- * Sub-components must be bg-transparent so the parent glass surface
- * shows through without interruption.
+ * Sub-components are explicitly bg-transparent so the parent glass shows
+ * through without any opaque band interrupting the surface.
  */
 
-function GlassCard({ className, ...props }: React.ComponentProps<'div'>) {
+const GLASS_STYLE: React.CSSProperties = {
+  background: 'rgba(255, 255, 255, 0.25)',
+  backdropFilter: 'blur(40px) saturate(1.8)',
+  WebkitBackdropFilter: 'blur(40px) saturate(1.8)',
+  border: '1px solid rgba(255, 255, 255, 0.55)',
+  boxShadow: [
+    '0 8px 32px rgba(0, 0, 0, 0.14)',
+    '0 2px 8px rgba(0, 0, 0, 0.08)',
+    'inset 0 1px 0 rgba(255, 255, 255, 0.90)',
+  ].join(', '),
+};
+
+function GlassCard({ className, style, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="glass-card"
       className={cn(
-        'bg-white/40 backdrop-blur-2xl',
-        'border border-white/50',
-        'shadow-2xl',
         'flex flex-col rounded-2xl text-slate-900',
         className,
       )}
+      style={{ ...GLASS_STYLE, ...style }}
       {...props}
     />
   );
