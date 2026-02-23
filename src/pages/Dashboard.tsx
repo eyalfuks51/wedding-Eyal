@@ -297,24 +297,16 @@ function AddGuestModal({
   };
 
   return (
-    <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-black/20 z-40"
-        onClick={onClose}
-        aria-hidden="true"
-      />
-
-      {/* Dialog */}
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="modal-title"
-        className="fixed inset-0 z-50 flex items-center justify-center p-4"
-        onClick={e => e.stopPropagation()}
-      >
-        {/* GlassCard replaces the old solid-white container */}
-        <GlassCard className="w-full max-w-md font-brand" dir="rtl">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }}
+      onClick={onClose}
+    >
+      {/* GlassCard — stop click from closing */}
+      <GlassCard className="w-full max-w-md font-brand" dir="rtl" onClick={e => e.stopPropagation()}>
 
           {/* ── Header ─────────────────────────────────────────────── */}
           <GlassCardHeader className="border-b border-white/40">
@@ -487,8 +479,7 @@ function AddGuestModal({
           </form>
 
         </GlassCard>
-      </div>
-    </>
+    </div>
   );
 }
 
