@@ -337,7 +337,7 @@ function AddGuestModal({
           </GlassCardHeader>
 
           {/* ── Form ───────────────────────────────────────────────── */}
-          <form onSubmit={handleSubmit} noValidate>
+          <form onSubmit={handleSubmit} noValidate style={{ background: 'transparent' }}>
             <GlassCardContent className="py-5 space-y-4">
 
               {/* group_name */}

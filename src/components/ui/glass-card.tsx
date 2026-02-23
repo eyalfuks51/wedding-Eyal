@@ -17,11 +17,16 @@ function GlassCard({ className, style, ...props }: React.ComponentProps<'div'>) 
     <div
       data-slot="glass-card"
       className={cn(
-        'bg-white/30 backdrop-blur-2xl border border-white/50 shadow-2xl',
+        'border border-white/50 shadow-2xl',
         'flex flex-col rounded-2xl text-slate-900',
         className,
       )}
-      style={style}
+      style={{
+        background: 'rgba(255, 255, 255, 0.25)',
+        backdropFilter: 'blur(40px) saturate(1.8)',
+        WebkitBackdropFilter: 'blur(40px) saturate(1.8)',
+        ...style,
+      }}
       {...props}
     />
   );
