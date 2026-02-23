@@ -22,6 +22,14 @@ import {
   GlassCardContent,
   GlassCardFooter,
 } from '@/components/ui/glass-card';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetClose,
+} from '@/components/ui/sheet';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -754,6 +762,101 @@ function SendWhatsAppModal({
   );
 }
 
+// ── Message History Sheet ─────────────────────────────────────────────────
+
+interface MessageHistorySheetProps {
+  invitation:  Invitation | null;
+  logs:        MessageLog[];
+  loading:     boolean;
+  onClose:     () => void;
+}
+
+function MessageHistorySheet({ invitation, logs, loading, onClose }: MessageHistorySheetProps) {
+  const open = invitation !== null;
+
+  // Format ISO timestamp → DD/MM/YYYY HH:mm
+  const formatTs = (iso: string) => {
+    const d = new Date(iso);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+
+  const BORDER_COLOR: Record<string, string> = {
+    pending: 'border-amber-400',
+    sent:    'border-emerald-500',
+    failed:  'border-rose-500',
+  };
+
+  return (
+    <Sheet open={open} onOpenChange={isOpen => { if (!isOpen) onClose(); }}>
+      <SheetContent side="left" dir="rtl" className="font-brand flex flex-col">
+
+        {/* ── Header ───────────────────────────────────────────────────────── */}
+        <SheetHeader className="flex-row items-start justify-between">
+          <div>
+            <SheetTitle>היסטוריית הודעות</SheetTitle>
+            {invitation?.group_name && (
+              <SheetDescription>{invitation.group_name}</SheetDescription>
+            )}
+          </div>
+          <SheetClose
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+            aria-label="סגור"
+          >
+            <X className="w-4 h-4" />
+          </SheetClose>
+        </SheetHeader>
+
+        {/* ── Timeline ─────────────────────────────────────────────────────── */}
+        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-3">
+
+          {loading && (
+            <div className="flex justify-center py-12">
+              <div className="w-8 h-8 border-4 border-violet-600 border-t-transparent rounded-full animate-spin" />
+            </div>
+          )}
+
+          {!loading && logs.length === 0 && (
+            <p className="text-center text-sm text-slate-400 py-12">
+              לא נמצאו הודעות עבור אורח זה
+            </p>
+          )}
+
+          {!loading && logs.map(log => (
+            <div
+              key={log.id}
+              className={`border-r-4 pr-3 py-2 space-y-1.5 ${BORDER_COLOR[log.status] ?? 'border-slate-300'}`}
+            >
+              {/* Top row: type chip + timestamp */}
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <span className="text-xs font-medium bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">
+                  {TEMPLATE_LABELS[log.message_type] ?? log.message_type}
+                </span>
+                <span className="text-xs text-slate-400 tabular-nums">
+                  {formatTs(log.created_at)}
+                </span>
+              </div>
+
+              {/* Message content */}
+              <p className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed line-clamp-4">
+                {log.content}
+              </p>
+
+              {/* Error box — only for failed */}
+              {log.status === 'failed' && log.error_log && (
+                <p className="text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded-lg px-2.5 py-1.5">
+                  {log.error_log}
+                </p>
+              )}
+            </div>
+          ))}
+
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 
 export default function Dashboard() {
@@ -846,6 +949,27 @@ export default function Dashboard() {
     return () => { ignored = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- supabase is a stable module-level singleton
   }, [invitations]);
+
+  // Lazy-fetch full history for the invitation currently open in the drawer.
+  useEffect(() => {
+    if (!supabase || !drawerInvitation) return;
+    let ignored = false;
+    setDrawerLoading(true);
+    setDrawerLogs([]);
+    supabase
+      .from('message_logs')
+      .select('id, invitation_id, phone, message_type, content, status, error_log, scheduled_for, sent_at, created_at')
+      .eq('invitation_id', drawerInvitation.id)
+      .order('created_at', { ascending: false })
+      .then(({ data, error: err }) => {
+        if (ignored) return;
+        if (err) console.error('[Dashboard] drawer fetch failed:', err.message);
+        setDrawerLogs((data ?? []) as MessageLog[]);
+        setDrawerLoading(false);
+      });
+    return () => { ignored = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- supabase is a stable module-level singleton
+  }, [drawerInvitation]);
 
   // ── Derived data ──────────────────────────────────────────────────────────
 
@@ -1068,6 +1192,13 @@ export default function Dashboard() {
         selectedGuests={selectedGuestsArray}
         eventConfig={event?.content_config ?? {}}
         onSend={handleSendBulkMessage}
+      />
+
+      <MessageHistorySheet
+        invitation={drawerInvitation}
+        logs={drawerLogs}
+        loading={drawerLoading}
+        onClose={() => setDrawerInvitation(null)}
       />
 
       {toast && (
