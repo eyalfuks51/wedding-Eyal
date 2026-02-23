@@ -9,6 +9,7 @@ import {
   Send,
   Download,
   Phone,
+  UserPlus,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -37,6 +38,10 @@ interface Kpis {
   pending: number;
   declined: number;
 }
+
+// Modal form shape — declared at module level so AddGuestModal can reference it
+const EMPTY_FORM = { group_name: '', phone: '', side: '', group: '', invited_pax: 1 } as const;
+type FormFields  = { group_name: string; phone: string; side: string; group: string; invited_pax: number };
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -173,11 +178,249 @@ function SelectFilter({ value, onChange, placeholder, options, labels }: SelectF
   );
 }
 
+// ── Add Guest Modal ───────────────────────────────────────────────────────────
+
+interface AddGuestModalProps {
+  isOpen:       boolean;
+  onClose:      () => void;
+  onSuccess:    (newInvitation: Invitation) => void;
+  eventId:      string;
+  saving:       boolean;
+  setSaving:    (v: boolean) => void;
+  formError:    string | null;
+  setFormError: (v: string | null) => void;
+  form:         FormFields;
+  setForm:      (v: FormFields) => void;
+}
+
+function AddGuestModal({
+  isOpen, onClose, onSuccess, eventId,
+  saving, setSaving, formError, setFormError, form, setForm,
+}: AddGuestModalProps) {
+  // Close on Escape key
+  useEffect(() => {
+    if (!isOpen) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  const handleField = (field: keyof FormFields, value: string | number) =>
+    setForm({ ...form, [field]: value });
+
+  const validate = (): string | null => {
+    if (!form.group_name.trim()) return 'נא להזין שם';
+    const digits = form.phone.replace(/\D/g, '');
+    if (digits.length < 9 || digits.length > 10) return 'נא להזין מספר טלפון תקין (9–10 ספרות)';
+    if (form.invited_pax < 1) return 'מספר המוזמנים חייב להיות לפחות 1';
+    return null;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const err = validate();
+    if (err) { setFormError(err); return; }
+    if (!supabase) { setFormError('Supabase is not configured'); return; }
+
+    setSaving(true);
+    setFormError(null);
+
+    const digits     = form.phone.replace(/\D/g, '');
+    const normalised = digits.startsWith('0') ? '972' + digits.slice(1) : digits;
+
+    const { data, error } = await supabase
+      .from('invitations')
+      .insert({
+        event_id:            eventId,
+        group_name:          form.group_name.trim(),
+        phone_numbers:       [normalised],
+        side:                form.side  || null,
+        group:               form.group.trim() || null,
+        invited_pax:         form.invited_pax,
+        confirmed_pax:       0,
+        rsvp_status:         'pending',
+        is_automated:        false,
+        messages_sent_count: 0,
+      })
+      .select()
+      .single();
+
+    setSaving(false);
+
+    if (error) {
+      setFormError(`שגיאה בשמירה: ${error.message}`);
+      return;
+    }
+    onSuccess(data as Invitation);
+  };
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+
+      {/* Dialog */}
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
+        className="fixed inset-0 z-50 flex items-center justify-center p-4"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md font-brand" dir="rtl">
+
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+            <h2 id="modal-title" className="text-lg font-bold text-slate-800 font-danidin">
+              הוספת מוזמן
+            </h2>
+            <button
+              onClick={onClose}
+              disabled={saving}
+              className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+              aria-label="סגור"
+            >
+              <XCircle className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} noValidate>
+            <div className="px-6 py-5 space-y-4">
+
+              {/* group_name */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                  שם הרשומה / משפחה <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={form.group_name}
+                  onChange={e => handleField('group_name', e.target.value)}
+                  placeholder="משפחת כהן"
+                  className="w-full px-3 py-2.5 text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent placeholder:text-slate-400"
+                  disabled={saving}
+                  autoFocus
+                />
+              </div>
+
+              {/* phone */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                  טלפון <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="tel"
+                  value={form.phone}
+                  onChange={e => handleField('phone', e.target.value)}
+                  placeholder="050-000-0000"
+                  className="w-full px-3 py-2.5 text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent placeholder:text-slate-400"
+                  disabled={saving}
+                  dir="ltr"
+                />
+              </div>
+
+              {/* side + group — 2-column row */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">צד</label>
+                  <div className="relative">
+                    <select
+                      value={form.side}
+                      onChange={e => handleField('side', e.target.value)}
+                      className="w-full appearance-none pr-3 pl-7 py-2.5 text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent cursor-pointer"
+                      disabled={saving}
+                    >
+                      <option value="">ללא</option>
+                      <option value="חתן">חתן</option>
+                      <option value="כלה">כלה</option>
+                      <option value="משותף">משותף</option>
+                    </select>
+                    <ChevronDown className="absolute inset-y-0 left-2 my-auto w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">קבוצה</label>
+                  <input
+                    type="text"
+                    value={form.group}
+                    onChange={e => handleField('group', e.target.value)}
+                    placeholder="עבודה, צבא..."
+                    className="w-full px-3 py-2.5 text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent placeholder:text-slate-400"
+                    disabled={saving}
+                  />
+                </div>
+              </div>
+
+              {/* invited_pax */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                  הוזמנו <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  max={20}
+                  value={form.invited_pax}
+                  onChange={e => handleField('invited_pax', Math.max(1, parseInt(e.target.value, 10) || 1))}
+                  className="w-24 px-3 py-2.5 text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent text-center"
+                  disabled={saving}
+                />
+              </div>
+
+              {/* Inline error */}
+              {formError && (
+                <p className="text-sm text-rose-600 font-brand bg-rose-50 px-3 py-2 rounded-xl">
+                  {formError}
+                </p>
+              )}
+
+            </div>
+
+            {/* Footer actions */}
+            <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 bg-slate-50/50 rounded-b-2xl">
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={saving}
+                className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors"
+              >
+                ביטול
+              </button>
+              <button
+                type="submit"
+                disabled={saving}
+                className="inline-flex items-center gap-2 px-5 py-2 bg-violet-600 hover:bg-violet-700 disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-medium rounded-xl transition-colors shadow-sm"
+              >
+                {saving ? (
+                  <>
+                    <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    שומר...
+                  </>
+                ) : 'שמור'}
+              </button>
+            </div>
+          </form>
+
+        </div>
+      </div>
+    </>
+  );
+}
+
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 
 export default function Dashboard() {
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [eventSlug, setEventSlug]     = useState('');
+  const [eventId, setEventId]         = useState('');
   const [loading, setLoading]         = useState(true);
   const [error, setError]             = useState<string | null>(null);
 
@@ -191,7 +434,14 @@ export default function Dashboard() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const selectAllRef = useRef<HTMLInputElement>(null);
 
-  // ── Data fetching ────────────────────────────────────────────────────────
+  // ── Add-guest modal ───────────────────────────────────────────────────────
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [form, setForm]               = useState<FormFields>({ ...EMPTY_FORM });
+  const [saving, setSaving]           = useState(false);
+  const [formError, setFormError]     = useState<string | null>(null);
+  const [toast, setToast]             = useState<string | null>(null);
+
+  // ── Data fetching ─────────────────────────────────────────────────────────
 
   useEffect(() => {
     if (!supabase) {
@@ -211,6 +461,7 @@ export default function Dashboard() {
         if (evErr) throw evErr;
 
         setEventSlug(ev.slug);
+        setEventId(ev.id);
 
         const { data: inv, error: invErr } = await sb
           .from('invitations')
@@ -229,7 +480,7 @@ export default function Dashboard() {
     load();
   }, []);
 
-  // ── Derived data ─────────────────────────────────────────────────────────
+  // ── Derived data ──────────────────────────────────────────────────────────
 
   const sides = useMemo(() => {
     const s = new Set<string>();
@@ -267,7 +518,7 @@ export default function Dashboard() {
     declined:          invitations.filter(i => i.rsvp_status === 'declined').length,
   }), [invitations]);
 
-  // ── Selection ────────────────────────────────────────────────────────────
+  // ── Selection ─────────────────────────────────────────────────────────────
 
   const filteredIds = useMemo(() => filtered.map(i => i.id), [filtered]);
   const allChecked  = filteredIds.length > 0 && filteredIds.every(id => selected.has(id));
@@ -295,12 +546,28 @@ export default function Dashboard() {
     });
   };
 
-  // ── Column visibility ────────────────────────────────────────────────────
+  // ── Modal helpers ─────────────────────────────────────────────────────────
+
+  const openModal  = () => { setForm({ ...EMPTY_FORM }); setFormError(null); setIsModalOpen(true); };
+  const closeModal = () => { if (saving) return; setIsModalOpen(false); };
+
+  const handleGuestAdded = (newInv: Invitation) => {
+    setInvitations(prev =>
+      [newInv, ...prev].sort((a, b) =>
+        (a.group_name ?? '').localeCompare(b.group_name ?? '', 'he')
+      )
+    );
+    setIsModalOpen(false);
+    setToast('המוזמן נוסף בהצלחה ✓');
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  // ── Column visibility ─────────────────────────────────────────────────────
 
   const hasSideOrGroup = invitations.some(i => i.side || i.group);
   const hasInvitedPax  = invitations.some(i => i.invited_pax != null && i.invited_pax > 0);
 
-  // ── Render guards ────────────────────────────────────────────────────────
+  // ── Render guards ─────────────────────────────────────────────────────────
 
   if (loading) return <Spinner />;
   if (error)   return <ErrorView message={error} />;
@@ -315,6 +582,28 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-brand" dir="rtl">
+
+      {/* ══════════════════════════════════════════════════════════════════
+          MODAL + TOAST (rendered at root so they layer above everything)
+      ══════════════════════════════════════════════════════════════════ */}
+      <AddGuestModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        onSuccess={handleGuestAdded}
+        eventId={eventId}
+        saving={saving}
+        setSaving={setSaving}
+        formError={formError}
+        setFormError={setFormError}
+        form={form}
+        setForm={setForm}
+      />
+
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50 bg-emerald-600 text-white text-sm font-medium font-brand px-4 py-2.5 rounded-xl shadow-lg">
+          {toast}
+        </div>
+      )}
 
       {/* ══════════════════════════════════════════════════════════════════
           HEADER
@@ -336,12 +625,22 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <button
-            className="shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 active:bg-violet-800 text-white text-sm font-medium font-brand rounded-xl transition-colors shadow-sm"
-          >
-            <Download className="w-4 h-4" />
-            ייצוא
-          </button>
+          {/* Action buttons — RTL renders right-to-left, so הוסף מוזמן appears first (right) */}
+          <div className="flex items-center gap-3 shrink-0">
+            <button
+              onClick={openModal}
+              className="shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 active:bg-violet-800 text-white text-sm font-medium font-brand rounded-xl transition-colors shadow-sm"
+            >
+              <UserPlus className="w-4 h-4" />
+              הוסף מוזמן
+            </button>
+            <button
+              className="shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm font-medium font-brand rounded-xl transition-colors"
+            >
+              <Download className="w-4 h-4" />
+              ייצוא
+            </button>
+          </div>
 
         </div>
       </header>
