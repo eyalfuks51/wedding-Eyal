@@ -3,32 +3,29 @@ import { fetchEventBySlug } from '../lib/supabase';
 
 export function useEvent(slug) {
   const [event, setEvent] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
+  const [loading, setLoading] = useState(!!slug);
+  const [notFound, setNotFound] = useState(!slug);
 
   useEffect(() => {
-    if (!slug) {
-      setNotFound(true);
-      setLoading(false);
-      return;
-    }
+    if (!slug) return;
 
-    setLoading(true);
-    setNotFound(false);
+    let cancelled = false;
 
     fetchEventBySlug(slug)
       .then((data) => {
-        setEvent(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        if (err.code === 'PGRST116' || err.details?.includes('0 rows')) {
-          setNotFound(true);
-        } else {
-          setNotFound(true);
+        if (!cancelled) {
+          setEvent(data);
+          setLoading(false);
         }
-        setLoading(false);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setNotFound(true);
+          setLoading(false);
+        }
       });
+
+    return () => { cancelled = true; };
   }, [slug]);
 
   return { event, loading, notFound };

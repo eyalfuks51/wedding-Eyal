@@ -60,12 +60,6 @@ function RsvpForm({ eventId }) {
     return () => ctx.revert();
   }, [status]);
 
-  const handleUpdate = () => {
-    setStatus('idle');
-    setFormData((prev) => ({ ...prev, attending: null }));
-    scrollToSection();
-  };
-
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
