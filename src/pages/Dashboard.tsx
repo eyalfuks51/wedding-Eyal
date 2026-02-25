@@ -77,6 +77,20 @@ interface BulkMessagePayload {
   content: string;
 }
 
+interface ColVis {
+  side:       boolean;
+  group:      boolean;
+  pax_split:  boolean;
+  automation: boolean;
+}
+
+const COL_OPTIONS: Array<{ key: keyof ColVis; label: string }> = [
+  { key: 'side',       label: 'צד' },
+  { key: 'group',      label: 'קבוצה' },
+  { key: 'pax_split',  label: 'כמויות מפורטות' },
+  { key: 'automation', label: 'אוטומציה' },
+];
+
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const SLUG = 'hagit-and-itai';
@@ -884,6 +898,11 @@ export default function Dashboard() {
   // ── Edit guest drawer ─────────────────────────────────────────────────────
   const [editGuest, setEditGuest] = useState<Invitation | null>(null);
 
+  // ── Column visibility ─────────────────────────────────────────────────────
+  const [colVis, setColVis]         = useState<ColVis>({ side: false, group: false, pax_split: false, automation: false });
+  const [colVisOpen, setColVisOpen] = useState(false);
+  const colVisRef                   = useRef<HTMLDivElement>(null);
+
   // ── Invitations fetch — runs once event.id is available ──────────────────
 
   useEffect(() => {
@@ -958,6 +977,22 @@ export default function Dashboard() {
     return () => { ignored = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- supabase is a stable module-level singleton
   }, [drawerInvitation]);
+
+  // Close colVis dropdown on outside click or Escape
+  useEffect(() => {
+    const onMouse = (e: MouseEvent) => {
+      if (colVisRef.current && !colVisRef.current.contains(e.target as Node)) {
+        setColVisOpen(false);
+      }
+    };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setColVisOpen(false); };
+    document.addEventListener('mousedown', onMouse);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onMouse);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, []);
 
   // ── Derived data ──────────────────────────────────────────────────────────
 
@@ -1050,11 +1085,6 @@ export default function Dashboard() {
     setToast('השינויים נשמרו ✓');
     setTimeout(() => setToast(null), 3000);
   };
-
-  // ── Column visibility ─────────────────────────────────────────────────────
-
-  const hasSideOrGroup = invitations.some(i => i.side || i.guest_group);
-  const hasInvitedPax  = invitations.some(i => i.invited_pax != null && i.invited_pax > 0);
 
   // ── WhatsApp bulk message ─────────────────────────────────────────────────
 
@@ -1153,7 +1183,11 @@ export default function Dashboard() {
   if (loading) return <Spinner />;
   if (error)   return <ErrorView message={error} />;
 
-  const colSpan = hasSideOrGroup ? 7 : 6;
+  const colSpan = 6
+    + (colVis.side       ? 1 : 0)
+    + (colVis.group      ? 1 : 0)
+    + (colVis.pax_split  ? 1 : 0)
+    + (colVis.automation ? 1 : 0);
 
   // Safe ratios — avoid division by zero
   const familyConfirmRate = kpi.totalFamilies > 0 ? kpi.confirmedFamilies / kpi.totalFamilies : 0;
@@ -1347,6 +1381,36 @@ export default function Dashboard() {
               labels={{ attending: 'מגיעים', pending: 'ממתינים', declined: 'לא מגיעים' }}
             />
 
+            {/* Column visibility dropdown */}
+            <div className="relative shrink-0" ref={colVisRef}>
+              <button
+                type="button"
+                onClick={() => setColVisOpen(prev => !prev)}
+                className="flex items-center gap-1.5 pr-3 pl-2.5 py-2.5 text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors font-brand"
+              >
+                תצוגה
+                <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-150 ${colVisOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {colVisOpen && (
+                <div className="absolute top-full mt-1 right-0 z-30 bg-white border border-slate-200 rounded-xl shadow-lg p-2 min-w-[180px]">
+                  {COL_OPTIONS.map(opt => (
+                    <label
+                      key={opt.key}
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 cursor-pointer text-sm font-brand text-slate-700 select-none"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={colVis[opt.key]}
+                        onChange={() => setColVis(prev => ({ ...prev, [opt.key]: !prev[opt.key] }))}
+                        className="w-4 h-4 rounded border-slate-300 accent-violet-600 cursor-pointer"
+                      />
+                      {opt.label}
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <span className="text-xs text-slate-400 font-brand mr-auto">
               {filtered.length === invitations.length
                 ? `${invitations.length} הזמנות`
@@ -1377,28 +1441,25 @@ export default function Dashboard() {
                     />
                   </th>
 
-                  <th className="px-4 py-3.5 text-right font-semibold text-slate-400 text-xs tracking-wider whitespace-nowrap">
-                    שם
-                  </th>
-                  <th className="px-4 py-3.5 text-right font-semibold text-slate-400 text-xs tracking-wider whitespace-nowrap">
-                    טלפונים
-                  </th>
+                  <th className="px-4 py-3.5 text-right font-semibold text-slate-400 text-xs tracking-wider whitespace-nowrap">שם</th>
+                  <th className="px-4 py-3.5 text-right font-semibold text-slate-400 text-xs tracking-wider whitespace-nowrap">טלפונים</th>
 
-                  {hasSideOrGroup && (
-                    <th className="px-4 py-3.5 text-right font-semibold text-slate-400 text-xs tracking-wider whitespace-nowrap">
-                      צד / קבוצה
-                    </th>
+                  {colVis.side  && <th className="px-4 py-3.5 text-right font-semibold text-slate-400 text-xs tracking-wider whitespace-nowrap">צד</th>}
+                  {colVis.group && <th className="px-4 py-3.5 text-right font-semibold text-slate-400 text-xs tracking-wider whitespace-nowrap">קבוצה</th>}
+
+                  {colVis.pax_split ? (
+                    <>
+                      <th className="px-4 py-3.5 text-right font-semibold text-slate-400 text-xs tracking-wider whitespace-nowrap">מוזמנים</th>
+                      <th className="px-4 py-3.5 text-right font-semibold text-slate-400 text-xs tracking-wider whitespace-nowrap">אישרו</th>
+                    </>
+                  ) : (
+                    <th className="px-4 py-3.5 text-right font-semibold text-slate-400 text-xs tracking-wider whitespace-nowrap">כמות</th>
                   )}
 
-                  <th className="px-4 py-3.5 text-right font-semibold text-slate-400 text-xs tracking-wider whitespace-nowrap">
-                    כמות
-                  </th>
-                  <th className="px-4 py-3.5 text-right font-semibold text-slate-400 text-xs tracking-wider whitespace-nowrap">
-                    סטטוס
-                  </th>
-                  <th className="px-4 py-3.5 text-right font-semibold text-slate-400 text-xs tracking-wider whitespace-nowrap">
-                    סטטוס הודעה
-                  </th>
+                  {colVis.automation && <th className="px-4 py-3.5 text-right font-semibold text-slate-400 text-xs tracking-wider whitespace-nowrap">אוטומציה</th>}
+
+                  <th className="px-4 py-3.5 text-right font-semibold text-slate-400 text-xs tracking-wider whitespace-nowrap">סטטוס</th>
+                  <th className="px-4 py-3.5 text-right font-semibold text-slate-400 text-xs tracking-wider whitespace-nowrap">סטטוס הודעה</th>
 
                 </tr>
               </thead>
@@ -1418,7 +1479,6 @@ export default function Dashboard() {
                 ) : (
                   filtered.map(inv => {
                     const isSelected = selected.has(inv.id);
-                    const sideGroup  = [inv.side, inv.guest_group].filter(Boolean).join(' / ');
 
                     return (
                       <tr
@@ -1469,24 +1529,48 @@ export default function Dashboard() {
                           </div>
                         </td>
 
-                        {/* Side / Group */}
-                        {hasSideOrGroup && (
+                        {colVis.side && (
                           <td className="px-4 py-4 text-slate-500 text-sm font-brand whitespace-nowrap">
-                            {sideGroup || '—'}
+                            {inv.side || '—'}
+                          </td>
+                        )}
+                        {colVis.group && (
+                          <td className="px-4 py-4 text-slate-500 text-sm font-brand whitespace-nowrap">
+                            {inv.guest_group || '—'}
                           </td>
                         )}
 
-                        {/* Pax count */}
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          <span className="font-semibold text-slate-800 font-brand">
-                            {inv.confirmed_pax ?? '?'}
-                          </span>
-                          {hasInvitedPax && inv.invited_pax != null && (
-                            <span className="text-slate-400 text-xs font-brand">
-                              {' '}/ {inv.invited_pax}
+                        {/* Pax */}
+                        {colVis.pax_split ? (
+                          <>
+                            <td className="px-4 py-4 whitespace-nowrap">
+                              <span className="text-slate-700 font-brand text-sm">{inv.invited_pax ?? '—'}</span>
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap">
+                              <span className="font-semibold text-slate-800 font-brand">{inv.confirmed_pax ?? '—'}</span>
+                            </td>
+                          </>
+                        ) : (
+                          <td className="px-4 py-4 whitespace-nowrap">
+                            <span className="font-semibold text-slate-800 font-brand">
+                              {inv.confirmed_pax ?? '?'}
                             </span>
-                          )}
-                        </td>
+                            {inv.invited_pax != null && (
+                              <span className="text-slate-400 text-xs font-brand"> / {inv.invited_pax}</span>
+                            )}
+                          </td>
+                        )}
+
+                        {/* Automation */}
+                        {colVis.automation && (
+                          <td className="px-4 py-4" onClick={e => e.stopPropagation()}>
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium font-brand ${
+                              inv.is_automated ? 'bg-violet-100 text-violet-700' : 'bg-slate-100 text-slate-400'
+                            }`}>
+                              {inv.is_automated ? 'פעיל' : 'כבוי'}
+                            </span>
+                          </td>
+                        )}
 
                         {/* Status */}
                         <td className="px-4 py-4">
