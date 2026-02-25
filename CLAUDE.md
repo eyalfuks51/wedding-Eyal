@@ -49,7 +49,9 @@ fontFamily: {
 - Floating bulk-action bar (slides up when rows selected): "שלח הודעה" + "ייצוא"
 - Columns: שם, טלפונים (clickable `tel:` chips), צד/קבוצה (conditional), כמות, סטטוס, **סטטוס הודעה**
 - Side/group columns are hidden automatically when the data contains no such fields
+- **Column Visibility Control:** A "תצוגה" dropdown in the filter bar to toggle optional columns (`side`, `guest_group`, pax counts, `is_automated`) — keeps the default UI clean while surfacing detail on demand
 - **Message History:** clicking a `MsgStatusBadge` in the "סטטוס הודעה" column opens `MessageHistorySheet` — a `<Sheet side="left">` drawer with a newest-first timeline of all `message_logs` for that guest
+- **Guest Editing (`EditGuestSheet`):** clicking a guest row opens a side `<Sheet>` to manually update Identity (`group_name`, `phone_numbers`), Classification (`side`, `guest_group`), RSVP data (`rsvp_status`, `invited_pax`, `confirmed_pax`), and toggle `is_automated`
 - Entirely Hebrew RTL; uses `font-brand` / `font-danidin` Tailwind utilities
 - Violet-600 primary accent; slate neutral palette; no GSAP (pure CSS transitions)
 
@@ -85,8 +87,8 @@ The source of truth for the Admin Dashboard. Represents a family/group invited t
 - `invited_pax` (integer) — Determines singular/plural messaging logic
 - `confirmed_pax` (integer) — How many actually RSVP'd
 - `rsvp_status` (text) — e.g., 'pending'
-- `is_automated` (boolean), `messages_sent_count` (integer), `last_message_sent_at` (timestamptz)
-- `side`, `guest_group` (varchar) — For dashboard filtering
+- `is_automated` (boolean) — Opt-out toggle for Track A automation (managed via `EditGuestSheet`); `messages_sent_count` (integer), `last_message_sent_at` (timestamptz)
+- `side`, `guest_group` (varchar) — For dashboard filtering, classification, and column visibility toggling
 
 **Table: `arrival_permits`**
 The actual RSVP submissions from the frontend form.
@@ -225,6 +227,7 @@ src/
 - **Ultimatum:** Final notice sent to 'pending' guests just before the venue's deadline.
 - **Logistics:** Venue navigation and details sent X hours before the event, only to confirmed attendees.
 - **Hangover:** Post-event gratitude sent to attendees the day after.
+- **Admin UI (Event Timeline):** A visual, opinionated pipeline mapping the funnel stages. Features "hard anchors" (e.g., Event Day) and toggleable nodes (Nudges) with fixed rules to prevent user errors. Each node displays real-time `message_logs` stats (sent vs. pending).
 
 **Track B: Manual Custom Messages (Dashboard UI)**
 - **Bulk Actions:** Admins can select specific guests via the table checkboxes to trigger a manual broadcast.
