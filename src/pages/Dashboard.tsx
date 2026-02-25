@@ -30,23 +30,7 @@ import {
   SheetDescription,
   SheetClose,
 } from '@/components/ui/sheet';
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-type RsvpStatus = 'pending' | 'attending' | 'declined';
-
-interface Invitation {
-  id: string;
-  group_name: string | null;
-  phone_numbers: string[] | null;
-  rsvp_status: RsvpStatus | null;
-  confirmed_pax: number | null;
-  invited_pax: number | null;
-  messages_sent_count: number | null;
-  is_automated: boolean | null;
-  side: string | null;
-  guest_group: string | null;
-}
+import { type Invitation, type RsvpStatus, EditGuestSheet } from '@/components/dashboard/EditGuestSheet';
 
 interface MessageLog {
   id:            string;
@@ -897,6 +881,9 @@ export default function Dashboard() {
   const [drawerLogs,       setDrawerLogs]       = useState<MessageLog[]>([]);
   const [drawerLoading,    setDrawerLoading]    = useState(false);
 
+  // ── Edit guest drawer ─────────────────────────────────────────────────────
+  const [editGuest, setEditGuest] = useState<Invitation | null>(null);
+
   // ── Invitations fetch — runs once event.id is available ──────────────────
 
   useEffect(() => {
@@ -1058,6 +1045,12 @@ export default function Dashboard() {
     setTimeout(() => setToast(null), 3000);
   };
 
+  const handleGuestSave = (updated: Invitation) => {
+    setInvitations(prev => prev.map(i => i.id === updated.id ? updated : i));
+    setToast('השינויים נשמרו ✓');
+    setTimeout(() => setToast(null), 3000);
+  };
+
   // ── Column visibility ─────────────────────────────────────────────────────
 
   const hasSideOrGroup = invitations.some(i => i.side || i.guest_group);
@@ -1200,6 +1193,13 @@ export default function Dashboard() {
         logs={drawerLogs}
         loading={drawerLoading}
         onClose={() => setDrawerInvitation(null)}
+      />
+
+      <EditGuestSheet
+        invitation={editGuest}
+        sides={sides}
+        onClose={() => setEditGuest(null)}
+        onSave={handleGuestSave}
       />
 
       {toast && (
@@ -1439,9 +1439,12 @@ export default function Dashboard() {
                           />
                         </td>
 
-                        {/* Name — semibold for strong visual anchor */}
-                        <td className="px-4 py-4">
-                          <span className="font-semibold text-slate-800 font-brand">
+                        {/* Name — click to open edit sheet */}
+                        <td
+                          className="px-4 py-4"
+                          onClick={e => { e.stopPropagation(); setEditGuest(inv); }}
+                        >
+                          <span className="font-semibold text-slate-800 font-brand cursor-pointer hover:text-violet-700 hover:underline">
                             {inv.group_name ?? '—'}
                           </span>
                         </td>
