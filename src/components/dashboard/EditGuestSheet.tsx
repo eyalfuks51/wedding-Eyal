@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { X } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import {
@@ -47,7 +47,7 @@ export interface EditGuestSheetProps {
 
 // ─── Small helpers ────────────────────────────────────────────────────────────
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
+function SectionLabel({ children }: { children: ReactNode }) {
   return (
     <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 font-brand mb-2 mt-5 first:mt-0">
       {children}
@@ -55,7 +55,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-function FieldLabel({ htmlFor, children }: { htmlFor?: string; children: React.ReactNode }) {
+function FieldLabel({ htmlFor, children }: { htmlFor?: string; children: ReactNode }) {
   return (
     <label htmlFor={htmlFor} className="block text-sm font-medium text-slate-600 font-brand mb-1">
       {children}
@@ -124,6 +124,11 @@ export function EditGuestSheet({ invitation, sides, onClose, onSave }: EditGuest
       return;
     }
 
+    if (!Number.isFinite(form.invited_pax) || !Number.isFinite(form.confirmed_pax)) {
+      setFormError('ערכי כמות אינם תקינים');
+      return;
+    }
+
     setSaving(true);
 
     const updates = {
@@ -150,6 +155,7 @@ export function EditGuestSheet({ invitation, sides, onClose, onSave }: EditGuest
     }
 
     onSave({ ...invitation, ...updates });
+    onClose();
   };
 
   return (
