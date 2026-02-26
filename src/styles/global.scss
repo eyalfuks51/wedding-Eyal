@@ -110,3 +110,12 @@ input, select, textarea {
   border-color: $primary;
   border-style: solid;
 }
+
+// Hide scrollbar while preserving scroll behavior
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
