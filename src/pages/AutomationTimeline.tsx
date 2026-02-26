@@ -910,7 +910,10 @@ export default function AutomationTimeline() {
               onPointerMove={drag.onPointerMove}
               onPointerUp={drag.onPointerUp}
             >
-              <div className="inline-flex items-start gap-0 py-6 px-8" style={{ direction: 'rtl' }}>
+              <div className="inline-flex items-start gap-0 py-6" style={{ direction: 'rtl' }}>
+                {/* Leading spacer (right edge in RTL) */}
+                <div className="w-8 shrink-0" aria-hidden="true" />
+
                 {pipelineNodes.map((node, idx) => (
                   <Fragment key={node.type === 'stage' ? node.setting.id : node.type === 'event' ? 'event' : 'add-nudge'}>
                     {idx > 0 && <HorizontalConnector />}
@@ -934,6 +937,9 @@ export default function AutomationTimeline() {
                     )}
                   </Fragment>
                 ))}
+
+                {/* Trailing spacer (left edge in RTL) */}
+                <div className="w-8 shrink-0" aria-hidden="true" />
               </div>
             </div>
           </div>
