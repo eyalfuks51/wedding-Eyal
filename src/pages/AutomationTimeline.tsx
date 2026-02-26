@@ -142,23 +142,41 @@ function findFocusStage(
 function useDragScroll(ref: React.RefObject<HTMLElement | null>) {
   const [isDragging, setIsDragging] = useState(false);
   const startState = useRef({ x: 0, scrollLeft: 0 });
+  const hasDraggedRef = useRef(false);
+  const pointerIdRef = useRef<number | null>(null);
+  const isDownRef = useRef(false);
 
   const onPointerDown = useCallback((e: React.PointerEvent) => {
     if (!ref.current) return;
-    setIsDragging(true);
+    isDownRef.current = true;
+    hasDraggedRef.current = false;
+    pointerIdRef.current = e.pointerId;
     startState.current = { x: e.clientX, scrollLeft: ref.current.scrollLeft };
-    ref.current.setPointerCapture(e.pointerId);
   }, [ref]);
 
   const onPointerMove = useCallback((e: React.PointerEvent) => {
-    if (!isDragging || !ref.current) return;
+    if (!isDownRef.current || !ref.current) return;
     const dx = e.clientX - startState.current.x;
+
+    if (!hasDraggedRef.current) {
+      if (Math.abs(dx) < 5) return;
+      hasDraggedRef.current = true;
+      setIsDragging(true);
+      if (pointerIdRef.current !== null) {
+        try { ref.current.setPointerCapture(pointerIdRef.current); } catch { /* ignore */ }
+      }
+    }
+
     ref.current.scrollLeft = startState.current.scrollLeft - dx;
-  }, [isDragging, ref]);
+  }, [ref]);
 
-  const onPointerUp = useCallback(() => setIsDragging(false), []);
+  const onPointerUp = useCallback(() => {
+    isDownRef.current = false;
+    setIsDragging(false);
+    pointerIdRef.current = null;
+  }, []);
 
-  return { onPointerDown, onPointerMove, onPointerUp, isDragging };
+  return { onPointerDown, onPointerMove, onPointerUp, isDragging, hasDragged: hasDraggedRef };
 }
 
 // ─── Toggle switch ────────────────────────────────────────────────────────────
@@ -272,6 +290,7 @@ function StageColumn({
   onToggle,
   onEdit,
   onDrilldown,
+  hasDragged,
 }: {
   setting: AutomationSettingRow;
   stats?: StageStats;
@@ -280,6 +299,7 @@ function StageColumn({
   onToggle: (id: string, current: boolean) => void;
   onEdit: (setting: AutomationSettingRow) => void;
   onDrilldown: (stage: StageName, filter: DrilldownFilter) => void;
+  hasDragged: React.RefObject<boolean>;
 }) {
   const meta = STAGE_META[setting.stage_name];
   const status = getStageStatus(setting, stats);
@@ -298,7 +318,7 @@ function StageColumn({
           isFocus && 'ring-2 ring-violet-400 ring-offset-2 scale-[1.03]',
           STATUS_CARD_CLASSES[status],
         )}
-        onClick={() => onEdit(setting)}
+        onClick={() => { if (!hasDragged.current) onEdit(setting); }}
       >
         {/* Status pill + toggle */}
         <div className="flex items-center justify-between mb-2">
@@ -927,6 +947,7 @@ export default function AutomationTimeline() {
                         onToggle={handleToggle}
                         onEdit={setEditSetting}
                         onDrilldown={handleDrilldown}
+                        hasDragged={drag.hasDragged}
                       />
                     )}
                     {node.type === 'add-nudge' && (
