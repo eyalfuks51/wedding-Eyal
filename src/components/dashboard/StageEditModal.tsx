@@ -86,6 +86,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void 
       type="button"
       role="switch"
       aria-checked={checked}
+      dir="ltr"
       onClick={e => { e.stopPropagation(); onChange(); }}
       className={[
         'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200',

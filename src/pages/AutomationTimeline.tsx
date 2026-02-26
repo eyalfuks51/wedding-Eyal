@@ -169,6 +169,7 @@ function Toggle({ checked, onChange, size = 'sm' }: { checked: boolean; onChange
       type="button"
       role="switch"
       aria-checked={checked}
+      dir="ltr"
       onClick={e => { e.stopPropagation(); onChange(); }}
       className={cn(
         'relative inline-flex shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200',
