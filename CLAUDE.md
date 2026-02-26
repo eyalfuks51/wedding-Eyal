@@ -64,12 +64,16 @@ fontFamily: {
 - Lazy fetch: per-invitation full history fetched only when drawer opens; `ignored` cancellation flag prevents stale updates on rapid re-open
 - Badge states: amber=ממתין בתור, emerald=נשלח, rose=נכשל, slate=טרם נשלח
 
-**Automation Timeline (`/dashboard/timeline`):**
-- Visual pipeline of the 5 funnel stages ordered by `days_before` DESC, split around an Event Day anchor card
-- Each node: toggle (optimistic update via `updateAutomationSetting`), inline days-before editor (click to edit, Enter/blur saves), stats mini-bar (sent/pending/failed dots from `fetchMessageStatsPerStage`), "ערוך טקסט" button
-- **TemplateEditorSheet:** `<Sheet side="left">` with singular/plural textareas, variable hints (`{{name}}`, `{{couple_names}}`, `{{link}}`, `{{waze_link}}`), saves via `update_whatsapp_template` RPC — atomic `jsonb_set` server-side
-- Toast feedback for all mutations; loading skeleton; manual refresh button
-- **Shared constants:** `STAGE_NAMES`, `STAGE_META`, `TEMPLATE_LABELS`, `MSG_STATUS_MAP` live in `src/components/dashboard/constants.ts` — imported by both Dashboard and AutomationTimeline
+**Automation Timeline V2 (`/dashboard/timeline`):**
+- **Auto-Pilot Master Toggle:** Global on/off for the automation engine, stored in `events.automation_config.auto_pilot` (boolean). Toggled via `toggle_auto_pilot` RPC. Soft pause: existing queued messages still send, only new evaluations are paused.
+- **Desktop (`lg:`):** Horizontal RTL scrollable pipeline with drag-to-scroll (`useDragScroll` hook). Smart-focus snapping on load positions the active stage at ~35% from right edge (Clamped Right-Third Focus algorithm). Stage columns (`w-48`) with status cards, icon circles on connecting line, labels, and computed dates below.
+- **Mobile (`< lg`):** Vertical card stack with `border-r-4` accent, status pills, and computed dates.
+- **Stage Status System:** `sent` (emerald) / `active` (violet) / `scheduled` (amber) / `disabled` (grey+opacity). Status determined from `is_active` + `message_logs` stats.
+- **StageEditModal (Liquid Glass):** Centered modal with `GlassCard` glassmorphism, replaces the old `TemplateEditorSheet`. Edits: toggle, `days_before` with live date preview, singular/plural template text with variable hints. Dynamic nudge delete button (guarded by `delete_dynamic_nudge` RPC).
+- **Dynamic Nudges:** Up to 3 additional nudge stages (`nudge_1`, `nudge_2`, `nudge_3`). "Add Nudge" button between last nudge and ultimatum. Insertion via `addDynamicNudge`, deletion via `delete_dynamic_nudge` RPC (blocked if `message_logs` exist). New nudge opens edit modal immediately.
+- **StageLogsSheet:** Side `<Sheet>` for per-stage message log drill-down with status filter tabs and search.
+- Toast feedback (z-60 above modals); responsive skeletons; manual refresh button
+- **Shared constants:** `CANONICAL_STAGES`, `DYNAMIC_NUDGE_NAMES`, `ALL_STAGE_NAMES`, `STAGE_META`, `TEMPLATE_LABELS`, `MSG_STATUS_MAP` live in `src/components/dashboard/constants.ts`
 
 ---
 
@@ -141,10 +145,22 @@ One row per funnel stage per event. Controls the automated WhatsApp pipeline.
 
 **Postgres RPC: `update_whatsapp_template(p_event_id, p_stage_name, p_singular, p_plural)`**
 - `SECURITY DEFINER` + `SET search_path = public` — runs with table-owner privileges, prevents search_path hijacking
-- Whitelists `p_stage_name` against `['icebreaker','nudge','ultimatum','logistics','hangover']`
+- Whitelists `p_stage_name` against `['icebreaker','nudge','nudge_1','nudge_2','nudge_3','ultimatum','logistics','hangover']`
 - Uses `jsonb_set` to atomically patch only `content_config → whatsapp_templates → <stage>` — no full-row replacement, no race conditions, no broad anon UPDATE on `events`
 - `GRANT EXECUTE TO anon` — callable via `supabase.rpc('update_whatsapp_template', {...})`
 - Raises exception for unknown event_id or invalid stage_name
+
+**Postgres RPC: `toggle_auto_pilot(p_event_id, p_enabled)`**
+- `SECURITY DEFINER` — atomically sets `events.automation_config.auto_pilot` via `jsonb_set`
+- Soft pause semantics: already-queued `pending` messages still send; only new stage evaluations are paused
+
+**Postgres RPC: `delete_dynamic_nudge(p_setting_id)`**
+- `SECURITY DEFINER` — deletes an `automation_settings` row and cleans up its `whatsapp_templates` key
+- Guards: only `nudge_1/2/3` can be deleted (not canonical stages), and only if zero `message_logs` exist for that stage
+- Raises exception if messages exist or if the stage is canonical
+
+**RLS on `automation_settings`** (migration `20260226200000`):
+- `Allow anon insert automation_settings` — with stage_name whitelist check
 
 ## Template Strategy — AI-Assisted Template Generation
 
@@ -237,14 +253,16 @@ src/
       glass-card.tsx                          GlassCard family (glassmorphism card primitives)
       sheet.tsx                               Sheet drawer primitive (@radix-ui/react-dialog)
     dashboard/
-      constants.ts                            STAGE_NAMES, STAGE_META, TEMPLATE_LABELS, MSG_STATUS_MAP
+      constants.ts                            CANONICAL_STAGES, DYNAMIC_NUDGE_NAMES, ALL_STAGE_NAMES, STAGE_META, MSG_STATUS_MAP
       DashboardNav.tsx                        Tab nav shared by /dashboard and /dashboard/timeline
       EditGuestSheet.tsx                      Side sheet to edit invitation fields
-      TemplateEditorSheet.tsx                 Side sheet to edit singular/plural WhatsApp templates
+      StageEditModal.tsx                      Liquid glass centered modal for stage editing (timing, templates, delete)
+      StageLogsSheet.tsx                      Side sheet for per-stage message log drill-down
   lib/
     supabase.js                               fetchEventBySlug(), submitRsvp(), fetchAutomationSettings(),
                                               updateAutomationSetting(), updateWhatsAppTemplate(),
-                                              fetchMessageStatsPerStage()
+                                              fetchMessageStatsPerStage(), fetchStageMessageLogs(),
+                                              toggleAutoPilot(), addDynamicNudge(), deleteDynamicNudge()
 ```
 
 ## RLS Policies (`arrival_permits`)
@@ -261,7 +279,7 @@ src/
 ## Phase 2: WhatsApp Automation & Scheduler (Active)
 - **Infrastructure:** Outbound messages sent via Green API. A custom Scheduler (`supabase/functions/whatsapp-scheduler/`) processes `message_logs` rows with `status='pending'`, respects operating hours (Asia/Jerusalem timezone, Shabbat-aware), and marks rows `sent` or `failed`. Inbound auto-replies are currently PAUSED.
 - **Message History UI (✅ complete):** Dashboard shows a "סטטוס הודעה" badge column and a `MessageHistorySheet` drawer with full per-guest send history.
-- **Automation Timeline UI (✅ complete):** `/dashboard/timeline` — visual pipeline of the 5 funnel stages with per-stage toggles, timing editors, live send stats, and a `TemplateEditorSheet` for editing singular/plural message text via the `update_whatsapp_template` RPC.
+- **Automation Timeline V2 (✅ complete):** `/dashboard/timeline` — horizontal RTL pipeline (desktop) / vertical stack (mobile) with Auto-Pilot master toggle, dynamic nudge management (up to 3 additional nudges), `StageEditModal` (liquid glass) for editing stage timing + templates, stage status system, smart-focus snapping, drag-to-scroll, and `StageLogsSheet` drill-down.
 
 **Track A: Automated Message Funnel (Background)**
 - **Icebreaker:** Initial broadcast with the event link.
