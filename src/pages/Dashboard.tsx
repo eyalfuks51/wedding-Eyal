@@ -31,6 +31,7 @@ import {
   SheetClose,
 } from '@/components/ui/sheet';
 import { type Invitation, type RsvpStatus, EditGuestSheet } from '@/components/dashboard/EditGuestSheet';
+import { TEMPLATE_LABELS, MSG_STATUS_MAP } from '@/components/dashboard/constants';
 
 interface MessageLog {
   id:            string;
@@ -199,13 +200,6 @@ function StatusBadge({ status }: { status: string | null }) {
 }
 
 // ── Msg Status Badge ──────────────────────────────────────────────────────
-
-const MSG_STATUS_MAP = {
-  pending: { label: 'ממתין בתור', classes: 'bg-amber-100 text-amber-700 border-amber-200' },
-  sent:    { label: 'נשלח',       classes: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
-  failed:  { label: 'נכשל',       classes: 'bg-rose-100 text-rose-700 border-rose-200' },
-  none:    { label: 'טרם נשלח',   classes: 'bg-slate-100 text-slate-500 border-slate-200' },
-} as const;
 
 interface MsgStatusBadgeProps {
   log:     MessageLog | undefined;
@@ -554,14 +548,6 @@ function AddGuestModal({
 }
 
 // ── Send WhatsApp Modal ───────────────────────────────────────────────────────
-
-const TEMPLATE_LABELS: Record<string, string> = {
-  icebreaker: 'פתיחה ראשונית',
-  nudge:      'תזכורת עדינה',
-  ultimatum:  'תזכורת אחרונה',
-  logistics:  'מידע לוגיסטי',
-  hangover:   'תודה לאחר האירוע',
-};
 
 interface SendWhatsAppModalProps {
   isOpen:          boolean;
