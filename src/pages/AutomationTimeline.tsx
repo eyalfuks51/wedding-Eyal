@@ -274,12 +274,6 @@ function StatsMini({
   );
 }
 
-// ─── Horizontal Connector ────────────────────────────────────────────────────
-
-function HorizontalConnector() {
-  return <div className="w-12 h-px bg-slate-200 shrink-0 self-center" style={{ marginTop: '-28px' }} />;
-}
-
 // ─── Desktop: Stage Column ───────────────────────────────────────────────────
 
 function StageColumn({
@@ -291,6 +285,8 @@ function StageColumn({
   onEdit,
   onDrilldown,
   hasDragged,
+  isFirst,
+  isLast,
 }: {
   setting: AutomationSettingRow;
   stats?: StageStats;
@@ -300,20 +296,19 @@ function StageColumn({
   onEdit: (setting: AutomationSettingRow) => void;
   onDrilldown: (stage: StageName, filter: DrilldownFilter) => void;
   hasDragged: React.RefObject<boolean>;
+  isFirst: boolean;
+  isLast: boolean;
 }) {
   const meta = STAGE_META[setting.stage_name];
   const status = getStageStatus(setting, stats);
   const dateInfo = computeStageDate(eventDate, setting.days_before);
 
   return (
-    <div
-      id={`stage-${setting.stage_name}`}
-      className="flex flex-col items-center w-48 shrink-0"
-    >
+    <div className="flex flex-col items-center w-full">
       {/* Card */}
       <div
         className={cn(
-          'w-full rounded-2xl border p-4 transition-all cursor-pointer',
+          'w-44 rounded-2xl border p-4 transition-all cursor-pointer',
           'hover:shadow-md hover:border-violet-200',
           isFocus && 'ring-2 ring-violet-400 ring-offset-2 scale-[1.03]',
           STATUS_CARD_CLASSES[status],
@@ -337,15 +332,19 @@ function StageColumn({
         />
       </div>
 
-      {/* Connector: vertical → icon circle → vertical */}
+      {/* Vertical line → full-width icon row → vertical line */}
       <div className="w-px h-4 bg-slate-200" />
-      <div className={cn(
-        'w-10 h-10 rounded-full flex items-center justify-center border-2 transition-colors',
-        setting.is_active
-          ? 'bg-violet-600 border-violet-600 text-white'
-          : 'bg-white border-slate-300 text-slate-400',
-      )}>
-        {getStageIcon(setting.stage_name, 'lg')}
+      <div className="w-full flex items-center">
+        <div className={cn('flex-1 h-px', !isFirst ? 'bg-slate-200' : '')} />
+        <div className={cn(
+          'w-10 h-10 rounded-full flex items-center justify-center border-2 transition-colors shrink-0',
+          setting.is_active
+            ? 'bg-violet-600 border-violet-600 text-white'
+            : 'bg-white border-slate-300 text-slate-400',
+        )}>
+          {getStageIcon(setting.stage_name, 'lg')}
+        </div>
+        <div className={cn('flex-1 h-px', !isLast ? 'bg-slate-200' : '')} />
       </div>
       <div className="w-px h-3 bg-slate-200" />
 
@@ -364,15 +363,15 @@ function StageColumn({
 
 // ─── Desktop: Event Day Column ───────────────────────────────────────────────
 
-function EventDayColumn({ date }: { date: Date | null }) {
+function EventDayColumn({ date, isFirst, isLast }: { date: Date | null; isFirst: boolean; isLast: boolean }) {
   const dateLabel = date
     ? date.toLocaleDateString('he-IL', { day: 'numeric', month: 'long', year: 'numeric' })
     : null;
 
   return (
-    <div id="event-day" className="flex flex-col items-center w-48 shrink-0">
+    <div className="flex flex-col items-center w-full">
       {/* Card */}
-      <div className="w-full rounded-2xl bg-violet-600 text-white p-4 shadow-md">
+      <div className="w-44 rounded-2xl bg-violet-600 text-white p-4 shadow-md">
         <div className="flex items-center gap-2 mb-1">
           <Calendar className="w-4 h-4 opacity-80" />
           <span className="font-danidin text-base leading-none">יום האירוע</span>
@@ -380,10 +379,14 @@ function EventDayColumn({ date }: { date: Date | null }) {
         <p className="text-xs opacity-80 font-brand">{dateLabel ?? '—'}</p>
       </div>
 
-      {/* Diamond icon on the line */}
+      {/* Diamond icon row with horizontal connectors */}
       <div className="w-px h-4 bg-slate-200" />
-      <div className="w-10 h-10 flex items-center justify-center">
-        <div className="w-6 h-6 bg-violet-600 rotate-45 rounded-[4px] shadow-sm shadow-violet-300/60" />
+      <div className="w-full flex items-center">
+        <div className={cn('flex-1 h-px', !isFirst ? 'bg-slate-200' : '')} />
+        <div className="w-10 h-10 flex items-center justify-center shrink-0">
+          <div className="w-6 h-6 bg-violet-600 rotate-45 rounded-[4px] shadow-sm shadow-violet-300/60" />
+        </div>
+        <div className={cn('flex-1 h-px', !isLast ? 'bg-slate-200' : '')} />
       </div>
       <div className="w-px h-3 bg-slate-200" />
 
@@ -400,27 +403,31 @@ function EventDayColumn({ date }: { date: Date | null }) {
 
 // ─── Desktop: Add Nudge Button ───────────────────────────────────────────────
 
-function AddNudgeColumn({ onClick, disabled }: { onClick: () => void; disabled: boolean }) {
+function AddNudgeColumn({ onClick, disabled, isFirst, isLast }: { onClick: () => void; disabled: boolean; isFirst: boolean; isLast: boolean }) {
   return (
-    <div className="flex flex-col items-center w-20 shrink-0">
+    <div className="flex flex-col items-center w-full">
       {/* Spacer to align with card area */}
       <div className="h-[88px]" />
 
-      {/* Button on the line */}
+      {/* Button row with horizontal connectors */}
       <div className="w-px h-4 bg-slate-200" />
-      <button
-        onClick={onClick}
-        disabled={disabled}
-        className={cn(
-          'w-10 h-10 rounded-full flex flex-col items-center justify-center',
-          'border-2 border-dashed border-slate-300 text-slate-400',
-          'hover:border-violet-400 hover:text-violet-500 transition-colors',
-          'disabled:opacity-30 disabled:cursor-not-allowed',
-        )}
-        title="הוסף תזכורת"
-      >
-        <Plus className="w-4 h-4" />
-      </button>
+      <div className="w-full flex items-center">
+        <div className={cn('flex-1 h-px', !isFirst ? 'bg-slate-200' : '')} />
+        <button
+          onClick={onClick}
+          disabled={disabled}
+          className={cn(
+            'w-10 h-10 rounded-full flex flex-col items-center justify-center shrink-0',
+            'border-2 border-dashed border-slate-300 text-slate-400',
+            'hover:border-violet-400 hover:text-violet-500 transition-colors',
+            'disabled:opacity-30 disabled:cursor-not-allowed',
+          )}
+          title="הוסף תזכורת"
+        >
+          <Plus className="w-4 h-4" />
+        </button>
+        <div className={cn('flex-1 h-px', !isLast ? 'bg-slate-200' : '')} />
+      </div>
       <div className="w-px h-3 bg-slate-200" />
 
       <p className="text-[10px] text-slate-400 font-brand text-center mt-1">+ תזכורת</p>
@@ -548,24 +555,25 @@ function VerticalConnector() {
 
 function DesktopSkeleton() {
   return (
-    <div className="hidden lg:flex items-start gap-0 py-6 px-8 animate-pulse">
-      {[1, 2, 3, 4, 5, 6].map(i => (
-        <Fragment key={i}>
-          {i > 1 && <div className="w-12 h-px bg-slate-200 shrink-0 self-center mt-10" />}
-          <div className="flex flex-col items-center w-48 shrink-0">
-            <div className="w-full rounded-2xl border border-slate-100 p-4">
-              <div className="flex justify-between mb-2">
-                <div className="h-5 w-14 bg-slate-200 rounded-full" />
-                <div className="h-5 w-9 bg-slate-200 rounded-full" />
-              </div>
-              <div className="h-3 w-28 bg-slate-100 rounded mt-2" />
+    <div className="hidden lg:flex items-start py-6 animate-pulse" dir="rtl">
+      {[1, 2, 3, 4, 5].map(i => (
+        <div key={i} className="w-[20%] shrink-0 flex flex-col items-center">
+          <div className="w-44 rounded-2xl border border-slate-100 p-4">
+            <div className="flex justify-between mb-2">
+              <div className="h-5 w-14 bg-slate-200 rounded-full" />
+              <div className="h-5 w-9 bg-slate-200 rounded-full" />
             </div>
-            <div className="w-px h-4 bg-slate-100" />
-            <div className="w-10 h-10 bg-slate-200 rounded-full" />
-            <div className="w-px h-3 bg-slate-100" />
-            <div className="h-3 w-16 bg-slate-100 rounded mt-1" />
+            <div className="h-3 w-28 bg-slate-100 rounded mt-2" />
           </div>
-        </Fragment>
+          <div className="w-px h-4 bg-slate-100" />
+          <div className="w-full flex items-center">
+            <div className={cn('flex-1 h-px', i > 1 ? 'bg-slate-100' : '')} />
+            <div className="w-10 h-10 bg-slate-200 rounded-full shrink-0" />
+            <div className={cn('flex-1 h-px', i < 5 ? 'bg-slate-100' : '')} />
+          </div>
+          <div className="w-px h-3 bg-slate-100" />
+          <div className="h-3 w-16 bg-slate-100 rounded mt-1" />
+        </div>
       ))}
     </div>
   );
@@ -921,7 +929,7 @@ export default function AutomationTimeline() {
             <div
               ref={scrollRef}
               className={cn(
-                'overflow-x-auto overflow-y-hidden scrollbar-hide',
+                'flex items-start overflow-x-auto overflow-y-hidden scrollbar-hide py-6',
                 drag.isDragging ? 'cursor-grabbing' : 'cursor-grab',
               )}
               style={{ scrollBehavior: 'auto' }}
@@ -930,14 +938,28 @@ export default function AutomationTimeline() {
               onPointerMove={drag.onPointerMove}
               onPointerUp={drag.onPointerUp}
             >
-              <div className="inline-flex items-start gap-0 py-6" style={{ direction: 'rtl' }}>
-                {/* Leading spacer (right edge in RTL) */}
-                <div className="w-8 shrink-0" aria-hidden="true" />
+              {/* Leading spacer (right edge in RTL) */}
+              <div className="w-4 shrink-0" aria-hidden="true" />
 
-                {pipelineNodes.map((node, idx) => (
-                  <Fragment key={node.type === 'stage' ? node.setting.id : node.type === 'event' ? 'event' : 'add-nudge'}>
-                    {idx > 0 && <HorizontalConnector />}
-                    {node.type === 'event' && <EventDayColumn date={eventDate} />}
+              {pipelineNodes.map((node, idx) => {
+                const isFirst = idx === 0;
+                const isLast = idx === pipelineNodes.length - 1;
+                const key = node.type === 'stage' ? node.setting.id : node.type === 'event' ? 'event' : 'add-nudge';
+                const cellId = node.type === 'stage'
+                  ? `stage-${node.setting.stage_name}`
+                  : node.type === 'event'
+                    ? 'event-day'
+                    : undefined;
+
+                return (
+                  <div
+                    key={key}
+                    id={cellId}
+                    className="w-[20%] shrink-0 flex flex-col items-center"
+                  >
+                    {node.type === 'event' && (
+                      <EventDayColumn date={eventDate} isFirst={isFirst} isLast={isLast} />
+                    )}
                     {node.type === 'stage' && (
                       <StageColumn
                         setting={node.setting}
@@ -948,20 +970,24 @@ export default function AutomationTimeline() {
                         onEdit={setEditSetting}
                         onDrilldown={handleDrilldown}
                         hasDragged={drag.hasDragged}
+                        isFirst={isFirst}
+                        isLast={isLast}
                       />
                     )}
                     {node.type === 'add-nudge' && (
                       <AddNudgeColumn
                         onClick={handleAddNudge}
                         disabled={!canAddNudge || addingNudge}
+                        isFirst={isFirst}
+                        isLast={isLast}
                       />
                     )}
-                  </Fragment>
-                ))}
+                  </div>
+                );
+              })}
 
-                {/* Trailing spacer (left edge in RTL) */}
-                <div className="w-8 shrink-0" aria-hidden="true" />
-              </div>
+              {/* Trailing spacer (left edge in RTL) */}
+              <div className="w-4 shrink-0" aria-hidden="true" />
             </div>
           </div>
         )}
