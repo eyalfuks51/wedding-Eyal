@@ -32,6 +32,7 @@ import {
 } from '@/components/ui/sheet';
 import { type Invitation, type RsvpStatus, EditGuestSheet } from '@/components/dashboard/EditGuestSheet';
 import { TEMPLATE_LABELS, MSG_STATUS_MAP } from '@/components/dashboard/constants';
+import DashboardNav from '@/components/dashboard/DashboardNav';
 
 interface MessageLog {
   id:            string;
@@ -1271,6 +1272,8 @@ export default function Dashboard() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <DashboardNav />
 
         {/* ════════════════════════════════════════════════════════════════
             KPI CARDS — with animated progress bars
