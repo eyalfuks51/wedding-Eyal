@@ -86,6 +86,23 @@ export const fetchMessageStatsPerStage = async (eventId) => {
   return stats;
 };
 
+/**
+ * Fetch all message_logs for a given stage, joined with invitations.group_name.
+ * Uses the FK relationship message_logs.invitation_id → invitations.id.
+ * Ordered newest-first.
+ */
+export const fetchStageMessageLogs = async (eventId, stageName) => {
+  if (!supabase) throw new Error('Supabase is not configured');
+  const { data, error } = await supabase
+    .from('message_logs')
+    .select('id, invitation_id, phone, status, error_log, sent_at, scheduled_for, created_at, invitations(group_name)')
+    .eq('event_id', eventId)
+    .eq('message_type', stageName)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data ?? [];
+};
+
 export const submitRsvp = async (rsvpData, eventId) => {
   if (!supabase) {
     console.error('Supabase is not configured');
