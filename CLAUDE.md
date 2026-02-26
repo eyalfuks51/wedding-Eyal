@@ -38,8 +38,12 @@ fontFamily: {
 
 ## Admin Dashboard (`/dashboard`)
 
-**Route:** `/dashboard` — registered in `App.jsx` before `/:slug` to avoid slug collision.
-**File:** `src/pages/Dashboard.tsx`
+**Routes:**
+- `/dashboard` — guest table (registered in `App.jsx` before `/:slug` to avoid slug collision)
+- `/dashboard/timeline` — automation pipeline timeline
+
+**Files:** `src/pages/Dashboard.tsx`, `src/pages/AutomationTimeline.tsx`
+**Shared tab navigation:** `DashboardNav` component sits at the top of both pages.
 **Event slug hardcoded:** `'hagit-and-itai'` (fetches that event's invitations from Supabase).
 
 **Features:**
@@ -59,6 +63,13 @@ fontFamily: {
 - Batch fetch: one `message_logs` query for all invitation IDs after table loads → `Map<invitation_id, MessageLog>` for O(1) badge lookup
 - Lazy fetch: per-invitation full history fetched only when drawer opens; `ignored` cancellation flag prevents stale updates on rapid re-open
 - Badge states: amber=ממתין בתור, emerald=נשלח, rose=נכשל, slate=טרם נשלח
+
+**Automation Timeline (`/dashboard/timeline`):**
+- Visual pipeline of the 5 funnel stages ordered by `days_before` DESC, split around an Event Day anchor card
+- Each node: toggle (optimistic update via `updateAutomationSetting`), inline days-before editor (click to edit, Enter/blur saves), stats mini-bar (sent/pending/failed dots from `fetchMessageStatsPerStage`), "ערוך טקסט" button
+- **TemplateEditorSheet:** `<Sheet side="left">` with singular/plural textareas, variable hints (`{{name}}`, `{{couple_names}}`, `{{link}}`, `{{waze_link}}`), saves via `update_whatsapp_template` RPC — atomic `jsonb_set` server-side
+- Toast feedback for all mutations; loading skeleton; manual refresh button
+- **Shared constants:** `STAGE_NAMES`, `STAGE_META`, `TEMPLATE_LABELS`, `MSG_STATUS_MAP` live in `src/components/dashboard/constants.ts` — imported by both Dashboard and AutomationTimeline
 
 ---
 
@@ -113,6 +124,27 @@ The central queue and historical log for all WhatsApp messages.
 - `error_log` (text)
 - `scheduled_for` (timestamptz) — When it should be sent
 - `sent_at` (timestamptz) — Exact time of successful send
+
+**Table: `automation_settings`**
+One row per funnel stage per event. Controls the automated WhatsApp pipeline.
+- `id` (uuid, PK)
+- `event_id` (uuid, FK → events.id)
+- `stage_name` (text) — matches key in `events.content_config.whatsapp_templates` (e.g. `'nudge'`)
+- `days_before` (integer) — positive = days before event, negative = days after (e.g. `-1` = hangover)
+- `target_status` (text) — `'pending'` or `'attending'` (business invariant, not editable from UI)
+- `is_active` (boolean) — admin toggle
+- `created_at` (timestamptz)
+
+**RLS on `automation_settings`** (migration `20260226100000`):
+- `Allow anon select automation_settings` — anon can read all rows (USING true)
+- `Allow anon update automation_settings` — anon can update rows (USING true, WITH CHECK true)
+
+**Postgres RPC: `update_whatsapp_template(p_event_id, p_stage_name, p_singular, p_plural)`**
+- `SECURITY DEFINER` + `SET search_path = public` — runs with table-owner privileges, prevents search_path hijacking
+- Whitelists `p_stage_name` against `['icebreaker','nudge','ultimatum','logistics','hangover']`
+- Uses `jsonb_set` to atomically patch only `content_config → whatsapp_templates → <stage>` — no full-row replacement, no race conditions, no broad anon UPDATE on `events`
+- `GRANT EXECUTE TO anon` — callable via `supabase.rpc('update_whatsapp_template', {...})`
+- Raises exception for unknown event_id or invalid stage_name
 
 ## Template Strategy — AI-Assisted Template Generation
 
@@ -189,6 +221,8 @@ src/
   pages/
     EventPage.jsx                             slug → useEvent → template dispatch
     NotFoundPage.jsx                          shown for unknown slugs or root /
+    Dashboard.tsx                             /dashboard — guest table with KPI cards, filters, bulk actions
+    AutomationTimeline.tsx                    /dashboard/timeline — visual funnel pipeline
   templates/
     WeddingDefaultTemplate/
       WeddingDefaultTemplate.jsx              composes Hero + RsvpForm + Map
@@ -202,8 +236,15 @@ src/
     ui/
       glass-card.tsx                          GlassCard family (glassmorphism card primitives)
       sheet.tsx                               Sheet drawer primitive (@radix-ui/react-dialog)
+    dashboard/
+      constants.ts                            STAGE_NAMES, STAGE_META, TEMPLATE_LABELS, MSG_STATUS_MAP
+      DashboardNav.tsx                        Tab nav shared by /dashboard and /dashboard/timeline
+      EditGuestSheet.tsx                      Side sheet to edit invitation fields
+      TemplateEditorSheet.tsx                 Side sheet to edit singular/plural WhatsApp templates
   lib/
-    supabase.js                               fetchEventBySlug(), submitRsvp(data, eventId)
+    supabase.js                               fetchEventBySlug(), submitRsvp(), fetchAutomationSettings(),
+                                              updateAutomationSetting(), updateWhatsAppTemplate(),
+                                              fetchMessageStatsPerStage()
 ```
 
 ## RLS Policies (`arrival_permits`)
@@ -220,6 +261,7 @@ src/
 ## Phase 2: WhatsApp Automation & Scheduler (Active)
 - **Infrastructure:** Outbound messages sent via Green API. A custom Scheduler (`supabase/functions/whatsapp-scheduler/`) processes `message_logs` rows with `status='pending'`, respects operating hours (Asia/Jerusalem timezone, Shabbat-aware), and marks rows `sent` or `failed`. Inbound auto-replies are currently PAUSED.
 - **Message History UI (✅ complete):** Dashboard shows a "סטטוס הודעה" badge column and a `MessageHistorySheet` drawer with full per-guest send history.
+- **Automation Timeline UI (✅ complete):** `/dashboard/timeline` — visual pipeline of the 5 funnel stages with per-stage toggles, timing editors, live send stats, and a `TemplateEditorSheet` for editing singular/plural message text via the `update_whatsapp_template` RPC.
 
 **Track A: Automated Message Funnel (Background)**
 - **Icebreaker:** Initial broadcast with the event link.
