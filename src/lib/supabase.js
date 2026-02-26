@@ -103,6 +103,37 @@ export const fetchStageMessageLogs = async (eventId, stageName) => {
   return data ?? [];
 };
 
+/** Toggle the event-level Auto-Pilot flag via RPC */
+export const toggleAutoPilot = async (eventId, enabled) => {
+  if (!supabase) throw new Error('Supabase is not configured');
+  const { error } = await supabase.rpc('toggle_auto_pilot', {
+    p_event_id: eventId,
+    p_enabled:  enabled,
+  });
+  if (error) throw error;
+};
+
+/** Insert a new dynamic nudge stage */
+export const addDynamicNudge = async (eventId, stageName, daysBefore) => {
+  if (!supabase) throw new Error('Supabase is not configured');
+  const { data, error } = await supabase
+    .from('automation_settings')
+    .insert({ event_id: eventId, stage_name: stageName, days_before: daysBefore, target_status: 'pending', is_active: true })
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+};
+
+/** Delete a dynamic nudge via the guarded RPC (fails if messages exist) */
+export const deleteDynamicNudge = async (settingId) => {
+  if (!supabase) throw new Error('Supabase is not configured');
+  const { error } = await supabase.rpc('delete_dynamic_nudge', {
+    p_setting_id: settingId,
+  });
+  if (error) throw error;
+};
+
 export const submitRsvp = async (rsvpData, eventId) => {
   if (!supabase) {
     console.error('Supabase is not configured');
