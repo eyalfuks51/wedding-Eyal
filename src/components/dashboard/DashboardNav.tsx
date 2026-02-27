@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 const TABS = [
   { path: '/dashboard',          label: 'אורחים' },
   { path: '/dashboard/timeline', label: 'ציר זמן' },
+  { path: '/dashboard/settings', label: 'הגדרות' },
 ] as const;
 
 export default function DashboardNav() {

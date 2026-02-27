@@ -48,6 +48,20 @@ export const updateAutomationSetting = async (settingId, updates) => {
 };
 
 /**
+ * Update the full content_config JSONB for an event.
+ * Merges the provided config with the existing one (shallow merge at top level).
+ * whatsapp_templates are excluded — those are managed via the Timeline's StageEditModal.
+ */
+export const updateEventContentConfig = async (eventId, contentConfig) => {
+  if (!supabase) throw new Error('Supabase is not configured');
+  const { error } = await supabase
+    .from('events')
+    .update({ content_config: contentConfig })
+    .eq('id', eventId);
+  if (error) throw error;
+};
+
+/**
  * Atomically patch a single whatsapp_template stage via Postgres RPC.
  * Uses jsonb_set server-side — no race conditions, no broad UPDATE on events.
  */
