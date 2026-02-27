@@ -8,7 +8,6 @@ import {
   Calendar,
   RefreshCw,
   Plus,
-  Loader2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEvent } from '../hooks/useEvent';
@@ -733,7 +732,6 @@ export default function AutomationTimeline() {
   const [editSetting, setEditSetting] = useState<AutomationSettingRow | null>(null);
   const [drilldown, setDrilldown]     = useState<StageLogsDrilldown | null>(null);
   const [toasts, setToasts]           = useState<Toast[]>([]);
-  const [addingNudge, setAddingNudge] = useState(false);
   const [draftNudge, setDraftNudge] = useState<{ stage_name: string; days_before: number } | null>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -1062,7 +1060,7 @@ export default function AutomationTimeline() {
                       <AddNudgeOverlay
                         key="add-nudge"
                         onClick={handleAddNudge}
-                        disabled={!canAddNudge || addingNudge}
+                        disabled={!canAddNudge}
                       />
                     );
                   }
@@ -1133,7 +1131,7 @@ export default function AutomationTimeline() {
                   {isNudgeType && nextIsUltimatum && (
                     <>
                       <VerticalConnector />
-                      <MobileAddNudge onClick={handleAddNudge} disabled={!canAddNudge || addingNudge} />
+                      <MobileAddNudge onClick={handleAddNudge} disabled={!canAddNudge} />
                     </>
                   )}
                   {idx < beforeEvent.length - 1 && <VerticalConnector />}
@@ -1185,16 +1183,6 @@ export default function AutomationTimeline() {
           eventId={event.id}
           onClose={() => setDrilldown(null)}
         />
-      )}
-
-      {/* Adding nudge indicator */}
-      {addingNudge && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl px-6 py-4 shadow-xl flex items-center gap-3 font-brand">
-            <Loader2 className="w-5 h-5 animate-spin text-violet-600" />
-            <span className="text-sm text-slate-700">מוסיף תזכורת...</span>
-          </div>
-        </div>
       )}
 
       <ToastContainer toasts={toasts} />
