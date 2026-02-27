@@ -152,6 +152,83 @@ export const deleteDynamicNudge = async (settingId) => {
   if (error) throw error;
 };
 
+/**
+ * Bulk upsert invitations by primary phone number.
+ * For each guest: if an invitation with the same phone_numbers[0] exists → update,
+ * otherwise → insert. Returns { inserted, updated, errors[] }.
+ */
+export const bulkUpsertInvitations = async (eventId, guests) => {
+  if (!supabase) throw new Error('Supabase is not configured');
+
+  // Fetch existing invitations to find matches by primary phone
+  const { data: existing, error: fetchErr } = await supabase
+    .from('invitations')
+    .select('id, phone_numbers')
+    .eq('event_id', eventId);
+  if (fetchErr) throw fetchErr;
+
+  // Build a map: normalized primary phone → invitation id
+  const phoneToId = new Map();
+  for (const inv of existing ?? []) {
+    const primary = inv.phone_numbers?.[0];
+    if (primary) phoneToId.set(primary, inv.id);
+  }
+
+  let inserted = 0;
+  let updated = 0;
+  const errors = [];
+
+  for (const guest of guests) {
+    const primaryPhone = guest.phone_numbers[0];
+    const existingId = phoneToId.get(primaryPhone);
+
+    try {
+      if (existingId) {
+        // UPDATE — preserve rsvp_status, confirmed_pax, messages_sent_count
+        const { error } = await supabase
+          .from('invitations')
+          .update({
+            group_name: guest.group_name,
+            phone_numbers: guest.phone_numbers,
+            invited_pax: guest.invited_pax,
+            side: guest.side,
+            guest_group: guest.guest_group,
+            is_automated: guest.is_automated,
+          })
+          .eq('id', existingId);
+        if (error) throw error;
+        updated++;
+      } else {
+        // INSERT
+        const { error } = await supabase
+          .from('invitations')
+          .insert({
+            event_id: eventId,
+            group_name: guest.group_name,
+            phone_numbers: guest.phone_numbers,
+            invited_pax: guest.invited_pax,
+            confirmed_pax: 0,
+            rsvp_status: 'pending',
+            is_automated: guest.is_automated,
+            messages_sent_count: 0,
+            side: guest.side,
+            guest_group: guest.guest_group,
+          });
+        if (error) throw error;
+        inserted++;
+      }
+    } catch (err) {
+      errors.push({
+        group_name: guest.group_name,
+        phone: primaryPhone,
+        error: err.message || 'שגיאה לא ידועה',
+      });
+    }
+  }
+
+  return { inserted, updated, errors };
+};
+
 export const submitRsvp = async (rsvpData, eventId) => {
   if (!supabase) {
     console.error('Supabase is not configured');
