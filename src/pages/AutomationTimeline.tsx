@@ -267,61 +267,6 @@ function StatusPill({ status }: { status: StageStatus }) {
   );
 }
 
-// ─── Stats Mini-bar (clickable) ──────────────────────────────────────────────
-
-function StatsMini({
-  stats,
-  onDrilldown,
-  compact = false,
-}: {
-  stats?: StageStats;
-  onDrilldown?: (filter: DrilldownFilter) => void;
-  compact?: boolean;
-}) {
-  if (!stats || (stats.sent === 0 && stats.pending === 0 && stats.failed === 0)) return null;
-
-  const ALL_ENTRIES = [
-    { filter: 'sent'    as const, count: stats.sent,    dot: 'bg-emerald-500', label: 'נשלחו' },
-    { filter: 'pending' as const, count: stats.pending, dot: 'bg-amber-400',   label: 'בתור'  },
-    { filter: 'failed'  as const, count: stats.failed,  dot: 'bg-rose-500',    label: 'נכשלו' },
-  ];
-  const entries = ALL_ENTRIES.filter(e => e.count > 0);
-
-  return (
-    <div className={cn('flex items-center flex-wrap', compact ? 'gap-2 mt-1.5' : 'gap-3 mt-1')}>
-      {entries.map(({ filter, count, dot, label }) => (
-        <button
-          key={filter}
-          type="button"
-          onClick={e => { e.stopPropagation(); onDrilldown?.(filter); }}
-          className={cn(
-            'inline-flex items-center gap-1 text-slate-500 hover:text-slate-800 transition-colors group',
-            compact ? 'text-[10px]' : 'text-xs',
-          )}
-          title="לחץ לפירוט"
-        >
-          <span className={cn('inline-block rounded-full', dot, compact ? 'w-1 h-1' : 'w-1.5 h-1.5')} />
-          <span className="group-hover:underline underline-offset-2">
-            {count} {label}
-          </span>
-        </button>
-      ))}
-      {entries.length > 1 && (
-        <button
-          type="button"
-          onClick={e => { e.stopPropagation(); onDrilldown?.('all'); }}
-          className={cn(
-            'text-violet-500 hover:text-violet-700 hover:underline underline-offset-2 transition-colors',
-            compact ? 'text-[10px]' : 'text-xs',
-          )}
-        >
-          הצג הכל
-        </button>
-      )}
-    </div>
-  );
-}
-
 // ─── Desktop: Stage Column ───────────────────────────────────────────────────
 
 function StageColumn({
