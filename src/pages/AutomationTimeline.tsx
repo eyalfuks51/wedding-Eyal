@@ -523,6 +523,7 @@ function MobileStageCard({
   setting,
   stats,
   eventDate,
+  audienceCounts,
   onToggle,
   onEdit,
   onDrilldown,
@@ -530,6 +531,7 @@ function MobileStageCard({
   setting: AutomationSettingRow;
   stats?: StageStats;
   eventDate: Date | null;
+  audienceCounts: { pending: number; attending: number };
   onToggle: (id: string, current: boolean) => void;
   onEdit: (setting: AutomationSettingRow) => void;
   onDrilldown: (stage: StageName, filter: DrilldownFilter) => void;
@@ -537,6 +539,28 @@ function MobileStageCard({
   const meta = STAGE_META[setting.stage_name];
   const status = getStageStatus(setting, stats);
   const dateInfo = computeStageDate(eventDate, setting.days_before);
+  const relativeTime = computeRelativeTime(eventDate, setting.days_before);
+
+  const msgStatLine = (() => {
+    if (!stats || (stats.sent === 0 && stats.pending === 0 && stats.failed === 0)) {
+      if (status === 'scheduled') {
+        const targetCount = setting.target_status === 'attending'
+          ? audienceCounts.attending
+          : audienceCounts.pending;
+        return targetCount > 0 ? `~${targetCount} מטורגטים` : null;
+      }
+      return null;
+    }
+    if (status === 'sent') return `${stats.sent} נשלחו`;
+    if (status === 'active') return `${stats.sent}/${stats.sent + stats.pending} נשלחו`;
+    if (status === 'scheduled') {
+      const targetCount = setting.target_status === 'attending'
+        ? audienceCounts.attending
+        : audienceCounts.pending;
+      return targetCount > 0 ? `~${targetCount} מטורגטים` : null;
+    }
+    return null;
+  })();
 
   return (
     <div
@@ -565,9 +589,14 @@ function MobileStageCard({
 
       {/* Row 2: date + target */}
       <div className="flex items-center gap-2 mt-2.5 flex-wrap">
+        {relativeTime && (
+          <span className="inline-flex items-center text-xs text-slate-600 font-brand font-medium">
+            {relativeTime}
+          </span>
+        )}
         {dateInfo && (
-          <span className="inline-flex items-center text-xs text-slate-500 font-brand">
-            {dateInfo.weekday} {dateInfo.dateStr}
+          <span className="inline-flex items-center text-[11px] text-slate-400 font-brand">
+            {dateInfo.shortDay} {dateInfo.shortDate}
           </span>
         )}
         <span className={cn(
@@ -580,11 +609,17 @@ function MobileStageCard({
         </span>
       </div>
 
-      {/* Row 3: clickable stats */}
-      <StatsMini
-        stats={stats}
-        onDrilldown={(filter) => onDrilldown(setting.stage_name, filter)}
-      />
+      {/* Row 3: message stat line */}
+      {msgStatLine && (
+        <p className={cn(
+          'text-xs font-brand font-medium mt-1.5',
+          status === 'sent' ? 'text-emerald-600' :
+          status === 'active' ? 'text-violet-600' :
+          'text-slate-500',
+        )}>
+          {msgStatLine}
+        </p>
+      )}
     </div>
   );
 }
@@ -1097,6 +1132,7 @@ export default function AutomationTimeline() {
                     setting={setting}
                     stats={stats[setting.stage_name]}
                     eventDate={eventDate}
+                    audienceCounts={audienceCounts}
                     onToggle={handleToggle}
                     onEdit={setEditSetting}
                     onDrilldown={handleDrilldown}
@@ -1123,6 +1159,7 @@ export default function AutomationTimeline() {
                   setting={setting}
                   stats={stats[setting.stage_name]}
                   eventDate={eventDate}
+                  audienceCounts={audienceCounts}
                   onToggle={handleToggle}
                   onEdit={setEditSetting}
                   onDrilldown={handleDrilldown}
