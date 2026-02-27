@@ -87,14 +87,32 @@ const SLUG = 'hagit-and-itai';
 function computeStageDate(
   eventDate: Date | null,
   daysBefore: number,
-): { dateStr: string; weekday: string } | null {
+): { dateStr: string; weekday: string; shortDate: string; shortDay: string } | null {
   if (!eventDate) return null;
   const d = new Date(eventDate);
   d.setDate(d.getDate() - daysBefore);
   return {
     dateStr: d.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' }),
     weekday: d.toLocaleDateString('he-IL', { weekday: 'short' }),
+    shortDate: d.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit' }),
+    shortDay: d.toLocaleDateString('he-IL', { weekday: 'short' }),
   };
+}
+
+function computeRelativeTime(eventDate: Date | null, daysBefore: number): string | null {
+  if (!eventDate) return null;
+  const stageDate = new Date(eventDate);
+  stageDate.setDate(stageDate.getDate() - daysBefore);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  stageDate.setHours(0, 0, 0, 0);
+  const diffMs = stageDate.getTime() - today.getTime();
+  const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+  if (diffDays === 0) return 'היום';
+  if (diffDays === 1) return 'מחר';
+  if (diffDays === -1) return 'אתמול';
+  if (diffDays > 0) return `עוד ${diffDays} ימים`;
+  return `לפני ${Math.abs(diffDays)} ימים`;
 }
 
 function getStageStatus(setting: AutomationSettingRow, stats?: StageStats): StageStatus {
