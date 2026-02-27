@@ -148,25 +148,35 @@ export default function StageEditModal({
     setSaving(true);
     setError('');
     try {
-      // Batch: setting update + template text update
-      const settingUpdates: Record<string, unknown> = {};
-      if (isActive !== setting.is_active) settingUpdates.is_active = isActive;
-      if (daysBefore !== setting.days_before) settingUpdates.days_before = daysBefore;
+      const isDraft = setting.id.startsWith('draft-');
 
-      const promises: Promise<unknown>[] = [];
-      if (Object.keys(settingUpdates).length > 0) {
-        promises.push(updateAutomationSetting(setting.id, settingUpdates));
+      // Only update existing DB row if not a draft
+      if (!isDraft) {
+        const settingUpdates: Record<string, unknown> = {};
+        if (isActive !== setting.is_active) settingUpdates.is_active = isActive;
+        if (daysBefore !== setting.days_before) settingUpdates.days_before = daysBefore;
+
+        const promises: Promise<unknown>[] = [];
+        if (Object.keys(settingUpdates).length > 0) {
+          promises.push(updateAutomationSetting(setting.id, settingUpdates));
+        }
+
+        const origTemplate = templates[setting.stage_name];
+        const textChanged =
+          singular !== (origTemplate?.singular ?? '') ||
+          plural !== (origTemplate?.plural ?? '');
+        if (textChanged) {
+          promises.push(updateWhatsAppTemplate(eventId, setting.stage_name, singular, plural));
+        }
+
+        await Promise.all(promises);
       }
 
+      // Always report what changed to parent (parent handles DB for drafts)
       const origTemplate = templates[setting.stage_name];
       const textChanged =
         singular !== (origTemplate?.singular ?? '') ||
         plural !== (origTemplate?.plural ?? '');
-      if (textChanged) {
-        promises.push(updateWhatsAppTemplate(eventId, setting.stage_name, singular, plural));
-      }
-
-      await Promise.all(promises);
 
       onSaved({
         ...(isActive !== setting.is_active && { is_active: isActive }),

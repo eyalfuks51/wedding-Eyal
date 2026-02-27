@@ -17,6 +17,7 @@ import {
   fetchMessageStatsPerStage,
   fetchAutomatedAudienceCounts,
   updateAutomationSetting,
+  updateWhatsAppTemplate,
   toggleAutoPilot,
   addDynamicNudge,
   deleteDynamicNudge,
@@ -733,6 +734,7 @@ export default function AutomationTimeline() {
   const [drilldown, setDrilldown]     = useState<StageLogsDrilldown | null>(null);
   const [toasts, setToasts]           = useState<Toast[]>([]);
   const [addingNudge, setAddingNudge] = useState(false);
+  const [draftNudge, setDraftNudge] = useState<{ stage_name: string; days_before: number } | null>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const drag = useDragScroll(scrollRef);
@@ -897,6 +899,22 @@ export default function AutomationTimeline() {
     showToast('ההגדרות נשמרו');
   };
 
+  const handleDraftNudgeSaved = async (updates: { is_active?: boolean; days_before?: number; singular?: string; plural?: string }) => {
+    if (!draftNudge || !event?.id) return;
+    try {
+      await addDynamicNudge(event.id, draftNudge.stage_name, updates.days_before ?? draftNudge.days_before);
+      if (updates.singular !== undefined || updates.plural !== undefined) {
+        await updateWhatsAppTemplate(event.id, draftNudge.stage_name, updates.singular ?? '', updates.plural ?? '');
+      }
+      await loadData(event.id);
+      showToast('תזכורת חדשה נוספה');
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : 'שגיאה בהוספת תזכורת', 'error');
+    } finally {
+      setDraftNudge(null);
+    }
+  };
+
   const handleDeleteNudge = async () => {
     if (!editSetting || !event?.id) return;
     try {
@@ -909,32 +927,32 @@ export default function AutomationTimeline() {
     }
   };
 
-  const handleAddNudge = async () => {
+  const handleAddNudge = () => {
     if (!event?.id || !canAddNudge) return;
-    setAddingNudge(true);
-    try {
-      // Find next available dynamic nudge name
-      const existing = settings.map(s => s.stage_name);
-      const nextName = (['nudge_1', 'nudge_2', 'nudge_3'] as const).find(n => !existing.includes(n));
-      if (!nextName) return;
+    // Find next available dynamic nudge name
+    const existing = settings.map(s => s.stage_name);
+    const nextName = (['nudge_1', 'nudge_2', 'nudge_3'] as const).find(n => !existing.includes(n));
+    if (!nextName) return;
 
-      // Compute default days_before: midpoint between last nudge and ultimatum
-      const nudges = sorted.filter(s => s.stage_name === 'nudge' || s.stage_name.startsWith('nudge_'));
-      const ultimatum = sorted.find(s => s.stage_name === 'ultimatum');
-      const lastNudgeDays = nudges.length > 0 ? Math.min(...nudges.map(n => n.days_before)) : 7;
-      const ultimatumDays = ultimatum?.days_before ?? 3;
-      const defaultDays = Math.round((lastNudgeDays + ultimatumDays) / 2);
+    // Compute default days_before: midpoint between last nudge and ultimatum
+    const nudges = sorted.filter(s => s.stage_name === 'nudge' || s.stage_name.startsWith('nudge_'));
+    const ultimatum = sorted.find(s => s.stage_name === 'ultimatum');
+    const lastNudgeDays = nudges.length > 0 ? Math.min(...nudges.map(n => n.days_before)) : 7;
+    const ultimatumDays = ultimatum?.days_before ?? 3;
+    const defaultDays = Math.round((lastNudgeDays + ultimatumDays) / 2);
 
-      const newSetting = await addDynamicNudge(event.id, nextName, defaultDays);
-      await loadData(event.id);
-      // Open the edit modal immediately
-      setEditSetting(newSetting as AutomationSettingRow);
-      showToast('תזכורת חדשה נוספה');
-    } catch (err: unknown) {
-      showToast(err instanceof Error ? err.message : 'שגיאה בהוספת תזכורת', 'error');
-    } finally {
-      setAddingNudge(false);
-    }
+    // Create a local draft (not in DB yet) and open the modal
+    const draft: AutomationSettingRow = {
+      id: `draft-${nextName}`,
+      event_id: event.id,
+      stage_name: nextName as AutomationSettingRow['stage_name'],
+      days_before: defaultDays,
+      target_status: 'pending',
+      is_active: true,
+      created_at: new Date().toISOString(),
+    };
+    setDraftNudge({ stage_name: nextName, days_before: defaultDays });
+    setEditSetting(draft);
   };
 
   const handleDrilldown = (stageName: StageName, filter: DrilldownFilter) => {
@@ -1153,9 +1171,9 @@ export default function AutomationTimeline() {
           eventId={event.id}
           eventDate={eventDate}
           isDynamicNudge={editIsDynamicNudge}
-          canDelete={editIsDynamicNudge && !editSettingHasLogs}
-          onClose={() => setEditSetting(null)}
-          onSaved={handleEditSaved}
+          canDelete={!draftNudge && editIsDynamicNudge && !editSettingHasLogs}
+          onClose={() => { setEditSetting(null); setDraftNudge(null); }}
+          onSaved={draftNudge ? handleDraftNudgeSaved : handleEditSaved}
           onDelete={handleDeleteNudge}
         />
       )}
