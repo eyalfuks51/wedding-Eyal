@@ -326,7 +326,7 @@ function StageColumn({
   return (
     <div className="flex flex-col items-center w-full">
       {/* Fixed-height card wrapper — keeps connector at same Y across all columns */}
-      <div className="h-[8.5rem] flex items-start justify-center">
+      <div className="h-[10rem] flex items-start justify-center">
         <div
           className={cn(
             'rounded-2xl border p-4 transition-all cursor-pointer',
@@ -421,7 +421,7 @@ function EventDayColumn({ date, isFirst, isLast }: { date: Date | null; isFirst:
   return (
     <div className="flex flex-col items-center w-full">
       {/* Fixed-height card wrapper — matches StageColumn height */}
-      <div className="h-[8.5rem] flex items-start justify-center">
+      <div className="h-[10rem] flex items-start justify-center">
         <div className="w-44 rounded-2xl bg-violet-600 text-white p-4 shadow-md flex flex-col justify-center">
           <div className="flex items-center gap-2 mb-1">
             <Calendar className="w-4 h-4 opacity-80" />
@@ -455,8 +455,8 @@ function AddNudgeOverlay({ onClick, disabled }: { onClick: () => void; disabled:
   return (
     <div className="relative w-0 shrink-0 flex items-start" style={{ zIndex: 10 }}>
       {/* Position the button centered on the icon-row:
-          card wrapper h-[8.5rem] (136px) + vertical line h-4 (16px) + half icon (20px) = 172px.
-          Subtract half button height (16px) = 156px from top. */}
+          card wrapper h-[10rem] (160px) + vertical line h-4 (16px) + half icon (20px) = 196px.
+          Subtract half button height (16px) = 180px from top. */}
       <button
         onClick={e => { e.stopPropagation(); onClick(); }}
         disabled={disabled}
@@ -467,7 +467,7 @@ function AddNudgeOverlay({ onClick, disabled }: { onClick: () => void; disabled:
           'hover:bg-violet-700 hover:scale-110 transition-all',
           'disabled:opacity-30 disabled:cursor-not-allowed',
         )}
-        style={{ top: '156px' }}
+        style={{ top: '180px' }}
         title="הוסף תזכורת"
       >
         <Plus className="w-4 h-4" />
@@ -639,7 +639,7 @@ function DesktopSkeleton() {
     <div className="hidden lg:flex items-start py-6 animate-pulse" dir="rtl">
       {[1, 2, 3, 4, 5].map(i => (
         <div key={i} className="w-[20%] shrink-0 flex flex-col items-center">
-          <div className="h-[8.5rem] flex items-start justify-center">
+          <div className="h-[10rem] flex items-start justify-center">
             <div className="w-44 rounded-2xl border border-slate-100 p-4">
               <div className="flex justify-between mb-2">
                 <div className="h-5 w-14 bg-slate-200 rounded-full" />
