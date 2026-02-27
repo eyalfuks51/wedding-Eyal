@@ -146,6 +146,33 @@ function useDragScroll(ref: React.RefObject<HTMLElement | null>) {
   const pointerIdRef = useRef<number | null>(null);
   const isDownRef = useRef(false);
 
+  // Snap: find the cell whose center is closest to the container center, scroll it there
+  const snapToNearest = useCallback(() => {
+    const el = ref.current;
+    if (!el) return;
+    const cells = el.querySelectorAll<HTMLElement>('[data-pipeline-cell]');
+    if (cells.length === 0) return;
+
+    const containerRect = el.getBoundingClientRect();
+    const containerCenter = containerRect.left + containerRect.width / 2;
+    let bestCell: HTMLElement | null = null;
+    let bestDist = Infinity;
+
+    cells.forEach(cell => {
+      const r = cell.getBoundingClientRect();
+      const cellCenter = r.left + r.width / 2;
+      const dist = Math.abs(cellCenter - containerCenter);
+      if (dist < bestDist) { bestDist = dist; bestCell = cell; }
+    });
+
+    if (bestCell) {
+      const r = (bestCell as HTMLElement).getBoundingClientRect();
+      const cellCenter = r.left + r.width / 2;
+      const delta = cellCenter - containerCenter;
+      el.scrollBy({ left: delta, behavior: 'smooth' });
+    }
+  }, [ref]);
+
   const onPointerDown = useCallback((e: React.PointerEvent) => {
     if (!ref.current) return;
     isDownRef.current = true;
@@ -171,12 +198,75 @@ function useDragScroll(ref: React.RefObject<HTMLElement | null>) {
   }, [ref]);
 
   const onPointerUp = useCallback(() => {
+    const wasDrag = hasDraggedRef.current;
     isDownRef.current = false;
     setIsDragging(false);
     pointerIdRef.current = null;
-  }, []);
+    if (wasDrag) snapToNearest();
+  }, [snapToNearest]);
 
-  return { onPointerDown, onPointerMove, onPointerUp, isDragging, hasDragged: hasDraggedRef };
+  return { onPointerDown, onPointerMove, onPointerUp, isDragging, hasDragged: hasDraggedRef, snapToNearest };
+}
+
+// ─── Scroll-Based Opacity Hook ──────────────────────────────────────────────
+
+function useScrollOpacity(
+  scrollRef: React.RefObject<HTMLElement | null>,
+  isDragging: boolean,
+) {
+  const [opacities, setOpacities] = useState<number[]>([]);
+  const rafRef = useRef(0);
+
+  const recalc = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const cells = el.querySelectorAll<HTMLElement>('[data-pipeline-cell]');
+    if (cells.length === 0) return;
+
+    const containerRect = el.getBoundingClientRect();
+    const containerCenter = containerRect.left + containerRect.width / 2;
+    const cellWidth = containerRect.width * 0.2; // each cell is 20%
+
+    const newOpacities: number[] = [];
+    cells.forEach(cell => {
+      const r = cell.getBoundingClientRect();
+      const cellCenter = r.left + r.width / 2;
+      const dist = Math.abs(cellCenter - containerCenter);
+      // Full opacity at center, fade to 0.45 at 2+ cells away
+      const t = Math.min(dist / (cellWidth * 2), 1);
+      newOpacities.push(1 - t * 0.55);
+    });
+    setOpacities(newOpacities);
+  }, [scrollRef]);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    const onScroll = () => {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = requestAnimationFrame(recalc);
+    };
+    el.addEventListener('scroll', onScroll, { passive: true });
+    // Initial calc
+    requestAnimationFrame(recalc);
+
+    return () => {
+      el.removeEventListener('scroll', onScroll);
+      cancelAnimationFrame(rafRef.current);
+    };
+  }, [scrollRef, recalc]);
+
+  // Also recalc when dragging changes (covers pointer-up snap)
+  useEffect(() => {
+    if (!isDragging) {
+      // After drag ends, recalc after the snap animation settles
+      const timer = setTimeout(recalc, 350);
+      return () => clearTimeout(timer);
+    }
+  }, [isDragging, recalc]);
+
+  return opacities;
 }
 
 // ─── Toggle switch ────────────────────────────────────────────────────────────
@@ -401,36 +491,31 @@ function EventDayColumn({ date, isFirst, isLast }: { date: Date | null; isFirst:
   );
 }
 
-// ─── Desktop: Add Nudge Button ───────────────────────────────────────────────
+// ─── Desktop: Add Nudge Overlay Button ──────────────────────────────────────
+// Rendered between two 20%-cells; absolutely positioned on the connector line.
+// The parent cell uses `relative` + zero width so it doesn't consume pipeline space.
 
-function AddNudgeColumn({ onClick, disabled, isFirst, isLast }: { onClick: () => void; disabled: boolean; isFirst: boolean; isLast: boolean }) {
+function AddNudgeOverlay({ onClick, disabled }: { onClick: () => void; disabled: boolean }) {
   return (
-    <div className="flex flex-col items-center w-full">
-      {/* Spacer to align with card area */}
-      <div className="h-[88px]" />
-
-      {/* Button row with horizontal connectors */}
-      <div className="w-px h-4 bg-slate-200" />
-      <div className="w-full flex items-center">
-        <div className={cn('flex-1 h-px', !isFirst ? 'bg-slate-200' : '')} />
-        <button
-          onClick={onClick}
-          disabled={disabled}
-          className={cn(
-            'w-10 h-10 rounded-full flex flex-col items-center justify-center shrink-0',
-            'border-2 border-dashed border-slate-300 text-slate-400',
-            'hover:border-violet-400 hover:text-violet-500 transition-colors',
-            'disabled:opacity-30 disabled:cursor-not-allowed',
-          )}
-          title="הוסף תזכורת"
-        >
-          <Plus className="w-4 h-4" />
-        </button>
-        <div className={cn('flex-1 h-px', !isLast ? 'bg-slate-200' : '')} />
-      </div>
-      <div className="w-px h-3 bg-slate-200" />
-
-      <p className="text-[10px] text-slate-400 font-brand text-center mt-1">+ תזכורת</p>
+    <div className="relative w-0 shrink-0 flex items-start" style={{ zIndex: 10 }}>
+      {/* Position the button at the icon-row vertical level:
+          card height (~88px) + vertical line (16px) + half icon (20px) = ~124px from top.
+          The py-6 on the container adds 24px. We want the button centered on the connector. */}
+      <button
+        onClick={e => { e.stopPropagation(); onClick(); }}
+        disabled={disabled}
+        className={cn(
+          'absolute -translate-x-1/2 left-0',
+          'w-8 h-8 rounded-full flex items-center justify-center',
+          'bg-violet-600 text-white shadow-md',
+          'hover:bg-violet-700 hover:scale-110 transition-all',
+          'disabled:opacity-30 disabled:cursor-not-allowed',
+        )}
+        style={{ top: '104px' }}
+        title="הוסף תזכורת"
+      >
+        <Plus className="w-4 h-4" />
+      </button>
     </div>
   );
 }
@@ -643,6 +728,7 @@ export default function AutomationTimeline() {
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const drag = useDragScroll(scrollRef);
+  const cellOpacities = useScrollOpacity(scrollRef, drag.isDragging);
 
   const showToast = useCallback((message: string, kind: ToastKind = 'success') => {
     const id = Date.now();
@@ -941,50 +1027,62 @@ export default function AutomationTimeline() {
               {/* Leading spacer (right edge in RTL) */}
               <div className="w-4 shrink-0" aria-hidden="true" />
 
-              {pipelineNodes.map((node, idx) => {
-                const isFirst = idx === 0;
-                const isLast = idx === pipelineNodes.length - 1;
-                const key = node.type === 'stage' ? node.setting.id : node.type === 'event' ? 'event' : 'add-nudge';
-                const cellId = node.type === 'stage'
-                  ? `stage-${node.setting.stage_name}`
-                  : node.type === 'event'
-                    ? 'event-day'
-                    : undefined;
+              {(() => {
+                // Separate real cells (stage/event) from add-nudge overlays
+                // so opacity indices align only with real cells.
+                let cellIdx = 0;
+                const realNodes = pipelineNodes.filter(n => n.type !== 'add-nudge');
 
-                return (
-                  <div
-                    key={key}
-                    id={cellId}
-                    className="w-[20%] shrink-0 flex flex-col items-center"
-                  >
-                    {node.type === 'event' && (
-                      <EventDayColumn date={eventDate} isFirst={isFirst} isLast={isLast} />
-                    )}
-                    {node.type === 'stage' && (
-                      <StageColumn
-                        setting={node.setting}
-                        stats={stats[node.setting.stage_name]}
-                        isFocus={focusId === `stage-${node.setting.stage_name}`}
-                        eventDate={eventDate}
-                        onToggle={handleToggle}
-                        onEdit={setEditSetting}
-                        onDrilldown={handleDrilldown}
-                        hasDragged={drag.hasDragged}
-                        isFirst={isFirst}
-                        isLast={isLast}
-                      />
-                    )}
-                    {node.type === 'add-nudge' && (
-                      <AddNudgeColumn
+                return pipelineNodes.map((node, idx) => {
+                  if (node.type === 'add-nudge') {
+                    return (
+                      <AddNudgeOverlay
+                        key="add-nudge"
                         onClick={handleAddNudge}
                         disabled={!canAddNudge || addingNudge}
-                        isFirst={isFirst}
-                        isLast={isLast}
                       />
-                    )}
-                  </div>
-                );
-              })}
+                    );
+                  }
+
+                  const realIdx = cellIdx;
+                  const isFirst = realIdx === 0;
+                  const isLast = realIdx === realNodes.length - 1;
+                  const key = node.type === 'stage' ? node.setting.id : 'event';
+                  const cellId = node.type === 'stage'
+                    ? `stage-${node.setting.stage_name}`
+                    : 'event-day';
+                  const opacity = cellOpacities[realIdx] ?? 1;
+                  cellIdx++;
+
+                  return (
+                    <div
+                      key={key}
+                      id={cellId}
+                      data-pipeline-cell
+                      className="w-[20%] shrink-0 flex flex-col items-center transition-opacity duration-300"
+                      style={{ opacity }}
+                    >
+                      {node.type === 'event' && (
+                        <EventDayColumn date={eventDate} isFirst={isFirst} isLast={isLast} />
+                      )}
+                      {node.type === 'stage' && (
+                        <StageColumn
+                          setting={node.setting}
+                          stats={stats[node.setting.stage_name]}
+                          isFocus={focusId === `stage-${node.setting.stage_name}`}
+                          eventDate={eventDate}
+                          onToggle={handleToggle}
+                          onEdit={setEditSetting}
+                          onDrilldown={handleDrilldown}
+                          hasDragged={drag.hasDragged}
+                          isFirst={isFirst}
+                          isLast={isLast}
+                        />
+                      )}
+                    </div>
+                  );
+                });
+              })()}
 
               {/* Trailing spacer (left edge in RTL) */}
               <div className="w-4 shrink-0" aria-hidden="true" />
