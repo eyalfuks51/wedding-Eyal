@@ -128,8 +128,16 @@ export default function StageEditModal({
     setIsActive(setting.is_active);
     setDaysBefore(setting.days_before);
     const t = templates[setting.stage_name];
-    setSingular(t?.singular ?? '');
-    setPlural(t?.plural ?? '');
+    let s = t?.singular ?? '';
+    let p = t?.plural ?? '';
+    // For dynamic nudges with no template yet, inherit from the first nudge
+    if (!s && !p && (setting.stage_name === 'nudge_1' || setting.stage_name === 'nudge_2' || setting.stage_name === 'nudge_3')) {
+      const fallback = templates['nudge'];
+      s = fallback?.singular ?? '';
+      p = fallback?.plural ?? '';
+    }
+    setSingular(s);
+    setPlural(p);
     setError('');
   }, [setting, templates]);
 
