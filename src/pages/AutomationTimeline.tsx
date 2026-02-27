@@ -15,6 +15,7 @@ import { useEvent } from '../hooks/useEvent';
 import {
   fetchAutomationSettings,
   fetchMessageStatsPerStage,
+  fetchAutomatedAudienceCounts,
   updateAutomationSetting,
   toggleAutoPilot,
   addDynamicNudge,
@@ -674,6 +675,7 @@ export default function AutomationTimeline() {
 
   const [settings, setSettings]       = useState<AutomationSettingRow[]>([]);
   const [stats, setStats]             = useState<Record<string, StageStats>>({});
+  const [audienceCounts, setAudienceCounts] = useState<{ pending: number; attending: number }>({ pending: 0, attending: 0 });
   const [templates, setTemplates]     = useState<WhatsAppTemplates>({});
   const [loading, setLoading]         = useState(true);
   const [refreshing, setRefreshing]   = useState(false);
@@ -693,12 +695,14 @@ export default function AutomationTimeline() {
   }, []);
 
   const loadData = useCallback(async (eventId: string) => {
-    const [settingsData, statsData] = await Promise.all([
+    const [settingsData, statsData, audienceData] = await Promise.all([
       fetchAutomationSettings(eventId),
       fetchMessageStatsPerStage(eventId),
+      fetchAutomatedAudienceCounts(eventId),
     ]);
     setSettings(settingsData as AutomationSettingRow[]);
     setStats(statsData as Record<string, StageStats>);
+    setAudienceCounts(audienceData as { pending: number; attending: number });
   }, []);
 
   // Initial load

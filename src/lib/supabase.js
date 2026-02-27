@@ -86,6 +86,24 @@ export const fetchMessageStatsPerStage = async (eventId) => {
   return stats;
 };
 
+/** Count automated invitations grouped by rsvp_status for an event */
+export const fetchAutomatedAudienceCounts = async (eventId) => {
+  if (!supabase) throw new Error('Supabase is not configured');
+  const { data, error } = await supabase
+    .from('invitations')
+    .select('rsvp_status')
+    .eq('event_id', eventId)
+    .eq('is_automated', true);
+  if (error) throw error;
+
+  const counts = { pending: 0, attending: 0 };
+  for (const row of data ?? []) {
+    if (row.rsvp_status === 'pending') counts.pending++;
+    else if (row.rsvp_status === 'attending') counts.attending++;
+  }
+  return counts;
+};
+
 /**
  * Fetch all message_logs for a given stage, joined with invitations.group_name.
  * Uses the FK relationship message_logs.invitation_id → invitations.id.
