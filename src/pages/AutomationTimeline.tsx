@@ -452,6 +452,9 @@ function EventDayColumn({ date, isFirst, isLast }: { date: Date | null; isFirst:
   const dateLabel = date
     ? date.toLocaleDateString('he-IL', { day: 'numeric', month: 'long', year: 'numeric' })
     : null;
+  const shortLabel = date
+    ? `${date.toLocaleDateString('he-IL', { weekday: 'short' })} ${date.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit' })}`
+    : null;
 
   return (
     <div className="flex flex-col items-center w-full">
@@ -476,10 +479,9 @@ function EventDayColumn({ date, isFirst, isLast }: { date: Date | null; isFirst:
       <div className="w-px h-3 bg-slate-200" />
 
       <p className="text-xs font-semibold text-violet-700 font-brand text-center mt-1">יום האירוע</p>
-      {date && (
-        <p className="text-[11px] text-slate-400 font-brand text-center mt-0.5">
-          {date.toLocaleDateString('he-IL', { weekday: 'short' })}{' '}
-          {date.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+      {shortLabel && (
+        <p className="text-[11px] text-violet-500 font-brand text-center mt-0.5">
+          {shortLabel}
         </p>
       )}
     </div>
