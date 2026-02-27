@@ -322,49 +322,57 @@ function StageColumn({
 
   return (
     <div className="flex flex-col items-center w-full">
-      {/* Card */}
-      <div
-        className={cn(
-          'rounded-2xl border p-4 transition-all cursor-pointer min-h-[7rem]',
-          'hover:shadow-md hover:border-violet-200',
-          isFocus ? 'w-52 border-2 border-violet-400 shadow-lg ring-4 ring-violet-50' : 'w-44',
-          !isFocus && STATUS_CARD_CLASSES[status],
-          isFocus && (status === 'disabled' ? 'bg-slate-50 opacity-60' : 'bg-white'),
-        )}
-        onClick={() => { if (!hasDragged.current) onEdit(setting); }}
-      >
-        {/* Status pill + toggle */}
-        <div className="flex items-center justify-between mb-2">
-          <StatusPill status={status} />
-          <Toggle checked={setting.is_active} onChange={() => onToggle(setting.id, setting.is_active)} />
-        </div>
-        {/* Target audience */}
-        <p className="text-[11px] text-slate-500 font-brand leading-snug">
-          {setting.target_status === 'attending' ? 'למגיעים בלבד' : 'למי שטרם אישרו הגעה'}
-        </p>
-        {/* Message stat line */}
-        {msgStatLine && (
-          <p className={cn(
-            'text-xs font-brand font-medium mt-1.5',
-            status === 'sent' ? 'text-emerald-600' :
-            status === 'active' ? 'text-violet-600' :
-            'text-slate-500',
-          )}>
-            {msgStatLine}
+      {/* Fixed-height card wrapper — keeps connector at same Y across all columns */}
+      <div className="h-[8.5rem] flex items-start justify-center">
+        <div
+          className={cn(
+            'rounded-2xl border p-4 transition-all cursor-pointer',
+            'hover:shadow-md hover:border-violet-200',
+            isFocus
+              ? 'w-52 border-2 border-violet-500 shadow-xl shadow-violet-200/40 ring-4 ring-violet-200 bg-violet-50/50'
+              : 'w-44',
+            !isFocus && STATUS_CARD_CLASSES[status],
+            !isFocus && status === 'disabled' && 'bg-slate-50 opacity-60',
+          )}
+          onClick={() => { if (!hasDragged.current) onEdit(setting); }}
+        >
+          {/* Status pill + toggle */}
+          <div className="flex items-center justify-between mb-2">
+            <StatusPill status={status} />
+            <Toggle checked={setting.is_active} onChange={() => onToggle(setting.id, setting.is_active)} />
+          </div>
+          {/* Target audience */}
+          <p className="text-[11px] text-slate-500 font-brand leading-snug">
+            {setting.target_status === 'attending' ? 'למגיעים בלבד' : 'למי שטרם אישרו הגעה'}
           </p>
-        )}
-        {/* Time indicators (inside card) */}
-        <div className="mt-2 pt-2 border-t border-slate-100">
-          {relativeTime && (
-            <p className="text-[11px] text-slate-600 font-brand font-medium leading-snug">
-              {relativeTime}
-            </p>
+          {/* Message stat line — clickable → opens stage logs */}
+          {msgStatLine && (
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onDrilldown(setting.stage_name, 'all'); }}
+              className={cn(
+                'text-xs font-brand font-medium mt-1.5 hover:underline cursor-pointer',
+                status === 'sent' ? 'text-emerald-600' :
+                status === 'active' ? 'text-violet-600' :
+                'text-slate-500',
+              )}
+            >
+              {msgStatLine}
+            </button>
           )}
-          {dateInfo && (
-            <p className="text-[10px] text-slate-400 font-brand mt-0.5">
-              {dateInfo.shortDay} {dateInfo.shortDate}
-            </p>
-          )}
+          {/* Time indicators */}
+          <div className="mt-2 pt-2 border-t border-slate-100">
+            {relativeTime && (
+              <p className="text-[11px] text-slate-600 font-brand font-medium leading-snug">
+                {relativeTime}
+              </p>
+            )}
+            {dateInfo && (
+              <p className="text-[10px] text-slate-400 font-brand mt-0.5">
+                {dateInfo.shortDay} {dateInfo.shortDate}
+              </p>
+            )}
+          </div>
         </div>
       </div>
 
@@ -404,16 +412,18 @@ function EventDayColumn({ date, isFirst, isLast }: { date: Date | null; isFirst:
 
   return (
     <div className="flex flex-col items-center w-full">
-      {/* Card */}
-      <div className="w-44 rounded-2xl bg-violet-600 text-white p-4 shadow-md min-h-[7rem] flex flex-col justify-center">
-        <div className="flex items-center gap-2 mb-1">
-          <Calendar className="w-4 h-4 opacity-80" />
-          <span className="font-danidin text-base leading-none">יום האירוע</span>
+      {/* Fixed-height card wrapper — matches StageColumn height */}
+      <div className="h-[8.5rem] flex items-start justify-center">
+        <div className="w-44 rounded-2xl bg-violet-600 text-white p-4 shadow-md flex flex-col justify-center">
+          <div className="flex items-center gap-2 mb-1">
+            <Calendar className="w-4 h-4 opacity-80" />
+            <span className="font-danidin text-base leading-none">יום האירוע</span>
+          </div>
+          <p className="text-xs opacity-80 font-brand">{dateLabel ?? '—'}</p>
+          {shortLabel && (
+            <p className="text-[11px] opacity-60 font-brand mt-1">{shortLabel}</p>
+          )}
         </div>
-        <p className="text-xs opacity-80 font-brand">{dateLabel ?? '—'}</p>
-        {shortLabel && (
-          <p className="text-[11px] opacity-60 font-brand mt-1">{shortLabel}</p>
-        )}
       </div>
 
       {/* Diamond icon row with horizontal connectors */}
@@ -425,9 +435,6 @@ function EventDayColumn({ date, isFirst, isLast }: { date: Date | null; isFirst:
         </div>
         <div className={cn('flex-1 h-px', !isLast ? 'bg-slate-200' : '')} />
       </div>
-      <div className="w-px h-3 bg-slate-200" />
-
-      <p className="text-xs font-semibold text-violet-700 font-brand text-center mt-1">יום האירוע</p>
     </div>
   );
 }
@@ -439,9 +446,9 @@ function EventDayColumn({ date, isFirst, isLast }: { date: Date | null; isFirst:
 function AddNudgeOverlay({ onClick, disabled }: { onClick: () => void; disabled: boolean }) {
   return (
     <div className="relative w-0 shrink-0 flex items-start" style={{ zIndex: 10 }}>
-      {/* Position the button at the icon-row vertical level:
-          card min-h (112px) + vertical line (16px) + half icon (20px) = ~148px from top.
-          We want the button centered on the connector line. */}
+      {/* Position the button centered on the icon-row:
+          card wrapper h-[8.5rem] (136px) + vertical line h-4 (16px) + half icon (20px) = 172px.
+          Subtract half button height (16px) = 156px from top. */}
       <button
         onClick={e => { e.stopPropagation(); onClick(); }}
         disabled={disabled}
@@ -452,7 +459,7 @@ function AddNudgeOverlay({ onClick, disabled }: { onClick: () => void; disabled:
           'hover:bg-violet-700 hover:scale-110 transition-all',
           'disabled:opacity-30 disabled:cursor-not-allowed',
         )}
-        style={{ top: '132px' }}
+        style={{ top: '156px' }}
         title="הוסף תזכורת"
       >
         <Plus className="w-4 h-4" />
@@ -619,14 +626,16 @@ function DesktopSkeleton() {
     <div className="hidden lg:flex items-start py-6 animate-pulse" dir="rtl">
       {[1, 2, 3, 4, 5].map(i => (
         <div key={i} className="w-[20%] shrink-0 flex flex-col items-center">
-          <div className="w-44 rounded-2xl border border-slate-100 p-4 min-h-[7rem]">
-            <div className="flex justify-between mb-2">
-              <div className="h-5 w-14 bg-slate-200 rounded-full" />
-              <div className="h-5 w-9 bg-slate-200 rounded-full" />
+          <div className="h-[8.5rem] flex items-start justify-center">
+            <div className="w-44 rounded-2xl border border-slate-100 p-4">
+              <div className="flex justify-between mb-2">
+                <div className="h-5 w-14 bg-slate-200 rounded-full" />
+                <div className="h-5 w-9 bg-slate-200 rounded-full" />
+              </div>
+              <div className="h-3 w-28 bg-slate-100 rounded mt-2" />
+              <div className="h-3 w-20 bg-slate-100 rounded mt-3" />
+              <div className="h-2 w-16 bg-slate-50 rounded mt-1" />
             </div>
-            <div className="h-3 w-28 bg-slate-100 rounded mt-2" />
-            <div className="h-3 w-20 bg-slate-100 rounded mt-3" />
-            <div className="h-2 w-16 bg-slate-50 rounded mt-1" />
           </div>
           <div className="w-px h-4 bg-slate-100" />
           <div className="w-full flex items-center">
