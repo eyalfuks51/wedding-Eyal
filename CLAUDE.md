@@ -41,8 +41,9 @@ fontFamily: {
 **Routes:**
 - `/dashboard` — guest table (registered in `App.jsx` before `/:slug` to avoid slug collision)
 - `/dashboard/timeline` — automation pipeline timeline
+- `/dashboard/settings` — event settings editor with live preview
 
-**Files:** `src/pages/Dashboard.tsx`, `src/pages/AutomationTimeline.tsx`
+**Files:** `src/pages/Dashboard.tsx`, `src/pages/AutomationTimeline.tsx`, `src/pages/DashboardSettings.tsx`
 **Shared tab navigation:** `DashboardNav` component sits at the top of both pages.
 **Event slug hardcoded:** `'hagit-and-itai'` (fetches that event's invitations from Supabase).
 
@@ -57,6 +58,7 @@ fontFamily: {
 - **Message History:** clicking a `MsgStatusBadge` in the "סטטוס הודעה" column opens `MessageHistorySheet` — a `<Sheet side="left">` drawer with a newest-first timeline of all `message_logs` for that guest
 - **Guest Editing (`EditGuestSheet`):** clicking a guest row opens a side `<Sheet>` to manually update Identity (`group_name`, `phone_numbers`), Classification (`side`, `guest_group`), RSVP data (`rsvp_status`, `invited_pax`, `confirmed_pax`), and toggle `is_automated`
 - **Guest Upload (ייבוא):** A header button opens `GuestUploadModal` — 3-step flow: download Excel template → fill → upload. Client-side parsing via `xlsx` library, validation returns per-row errors with group names. Upsert by primary phone: existing guests updated (preserving RSVP data), new guests inserted. Results screen shows success/error counts.
+- **Event Settings (`/dashboard/settings`):** 3rd tab — edits `content_config` JSONB fields (couple details, date/venue, schedule, transport, footer). Split-pane: form on right + `LivePreview` phone-frame on left (desktop). Mobile: floating preview button opens full-screen overlay. Saves via direct `events` table UPDATE. WhatsApp templates excluded (managed via Timeline).
 - Entirely Hebrew RTL; uses `font-brand` / `font-danidin` Tailwind utilities
 - Violet-600 primary accent; slate neutral palette; no GSAP (pure CSS transitions)
 
@@ -240,6 +242,7 @@ src/
     NotFoundPage.jsx                          shown for unknown slugs or root /
     Dashboard.tsx                             /dashboard — guest table with KPI cards, filters, bulk actions
     AutomationTimeline.tsx                    /dashboard/timeline — visual funnel pipeline
+    DashboardSettings.tsx                     /dashboard/settings — event settings editor with live preview
   templates/
     WeddingDefaultTemplate/
       WeddingDefaultTemplate.jsx              composes Hero + RsvpForm + Map
@@ -260,12 +263,13 @@ src/
       StageEditModal.tsx                      Liquid glass centered modal for stage editing (timing, templates, delete)
       StageLogsSheet.tsx                      Side sheet for per-stage message log drill-down
       GuestUploadModal.tsx                      3-step guest upload modal (instructions → upload → results)
+      LivePreview.tsx                           Phone-frame preview wrapper for template rendering
   lib/
     supabase.js                               fetchEventBySlug(), submitRsvp(), fetchAutomationSettings(),
                                               updateAutomationSetting(), updateWhatsAppTemplate(),
                                               fetchMessageStatsPerStage(), fetchStageMessageLogs(),
                                               toggleAutoPilot(), addDynamicNudge(), deleteDynamicNudge(),
-                                              bulkUpsertInvitations()
+                                              bulkUpsertInvitations(), updateEventContentConfig()
     guest-excel.ts                            Excel template download + upload parser
 ```
 
