@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import {
   Search,
   Users,
@@ -9,6 +9,7 @@ import {
   Send,
   Download,
   Phone,
+  Upload,
   UserPlus,
   X,
 } from 'lucide-react';
@@ -33,6 +34,7 @@ import {
 import { type Invitation, type RsvpStatus, EditGuestSheet } from '@/components/dashboard/EditGuestSheet';
 import { TEMPLATE_LABELS, MSG_STATUS_MAP } from '@/components/dashboard/constants';
 import DashboardNav from '@/components/dashboard/DashboardNav';
+import GuestUploadModal from '@/components/dashboard/GuestUploadModal';
 
 interface MessageLog {
   id:            string;
@@ -869,6 +871,7 @@ export default function Dashboard() {
 
   // ── Add-guest modal ───────────────────────────────────────────────────────
   const [isModalOpen, setIsModalOpen]             = useState(false);
+  const [isUploadOpen, setIsUploadOpen]           = useState(false);
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
   const [form, setForm]               = useState<FormFields>({ ...EMPTY_FORM });
   const [saving, setSaving]           = useState(false);
@@ -910,6 +913,17 @@ export default function Dashboard() {
         setInvLoading(false);
       });
   // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [event?.id]);
+
+  const reloadInvitations = useCallback(() => {
+    if (!event?.id || !supabase) return;
+    const sb = supabase;
+    setInvLoading(true);
+    sb.from('invitations').select('*').eq('event_id', event.id).order('group_name', { ascending: true })
+      .then(({ data, error }) => {
+        if (!error && data) setInvitations(data as Invitation[]);
+        setInvLoading(false);
+      });
   }, [event?.id]);
 
   // Batch-fetch the most-recent message_log for every invitation in one query.
@@ -1223,6 +1237,15 @@ export default function Dashboard() {
         onSave={handleGuestSave}
       />
 
+      {event?.id && (
+        <GuestUploadModal
+          isOpen={isUploadOpen}
+          eventId={event.id}
+          onClose={() => setIsUploadOpen(false)}
+          onSuccess={reloadInvitations}
+        />
+      )}
+
       {toast && (
         <div className={`fixed bottom-6 right-6 z-50 text-white text-sm font-medium font-brand px-4 py-2.5 rounded-xl shadow-lg ${
           toastVariant === 'error' ? 'bg-rose-600' : 'bg-emerald-600'
@@ -1259,6 +1282,13 @@ export default function Dashboard() {
             >
               <UserPlus className="w-4 h-4" />
               הוסף מוזמן
+            </button>
+            <button
+              onClick={() => setIsUploadOpen(true)}
+              className="shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm font-medium font-brand rounded-xl transition-colors"
+            >
+              <Upload className="w-4 h-4" />
+              ייבוא
             </button>
             <button
               className="shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm font-medium font-brand rounded-xl transition-colors"
