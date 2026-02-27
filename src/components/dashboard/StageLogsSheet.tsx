@@ -21,8 +21,8 @@ interface StageLog {
   sent_at: string | null;
   scheduled_for: string | null;
   created_at: string;
-  // Supabase returns FK joins as an array even for 1:1 relationships
-  invitations: { group_name: string | null }[] | null;
+  // Supabase returns many-to-one FK joins as a single object (not array)
+  invitations: { group_name: string | null } | null;
 }
 
 export type DrilldownFilter = 'all' | 'sent' | 'pending' | 'failed';
@@ -130,7 +130,7 @@ function FilterTabs({ filter, counts, onChange }: FilterTabsProps) {
 // ─── Log row ──────────────────────────────────────────────────────────────────
 
 function LogRow({ log }: { log: StageLog }) {
-  const name = log.invitations?.[0]?.group_name;
+  const name = log.invitations?.group_name;
   const ts   = formatTimestamp(log);
 
   return (
@@ -242,7 +242,7 @@ export default function StageLogsSheet({ drilldown, eventId, onClose }: StageLog
     if (search.trim()) {
       const q = search.trim().toLowerCase();
       result = result.filter(l =>
-        (l.invitations?.[0]?.group_name ?? '').toLowerCase().includes(q) ||
+        (l.invitations?.group_name ?? '').toLowerCase().includes(q) ||
         l.phone.includes(q)
       );
     }
