@@ -88,15 +88,18 @@ const SLUG = 'hagit-and-itai';
 function computeStageDate(
   eventDate: Date | null,
   daysBefore: number,
-): { dateStr: string; weekday: string; shortDate: string; shortDay: string } | null {
+): { dateStr: string; weekday: string; shortDate: string; shortDay: string; isFridayOrShabbat: boolean; raw: Date } | null {
   if (!eventDate) return null;
   const d = new Date(eventDate);
   d.setDate(d.getDate() - daysBefore);
+  const day = d.getDay(); // 0=Sun … 5=Fri, 6=Sat
   return {
     dateStr: d.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' }),
     weekday: d.toLocaleDateString('he-IL', { weekday: 'short' }),
     shortDate: d.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit' }),
     shortDay: d.toLocaleDateString('he-IL', { weekday: 'short' }),
+    isFridayOrShabbat: day === 5 || day === 6,
+    raw: d,
   };
 }
 
@@ -372,6 +375,11 @@ function StageColumn({
                 {dateInfo.shortDay} {dateInfo.shortDate}
               </p>
             )}
+            {dateInfo?.isFridayOrShabbat && status === 'scheduled' && (
+              <p className="text-[10px] text-amber-500 font-brand mt-0.5">
+                ישלח לאחר שבת
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -548,6 +556,11 @@ function MobileStageCard({
         {dateInfo && (
           <span className="inline-flex items-center text-[11px] text-slate-400 font-brand">
             {dateInfo.shortDay} {dateInfo.shortDate}
+          </span>
+        )}
+        {dateInfo?.isFridayOrShabbat && status === 'scheduled' && (
+          <span className="inline-flex items-center text-[10px] text-amber-500 font-brand">
+            ישלח לאחר שבת
           </span>
         )}
         <span className={cn(
