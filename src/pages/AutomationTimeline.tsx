@@ -208,67 +208,6 @@ function useDragScroll(ref: React.RefObject<HTMLElement | null>) {
   return { onPointerDown, onPointerMove, onPointerUp, isDragging, hasDragged: hasDraggedRef, snapToNearest };
 }
 
-// ─── Scroll-Based Opacity Hook ──────────────────────────────────────────────
-
-function useScrollOpacity(
-  scrollRef: React.RefObject<HTMLElement | null>,
-  isDragging: boolean,
-) {
-  const [opacities, setOpacities] = useState<number[]>([]);
-  const rafRef = useRef(0);
-
-  const recalc = useCallback(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const cells = el.querySelectorAll<HTMLElement>('[data-pipeline-cell]');
-    if (cells.length === 0) return;
-
-    const containerRect = el.getBoundingClientRect();
-    const containerCenter = containerRect.left + containerRect.width / 2;
-    const cellWidth = containerRect.width * 0.2; // each cell is 20%
-
-    const newOpacities: number[] = [];
-    cells.forEach(cell => {
-      const r = cell.getBoundingClientRect();
-      const cellCenter = r.left + r.width / 2;
-      const dist = Math.abs(cellCenter - containerCenter);
-      // Full opacity at center, fade to 0.45 at 2+ cells away
-      const t = Math.min(dist / (cellWidth * 2), 1);
-      newOpacities.push(1 - t * 0.55);
-    });
-    setOpacities(newOpacities);
-  }, [scrollRef]);
-
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-
-    const onScroll = () => {
-      cancelAnimationFrame(rafRef.current);
-      rafRef.current = requestAnimationFrame(recalc);
-    };
-    el.addEventListener('scroll', onScroll, { passive: true });
-    // Initial calc
-    requestAnimationFrame(recalc);
-
-    return () => {
-      el.removeEventListener('scroll', onScroll);
-      cancelAnimationFrame(rafRef.current);
-    };
-  }, [scrollRef, recalc]);
-
-  // Also recalc when dragging changes (covers pointer-up snap)
-  useEffect(() => {
-    if (!isDragging) {
-      // After drag ends, recalc after the snap animation settles
-      const timer = setTimeout(recalc, 350);
-      return () => clearTimeout(timer);
-    }
-  }, [isDragging, recalc]);
-
-  return opacities;
-}
-
 // ─── Toggle switch ────────────────────────────────────────────────────────────
 
 function Toggle({ checked, onChange, size = 'sm' }: { checked: boolean; onChange: () => void; size?: 'sm' | 'lg' }) {
@@ -728,7 +667,6 @@ export default function AutomationTimeline() {
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const drag = useDragScroll(scrollRef);
-  const cellOpacities = useScrollOpacity(scrollRef, drag.isDragging);
 
   const showToast = useCallback((message: string, kind: ToastKind = 'success') => {
     const id = Date.now();
@@ -1028,12 +966,9 @@ export default function AutomationTimeline() {
               <div className="w-4 shrink-0" aria-hidden="true" />
 
               {(() => {
-                // Separate real cells (stage/event) from add-nudge overlays
-                // so opacity indices align only with real cells.
-                let cellIdx = 0;
                 const realNodes = pipelineNodes.filter(n => n.type !== 'add-nudge');
 
-                return pipelineNodes.map((node, idx) => {
+                return pipelineNodes.map((node) => {
                   if (node.type === 'add-nudge') {
                     return (
                       <AddNudgeOverlay
@@ -1044,23 +979,20 @@ export default function AutomationTimeline() {
                     );
                   }
 
-                  const realIdx = cellIdx;
+                  const realIdx = realNodes.indexOf(node);
                   const isFirst = realIdx === 0;
                   const isLast = realIdx === realNodes.length - 1;
                   const key = node.type === 'stage' ? node.setting.id : 'event';
                   const cellId = node.type === 'stage'
                     ? `stage-${node.setting.stage_name}`
                     : 'event-day';
-                  const opacity = cellOpacities[realIdx] ?? 1;
-                  cellIdx++;
 
                   return (
                     <div
                       key={key}
                       id={cellId}
                       data-pipeline-cell
-                      className="w-[20%] shrink-0 flex flex-col items-center transition-opacity duration-300"
-                      style={{ opacity }}
+                      className="w-[20%] shrink-0 flex flex-col items-center"
                     >
                       {node.type === 'event' && (
                         <EventDayColumn date={eventDate} isFirst={isFirst} isLast={isLast} />
