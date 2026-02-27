@@ -325,7 +325,7 @@ function StageColumn({
       {/* Card */}
       <div
         className={cn(
-          'rounded-2xl border p-4 transition-all cursor-pointer',
+          'rounded-2xl border p-4 transition-all cursor-pointer min-h-[7rem]',
           'hover:shadow-md hover:border-violet-200',
           isFocus ? 'w-52 border-2 border-violet-400 shadow-lg ring-4 ring-violet-50' : 'w-44',
           !isFocus && STATUS_CARD_CLASSES[status],
@@ -353,6 +353,19 @@ function StageColumn({
             {msgStatLine}
           </p>
         )}
+        {/* Time indicators (inside card) */}
+        <div className="mt-2 pt-2 border-t border-slate-100">
+          {relativeTime && (
+            <p className="text-[11px] text-slate-600 font-brand font-medium leading-snug">
+              {relativeTime}
+            </p>
+          )}
+          {dateInfo && (
+            <p className="text-[10px] text-slate-400 font-brand mt-0.5">
+              {dateInfo.shortDay} {dateInfo.shortDate}
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Vertical line → full-width icon row → vertical line */}
@@ -375,18 +388,6 @@ function StageColumn({
       <p className="text-xs font-medium text-slate-700 font-brand text-center mt-1 leading-tight">
         {meta.label}
       </p>
-      {/* Time: relative */}
-      {relativeTime && (
-        <p className="text-[11px] text-slate-600 font-brand text-center mt-0.5 font-medium">
-          {relativeTime}
-        </p>
-      )}
-      {/* Time: absolute (short day + short date) */}
-      {dateInfo && (
-        <p className="text-[10px] text-slate-400 font-brand text-center mt-0.5">
-          {dateInfo.shortDay} {dateInfo.shortDate}
-        </p>
-      )}
     </div>
   );
 }
@@ -404,12 +405,15 @@ function EventDayColumn({ date, isFirst, isLast }: { date: Date | null; isFirst:
   return (
     <div className="flex flex-col items-center w-full">
       {/* Card */}
-      <div className="w-44 rounded-2xl bg-violet-600 text-white p-4 shadow-md">
+      <div className="w-44 rounded-2xl bg-violet-600 text-white p-4 shadow-md min-h-[7rem] flex flex-col justify-center">
         <div className="flex items-center gap-2 mb-1">
           <Calendar className="w-4 h-4 opacity-80" />
           <span className="font-danidin text-base leading-none">יום האירוע</span>
         </div>
         <p className="text-xs opacity-80 font-brand">{dateLabel ?? '—'}</p>
+        {shortLabel && (
+          <p className="text-[11px] opacity-60 font-brand mt-1">{shortLabel}</p>
+        )}
       </div>
 
       {/* Diamond icon row with horizontal connectors */}
@@ -424,11 +428,6 @@ function EventDayColumn({ date, isFirst, isLast }: { date: Date | null; isFirst:
       <div className="w-px h-3 bg-slate-200" />
 
       <p className="text-xs font-semibold text-violet-700 font-brand text-center mt-1">יום האירוע</p>
-      {shortLabel && (
-        <p className="text-[11px] text-violet-500 font-brand text-center mt-0.5">
-          {shortLabel}
-        </p>
-      )}
     </div>
   );
 }
@@ -441,8 +440,8 @@ function AddNudgeOverlay({ onClick, disabled }: { onClick: () => void; disabled:
   return (
     <div className="relative w-0 shrink-0 flex items-start" style={{ zIndex: 10 }}>
       {/* Position the button at the icon-row vertical level:
-          card height (~88px) + vertical line (16px) + half icon (20px) = ~124px from top.
-          The py-6 on the container adds 24px. We want the button centered on the connector. */}
+          card min-h (112px) + vertical line (16px) + half icon (20px) = ~148px from top.
+          We want the button centered on the connector line. */}
       <button
         onClick={e => { e.stopPropagation(); onClick(); }}
         disabled={disabled}
@@ -453,7 +452,7 @@ function AddNudgeOverlay({ onClick, disabled }: { onClick: () => void; disabled:
           'hover:bg-violet-700 hover:scale-110 transition-all',
           'disabled:opacity-30 disabled:cursor-not-allowed',
         )}
-        style={{ top: '104px' }}
+        style={{ top: '132px' }}
         title="הוסף תזכורת"
       >
         <Plus className="w-4 h-4" />
@@ -620,12 +619,14 @@ function DesktopSkeleton() {
     <div className="hidden lg:flex items-start py-6 animate-pulse" dir="rtl">
       {[1, 2, 3, 4, 5].map(i => (
         <div key={i} className="w-[20%] shrink-0 flex flex-col items-center">
-          <div className="w-44 rounded-2xl border border-slate-100 p-4">
+          <div className="w-44 rounded-2xl border border-slate-100 p-4 min-h-[7rem]">
             <div className="flex justify-between mb-2">
               <div className="h-5 w-14 bg-slate-200 rounded-full" />
               <div className="h-5 w-9 bg-slate-200 rounded-full" />
             </div>
             <div className="h-3 w-28 bg-slate-100 rounded mt-2" />
+            <div className="h-3 w-20 bg-slate-100 rounded mt-3" />
+            <div className="h-2 w-16 bg-slate-50 rounded mt-1" />
           </div>
           <div className="w-px h-4 bg-slate-100" />
           <div className="w-full flex items-center">
