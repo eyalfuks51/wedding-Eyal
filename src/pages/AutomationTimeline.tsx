@@ -329,6 +329,7 @@ function StageColumn({
   stats,
   isFocus,
   eventDate,
+  audienceCounts,
   onToggle,
   onEdit,
   onDrilldown,
@@ -340,6 +341,7 @@ function StageColumn({
   stats?: StageStats;
   isFocus: boolean;
   eventDate: Date | null;
+  audienceCounts: { pending: number; attending: number };
   onToggle: (id: string, current: boolean) => void;
   onEdit: (setting: AutomationSettingRow) => void;
   onDrilldown: (stage: StageName, filter: DrilldownFilter) => void;
@@ -350,16 +352,39 @@ function StageColumn({
   const meta = STAGE_META[setting.stage_name];
   const status = getStageStatus(setting, stats);
   const dateInfo = computeStageDate(eventDate, setting.days_before);
+  const relativeTime = computeRelativeTime(eventDate, setting.days_before);
+
+  const msgStatLine = (() => {
+    if (!stats || (stats.sent === 0 && stats.pending === 0 && stats.failed === 0)) {
+      if (status === 'scheduled') {
+        const targetCount = setting.target_status === 'attending'
+          ? audienceCounts.attending
+          : audienceCounts.pending;
+        return targetCount > 0 ? `~${targetCount} מטורגטים` : null;
+      }
+      return null;
+    }
+    if (status === 'sent') return `${stats.sent} נשלחו`;
+    if (status === 'active') return `${stats.sent}/${stats.sent + stats.pending} נשלחו`;
+    if (status === 'scheduled') {
+      const targetCount = setting.target_status === 'attending'
+        ? audienceCounts.attending
+        : audienceCounts.pending;
+      return targetCount > 0 ? `~${targetCount} מטורגטים` : null;
+    }
+    return null;
+  })();
 
   return (
     <div className="flex flex-col items-center w-full">
       {/* Card */}
       <div
         className={cn(
-          'w-44 rounded-2xl border p-4 transition-all cursor-pointer',
+          'rounded-2xl border p-4 transition-all cursor-pointer',
           'hover:shadow-md hover:border-violet-200',
-          isFocus && 'ring-2 ring-violet-400 ring-offset-2 scale-[1.03]',
-          STATUS_CARD_CLASSES[status],
+          isFocus ? 'w-52 border-2 border-violet-400 shadow-lg ring-4 ring-violet-50' : 'w-44',
+          !isFocus && STATUS_CARD_CLASSES[status],
+          isFocus && (status === 'disabled' ? 'bg-slate-50 opacity-60' : 'bg-white'),
         )}
         onClick={() => { if (!hasDragged.current) onEdit(setting); }}
       >
@@ -372,12 +397,17 @@ function StageColumn({
         <p className="text-[11px] text-slate-500 font-brand leading-snug">
           {setting.target_status === 'attending' ? 'למגיעים בלבד' : 'למי שטרם אישרו הגעה'}
         </p>
-        {/* Stats */}
-        <StatsMini
-          stats={stats}
-          onDrilldown={(filter) => onDrilldown(setting.stage_name, filter)}
-          compact
-        />
+        {/* Message stat line */}
+        {msgStatLine && (
+          <p className={cn(
+            'text-xs font-brand font-medium mt-1.5',
+            status === 'sent' ? 'text-emerald-600' :
+            status === 'active' ? 'text-violet-600' :
+            'text-slate-500',
+          )}>
+            {msgStatLine}
+          </p>
+        )}
       </div>
 
       {/* Vertical line → full-width icon row → vertical line */}
@@ -396,13 +426,20 @@ function StageColumn({
       </div>
       <div className="w-px h-3 bg-slate-200" />
 
-      {/* Label + date */}
+      {/* Label */}
       <p className="text-xs font-medium text-slate-700 font-brand text-center mt-1 leading-tight">
         {meta.label}
       </p>
+      {/* Time: relative */}
+      {relativeTime && (
+        <p className="text-[11px] text-slate-600 font-brand text-center mt-0.5 font-medium">
+          {relativeTime}
+        </p>
+      )}
+      {/* Time: absolute (short day + short date) */}
       {dateInfo && (
-        <p className="text-[11px] text-slate-400 font-brand text-center mt-0.5">
-          {dateInfo.weekday} {dateInfo.dateStr}
+        <p className="text-[10px] text-slate-400 font-brand text-center mt-0.5">
+          {dateInfo.shortDay} {dateInfo.shortDate}
         </p>
       )}
     </div>
@@ -1025,6 +1062,7 @@ export default function AutomationTimeline() {
                           stats={stats[node.setting.stage_name]}
                           isFocus={focusId === `stage-${node.setting.stage_name}`}
                           eventDate={eventDate}
+                          audienceCounts={audienceCounts}
                           onToggle={handleToggle}
                           onEdit={setEditSetting}
                           onDrilldown={handleDrilldown}
