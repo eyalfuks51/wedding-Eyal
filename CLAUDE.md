@@ -56,6 +56,7 @@ fontFamily: {
 - **Column Visibility Control:** A "תצוגה" dropdown in the filter bar to toggle optional columns (`side`, `guest_group`, pax counts, `is_automated`) — keeps the default UI clean while surfacing detail on demand
 - **Message History:** clicking a `MsgStatusBadge` in the "סטטוס הודעה" column opens `MessageHistorySheet` — a `<Sheet side="left">` drawer with a newest-first timeline of all `message_logs` for that guest
 - **Guest Editing (`EditGuestSheet`):** clicking a guest row opens a side `<Sheet>` to manually update Identity (`group_name`, `phone_numbers`), Classification (`side`, `guest_group`), RSVP data (`rsvp_status`, `invited_pax`, `confirmed_pax`), and toggle `is_automated`
+- **Guest Upload (ייבוא):** A header button opens `GuestUploadModal` — 3-step flow: download Excel template → fill → upload. Client-side parsing via `xlsx` library, validation returns per-row errors with group names. Upsert by primary phone: existing guests updated (preserving RSVP data), new guests inserted. Results screen shows success/error counts.
 - Entirely Hebrew RTL; uses `font-brand` / `font-danidin` Tailwind utilities
 - Violet-600 primary accent; slate neutral palette; no GSAP (pure CSS transitions)
 
@@ -258,11 +259,14 @@ src/
       EditGuestSheet.tsx                      Side sheet to edit invitation fields
       StageEditModal.tsx                      Liquid glass centered modal for stage editing (timing, templates, delete)
       StageLogsSheet.tsx                      Side sheet for per-stage message log drill-down
+      GuestUploadModal.tsx                      3-step guest upload modal (instructions → upload → results)
   lib/
     supabase.js                               fetchEventBySlug(), submitRsvp(), fetchAutomationSettings(),
                                               updateAutomationSetting(), updateWhatsAppTemplate(),
                                               fetchMessageStatsPerStage(), fetchStageMessageLogs(),
-                                              toggleAutoPilot(), addDynamicNudge(), deleteDynamicNudge()
+                                              toggleAutoPilot(), addDynamicNudge(), deleteDynamicNudge(),
+                                              bulkUpsertInvitations()
+    guest-excel.ts                            Excel template download + upload parser
 ```
 
 ## RLS Policies (`arrival_permits`)
@@ -301,3 +305,30 @@ src/
 - **TypeScript LSP:** You have the `typescript-lsp` plugin enabled. Actively monitor real-time diagnostic errors. Fix any type or linting issues immediately as you code before proceeding.
 - **Superpowers:** Use the Superpowers plugin for structured development. Run `/superpowers:brainstorm` before complex component creation, and generate execution plans with `/superpowers:write-plan` for larger features.
 - **UI & Assets:** The application is RTL strictly (Hebrew). Local fonts are stored at `src/styles/fonts`. Ensure all CSS/Tailwind configurations properly route to this local directory.
+## 🎯 Product-Led Agent Team Workflow
+
+### Phase 1: Brainstorming
+- Act as a Product Manager when I start a new conversation.
+- Communicate in simple English.
+- Ask questions, challenge my logic, help refine the feature.
+- **Do NOT write any code in this phase.**
+- Present a clear summary of what we agreed on.
+
+### Phase 2: Approval
+- When I clearly approve (e.g., "lets do it", "go", "approved",
+  or any clear confirmation) – green light.
+- Create a technical feature spec as an MD file in docs/.
+
+### Phase 3: Development Team Execution
+- Create an Agent Team automatically.
+- **Use Sonnet for all teammates** (specify model: sonnet 
+  when spawning each teammate).
+- Break the spec into independent tasks.
+- Assign each task to a separate teammate.
+- Each teammate must own different files to avoid conflicts.
+- Use Delegate Mode – coordinate only, do NOT write code as Lead.
+- Manage inter-agent communication until completion.
+
+### Phase 4: Summary
+- When done, present a summary: what was built, what files 
+  changed, and what needs manual testing.
