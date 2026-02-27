@@ -190,15 +190,8 @@ function useDragScroll(ref: React.RefObject<HTMLElement | null>) {
     if (bestCell) {
       const r = (bestCell as HTMLElement).getBoundingClientRect();
       const cellCenter = r.left + r.width / 2;
-      let delta = cellCenter - containerCenter;
-      // Clamp: don't scroll past boundaries
-      const maxScrollLeft = el.scrollWidth - el.clientWidth;
-      const newScrollLeft = el.scrollLeft + delta;
-      if (newScrollLeft < 0) delta = -el.scrollLeft;
-      else if (newScrollLeft > maxScrollLeft) delta = maxScrollLeft - el.scrollLeft;
-      if (Math.abs(delta) > 1) {
-        el.scrollBy({ left: delta, behavior: 'smooth' });
-      }
+      const delta = cellCenter - containerCenter;
+      el.scrollBy({ left: delta, behavior: 'smooth' });
     }
   }, [ref]);
 
@@ -1043,13 +1036,14 @@ export default function AutomationTimeline() {
                 'flex items-start overflow-x-auto overflow-y-hidden scrollbar-hide py-6',
                 drag.isDragging ? 'cursor-grabbing' : 'cursor-grab',
               )}
+              style={{ scrollBehavior: 'auto' }}
               dir="rtl"
               onPointerDown={drag.onPointerDown}
               onPointerMove={drag.onPointerMove}
               onPointerUp={drag.onPointerUp}
             >
               {/* Leading spacer (right edge in RTL) */}
-              <div className="w-16 shrink-0" aria-hidden="true" />
+              <div className="w-4 shrink-0" aria-hidden="true" />
 
               {(() => {
                 const realNodes = pipelineNodes.filter(n => n.type !== 'add-nudge');
@@ -1104,7 +1098,7 @@ export default function AutomationTimeline() {
               })()}
 
               {/* Trailing spacer (left edge in RTL) */}
-              <div className="w-16 shrink-0" aria-hidden="true" />
+              <div className="w-4 shrink-0" aria-hidden="true" />
             </div>
           </div>
         )}
