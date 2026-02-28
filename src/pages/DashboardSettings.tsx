@@ -1,5 +1,9 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Save, Plus, Trash2, ChevronDown, Eye } from 'lucide-react';
+import {
+  Save, Plus, Trash2, ChevronDown, Eye,
+  Heart, CalendarDays, Clock, Car, AlignLeft,
+  GripVertical,
+} from 'lucide-react';
 import { useEvent } from '@/hooks/useEvent';
 import { updateEventContentConfig } from '@/lib/supabase';
 import DashboardNav from '@/components/dashboard/DashboardNav';
@@ -48,34 +52,46 @@ const ICON_OPTIONS = [
   { value: 'dance', label: 'ריקודים 💃' },
 ];
 
-// ─── Reusable form primitives ──────────────────────────────────────────────────
+// ─── Form primitives ──────────────────────────────────────────────────────────
 
-function FieldLabel({ label, hint }: { label: string; hint?: string }) {
+const INPUT_BASE = [
+  'w-full px-3.5 py-2.5 text-sm font-brand text-slate-800',
+  'bg-slate-50/70 border border-slate-200 rounded-xl',
+  'placeholder:text-slate-300',
+  'focus:outline-none focus:ring-2 focus:ring-violet-200 focus:border-violet-400 focus:bg-white',
+  'transition-all duration-150',
+].join(' ');
+
+function FieldLabel({ label }: { label: string }) {
   return (
-    <label className="block text-sm font-medium text-slate-700 font-brand mb-1">
+    <p className="text-[11px] font-semibold tracking-widest uppercase text-slate-400 font-brand mb-1.5">
       {label}
-      {hint && <span className="text-slate-400 font-normal mr-2 text-xs">({hint})</span>}
-    </label>
+    </p>
   );
 }
 
-function TextInput({ value, onChange, placeholder, type = 'text', dir }: {
+function FieldHint({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="mt-1 text-[11px] text-slate-400 font-brand leading-snug">
+      {children}
+    </p>
+  );
+}
+
+function TextInput({ value, onChange, placeholder, dir }: {
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
-  type?: string;
   dir?: string;
 }) {
   return (
     <input
-      type={type}
+      type="text"
       value={value}
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
       dir={dir}
-      className="w-full px-3 py-2 text-sm font-brand bg-white border border-slate-200 rounded-xl
-                 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400
-                 focus:border-transparent transition-shadow"
+      className={INPUT_BASE}
     />
   );
 }
@@ -92,9 +108,7 @@ function TextArea({ value, onChange, placeholder, rows = 3 }: {
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
       rows={rows}
-      className="w-full px-3 py-2 text-sm font-brand bg-white border border-slate-200 rounded-xl
-                 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400
-                 focus:border-transparent transition-shadow resize-none"
+      className={`${INPUT_BASE} resize-none leading-relaxed`}
     />
   );
 }
@@ -110,35 +124,75 @@ function NumberInput({ value, onChange, placeholder }: {
       value={value ?? ''}
       onChange={e => onChange(e.target.value ? Number(e.target.value) : undefined)}
       placeholder={placeholder}
-      className="w-full px-3 py-2 text-sm font-brand bg-white border border-slate-200 rounded-xl
-                 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400
-                 focus:border-transparent transition-shadow"
+      className={INPUT_BASE}
     />
   );
 }
 
-// ─── Collapsible section ───────────────────────────────────────────────────────
+// ─── Section card ──────────────────────────────────────────────────────────────
 
-function Section({ title, defaultOpen = true, children }: {
+type SectionIcon = React.ComponentType<{ className?: string }>;
+
+function Section({
+  title,
+  icon: Icon,
+  defaultOpen = true,
+  children,
+}: {
   title: string;
+  icon: SectionIcon;
   defaultOpen?: boolean;
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="bg-white/70 backdrop-blur-sm rounded-2xl border border-slate-200/60 overflow-hidden">
+    <div
+      className={[
+        'rounded-2xl border bg-white overflow-hidden',
+        'transition-shadow duration-200',
+        open
+          ? 'border-violet-100 shadow-[0_2px_16px_-4px_rgba(124,58,237,0.10)]'
+          : 'border-slate-100 shadow-sm',
+      ].join(' ')}
+    >
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-5 py-4 text-right"
+        className="w-full flex items-center gap-3 px-5 py-4 hover:bg-slate-50/60 transition-colors"
       >
-        <span className="text-base font-medium font-brand text-slate-800">{title}</span>
-        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`} />
+        <span
+          className={[
+            'p-2 rounded-xl transition-colors duration-200',
+            open ? 'bg-violet-100 text-violet-600' : 'bg-slate-100 text-slate-400',
+          ].join(' ')}
+        >
+          <Icon className="w-4 h-4" />
+        </span>
+        <span className="flex-1 text-sm font-semibold font-brand text-slate-800 text-right">
+          {title}
+        </span>
+        <ChevronDown
+          className={[
+            'w-4 h-4 text-slate-400 transition-transform duration-200',
+            open ? 'rotate-180' : '',
+          ].join(' ')}
+        />
       </button>
+
       {open && (
-        <div className="px-5 pb-5 space-y-4 border-t border-slate-100 pt-4">
+        <div className="px-5 pb-6 pt-1 space-y-5 border-t border-slate-50">
           {children}
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── Field group (subtle inset background for related fields) ─────────────────
+
+function FieldGroup({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="bg-slate-50/50 rounded-xl p-4 space-y-4 border border-slate-100/80">
+      {children}
     </div>
   );
 }
@@ -151,39 +205,61 @@ function ScheduleRow({ item, onChange, onDelete }: {
   onDelete: () => void;
 }) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 group bg-white rounded-xl px-3 py-2.5 border border-slate-100 shadow-sm">
+      <GripVertical className="w-3.5 h-3.5 text-slate-300 shrink-0" />
       <input
         type="time"
         value={item.time ?? ''}
         onChange={e => onChange('time', e.target.value)}
-        className="w-24 px-2 py-1.5 text-sm font-brand bg-white border border-slate-200 rounded-lg
-                   focus:outline-none focus:ring-2 focus:ring-violet-400"
+        className="w-24 px-2 py-1 text-sm font-brand text-slate-700 bg-transparent border-none
+                   focus:outline-none focus:ring-0 tabular-nums"
       />
+      <div className="w-px h-5 bg-slate-200 shrink-0" />
       <input
         type="text"
         value={item.label ?? ''}
         onChange={e => onChange('label', e.target.value)}
         placeholder="תיאור"
-        className="flex-1 px-3 py-1.5 text-sm font-brand bg-white border border-slate-200 rounded-lg
-                   placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400"
+        className="flex-1 px-2 py-1 text-sm font-brand text-slate-700 bg-transparent border-none
+                   placeholder:text-slate-300 focus:outline-none focus:ring-0"
       />
       <select
         value={item.icon ?? ''}
         onChange={e => onChange('icon', e.target.value)}
-        className="w-28 px-2 py-1.5 text-sm font-brand bg-white border border-slate-200 rounded-lg
-                   focus:outline-none focus:ring-2 focus:ring-violet-400"
+        className="w-28 px-2 py-1 text-sm font-brand text-slate-600 bg-transparent border-none
+                   focus:outline-none focus:ring-0 cursor-pointer"
       >
-        <option value="">ללא אייקון</option>
+        <option value="">ללא</option>
         {ICON_OPTIONS.map(o => (
           <option key={o.value} value={o.value}>{o.label}</option>
         ))}
       </select>
       <button
         onClick={onDelete}
-        className="p-1.5 text-slate-400 hover:text-rose-500 transition-colors"
+        className="p-1 text-slate-300 hover:text-rose-400 opacity-0 group-hover:opacity-100
+                   transition-all duration-150 shrink-0"
       >
-        <Trash2 className="w-4 h-4" />
+        <Trash2 className="w-3.5 h-3.5" />
       </button>
+    </div>
+  );
+}
+
+// ─── Loading skeleton ──────────────────────────────────────────────────────────
+
+function SettingsSkeleton() {
+  return (
+    <div className="animate-pulse space-y-4 mt-2">
+      {[200, 280, 160].map((h, i) => (
+        <div key={i} className="rounded-2xl bg-white border border-slate-100 overflow-hidden">
+          <div className="flex items-center gap-3 px-5 py-4">
+            <div className="w-8 h-8 bg-slate-100 rounded-xl" />
+            <div className="h-4 bg-slate-100 rounded w-28" />
+          </div>
+          <div className="border-t border-slate-50 px-5 py-5 space-y-4"
+               style={{ height: `${h}px` }} />
+        </div>
+      ))}
     </div>
   );
 }
@@ -192,10 +268,10 @@ function ScheduleRow({ item, onChange, onDelete }: {
 
 export default function DashboardSettings() {
   const { event, loading: eventLoading } = useEvent(SLUG);
-  const [draft, setDraft]     = useState<ContentConfig>({});
+  const [draft, setDraft]       = useState<ContentConfig>({});
   const [original, setOriginal] = useState<ContentConfig>({});
-  const [saving, setSaving]   = useState(false);
-  const [toasts, setToasts]   = useState<Toast[]>([]);
+  const [saving, setSaving]     = useState(false);
+  const [toasts, setToasts]     = useState<Toast[]>([]);
   const [showMobilePreview, setShowMobilePreview] = useState(false);
 
   const showToast = useCallback((message: string, kind: ToastKind = 'success') => {
@@ -204,7 +280,6 @@ export default function DashboardSettings() {
     setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3000);
   }, []);
 
-  // Initialize draft from event data
   useEffect(() => {
     if (!event) return;
     const config = (event as any).content_config ?? {};
@@ -216,8 +291,6 @@ export default function DashboardSettings() {
     () => JSON.stringify(draft) !== JSON.stringify(original),
     [draft, original],
   );
-
-  // ── Field updaters ──
 
   const handleField = useCallback((key: string, value: unknown) => {
     setDraft(prev => ({ ...prev, [key]: value }));
@@ -245,13 +318,10 @@ export default function DashboardSettings() {
     }));
   }, []);
 
-  // ── Save ──
-
   const handleSave = useCallback(async () => {
     if (!event || !isDirty) return;
     setSaving(true);
     try {
-      // Preserve whatsapp_templates from original (managed by Timeline)
       const toSave = { ...draft };
       if (original.whatsapp_templates) {
         toSave.whatsapp_templates = original.whatsapp_templates;
@@ -266,18 +336,14 @@ export default function DashboardSettings() {
     }
   }, [event, draft, original, isDirty, showToast]);
 
-  // ── Loading state ──
+  // ── Loading ──
 
   if (eventLoading) {
     return (
       <div dir="rtl" className="min-h-screen bg-gradient-to-br from-slate-50 to-violet-50/30 px-4 py-8 sm:px-8">
         <div className="mx-auto max-w-7xl">
           <DashboardNav />
-          <div className="animate-pulse space-y-4 mt-8">
-            <div className="h-8 bg-slate-200 rounded w-48" />
-            <div className="h-64 bg-slate-200 rounded-2xl" />
-            <div className="h-64 bg-slate-200 rounded-2xl" />
-          </div>
+          <SettingsSkeleton />
         </div>
       </div>
     );
@@ -290,40 +356,48 @@ export default function DashboardSettings() {
       <div className="mx-auto max-w-7xl">
         <DashboardNav />
 
-        {/* Header with save button */}
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-danidin text-slate-800">הגדרות האירוע</h1>
+        {/* Page header */}
+        <div className="flex items-center justify-between mb-7">
+          <div>
+            <h1 className="text-2xl font-danidin text-slate-800 leading-none">הגדרות האירוע</h1>
+            <p className="text-xs text-slate-400 font-brand mt-1">
+              {isDirty ? 'יש שינויים שלא נשמרו' : 'כל השינויים נשמרו'}
+            </p>
+          </div>
           <div className="flex items-center gap-3">
-            {/* Mobile preview toggle */}
+            {/* Mobile preview */}
             <button
               onClick={() => setShowMobilePreview(true)}
-              className="lg:hidden flex items-center gap-2 px-4 py-2 text-sm font-brand font-medium
+              className="lg:hidden flex items-center gap-1.5 px-4 py-2 text-sm font-brand font-medium
                          text-violet-600 bg-violet-50 rounded-xl hover:bg-violet-100 transition-colors"
             >
               <Eye className="w-4 h-4" />
-              תצוגה מקדימה
+              תצוגה
             </button>
-            {/* Save button */}
+            {/* Save — desktop */}
             <button
               onClick={handleSave}
               disabled={!isDirty || saving}
-              className="flex items-center gap-2 px-5 py-2 text-sm font-brand font-medium
+              className="hidden lg:flex items-center gap-2 px-5 py-2.5 text-sm font-brand font-semibold
                          text-white bg-violet-600 rounded-xl shadow-sm
-                         hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                         hover:bg-violet-700 active:scale-95
+                         disabled:opacity-40 disabled:cursor-not-allowed
+                         transition-all duration-150"
             >
               <Save className="w-4 h-4" />
-              {saving ? 'שומר...' : 'שמור'}
+              {saving ? 'שומר...' : 'שמור שינויים'}
             </button>
           </div>
         </div>
 
-        {/* Split layout: form + preview */}
-        <div className="flex gap-8">
-          {/* Form (right side in RTL) */}
-          <div className="flex-1 space-y-4 min-w-0">
+        {/* Split: form (right in RTL) + preview (left in RTL) */}
+        <div className="flex gap-8 items-start">
 
-            {/* Section 1: Couple Details */}
-            <Section title="פרטי הזוג">
+          {/* ── Form ── */}
+          <div className="flex-1 min-w-0 space-y-3 pb-24 lg:pb-0">
+
+            {/* Section 1: Couple details */}
+            <Section title="פרטי הזוג" icon={Heart}>
               <div>
                 <FieldLabel label="שמות הזוג" />
                 <TextInput
@@ -337,85 +411,99 @@ export default function DashboardSettings() {
                 <TextArea
                   value={draft.quote ?? ''}
                   onChange={v => handleField('quote', v)}
-                  placeholder="ציטוט מיוחד..."
+                  placeholder="Love is composed of a single soul inhabiting two bodies..."
                   rows={2}
                 />
+                <FieldHint>מוצג מעל שמות הזוג</FieldHint>
               </div>
               <div>
                 <FieldLabel label="טקסט הזמנה" />
                 <TextArea
                   value={draft.invitation_text ?? ''}
                   onChange={v => handleField('invitation_text', v)}
-                  placeholder="שמחים להזמינכם לחגוג איתנו..."
+                  placeholder="שמחים לראותכם ביום חתונתנו..."
                 />
               </div>
             </Section>
 
             {/* Section 2: Date & Venue */}
-            <Section title="תאריך ומיקום">
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <FieldLabel label="תאריך (תצוגה)" hint="ה-10.05" />
-                  <TextInput
-                    value={draft.date_display ?? ''}
-                    onChange={v => handleField('date_display', v)}
-                    placeholder="ה-10.05"
-                  />
+            <Section title="תאריך ומיקום" icon={CalendarDays}>
+              {/* Date row — grouped */}
+              <FieldGroup>
+                <p className="text-[11px] font-semibold tracking-widest uppercase text-slate-400 font-brand">
+                  תאריך
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  <div>
+                    <FieldLabel label="תצוגה" />
+                    <TextInput
+                      value={draft.date_display ?? ''}
+                      onChange={v => handleField('date_display', v)}
+                      placeholder="10.10.2025"
+                    />
+                    <FieldHint>כפי שיוצג גדול בהזמנה</FieldHint>
+                  </div>
+                  <div>
+                    <FieldLabel label="עברי" />
+                    <TextInput
+                      value={draft.date_hebrew ?? ''}
+                      onChange={v => handleField('date_hebrew', v)}
+                      placeholder="ט' בתשרי"
+                    />
+                  </div>
+                  <div>
+                    <FieldLabel label="יום" />
+                    <TextInput
+                      value={draft.day_of_week ?? ''}
+                      onChange={v => handleField('day_of_week', v)}
+                      placeholder="שישי"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <FieldLabel label="תאריך עברי" hint="ה-10 במאי" />
-                  <TextInput
-                    value={draft.date_hebrew ?? ''}
-                    onChange={v => handleField('date_hebrew', v)}
-                    placeholder="ה-10 במאי"
-                  />
-                </div>
-                <div>
-                  <FieldLabel label="יום בשבוע" />
-                  <TextInput
-                    value={draft.day_of_week ?? ''}
-                    onChange={v => handleField('day_of_week', v)}
-                    placeholder="שלישי"
-                  />
-                </div>
-              </div>
+              </FieldGroup>
+
+              {/* Venue */}
               <div>
-                <FieldLabel label="שם מקום" />
+                <FieldLabel label="שם מקום האירוע" />
                 <TextInput
                   value={draft.venue_name ?? ''}
                   onChange={v => handleField('venue_name', v)}
-                  placeholder="גן אירועים..."
+                  placeholder="גן האירועים..."
                 />
               </div>
               <div>
-                <FieldLabel label="כתובת" hint="תצוגה באתר" />
+                <FieldLabel label="כתובת (תצוגה)" />
                 <TextArea
                   value={draft.venue_address ?? ''}
                   onChange={v => handleField('venue_address', v)}
-                  placeholder="רחוב, עיר"
+                  placeholder="רחוב הפרחים 1, תל אביב"
                   rows={2}
                 />
+                <FieldHint>הטקסט המוצג על ההזמנה — קצר ונקי</FieldHint>
               </div>
               <div>
-                <FieldLabel label="כתובת מלאה" hint="לשאילתת מפות Google" />
+                <FieldLabel label="כתובת מלאה" />
                 <TextInput
                   value={draft.venue_address_full ?? ''}
                   onChange={v => handleField('venue_address_full', v)}
-                  placeholder="כתובת מלאה כולל עיר"
+                  placeholder="רחוב הפרחים 1, תל אביב 68000"
                 />
+                <FieldHint>משמשת לחיפוש במפות Google</FieldHint>
               </div>
               <div>
-                <FieldLabel label="שאילתת מפות" hint="Google Maps query" />
+                <FieldLabel label="שאילתת מפות" />
                 <TextInput
                   value={draft.venue_maps_query ?? ''}
                   onChange={v => handleField('venue_maps_query', v)}
-                  placeholder="שם המקום, עיר"
+                  placeholder="גן האירועים תל אביב"
+                  dir="ltr"
                 />
+                <FieldHint>הטקסט שמוקלד ב-Google Maps Embed</FieldHint>
               </div>
             </Section>
 
             {/* Section 3: Schedule */}
-            <Section title="לוז האירוע">
+            <Section title="לוז הערב" icon={Clock}>
               <div className="space-y-2">
                 {schedule.map((item, i) => (
                   <ScheduleRow
@@ -425,11 +513,16 @@ export default function DashboardSettings() {
                     onDelete={() => removeScheduleItem(i)}
                   />
                 ))}
+                {schedule.length === 0 && (
+                  <div className="text-center py-6 text-slate-400 font-brand text-sm">
+                    עדיין אין פריטים בלוז
+                  </div>
+                )}
               </div>
               <button
                 onClick={addScheduleItem}
-                className="flex items-center gap-1.5 text-sm font-brand text-violet-600
-                           hover:text-violet-700 transition-colors"
+                className="flex items-center gap-1.5 text-sm font-brand font-medium
+                           text-violet-500 hover:text-violet-700 transition-colors"
               >
                 <Plus className="w-4 h-4" />
                 הוסף פריט
@@ -437,7 +530,7 @@ export default function DashboardSettings() {
             </Section>
 
             {/* Section 4: Transport */}
-            <Section title="הגעה ותחבורה" defaultOpen={false}>
+            <Section title="הגעה ותחבורה" icon={Car} defaultOpen={false}>
               <div>
                 <FieldLabel label="קישור Waze" />
                 <TextInput
@@ -446,78 +539,89 @@ export default function DashboardSettings() {
                   placeholder="https://waze.com/ul/..."
                   dir="ltr"
                 />
+                <FieldHint>ישלח לאורחים בהודעת לוגיסטיקה</FieldHint>
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <FieldLabel label="קו רכבת / רכבת קלה" />
-                  <TextInput
-                    value={draft.train_line ?? ''}
-                    onChange={v => handleField('train_line', v)}
-                    placeholder="קו אדום"
-                  />
+              <FieldGroup>
+                <p className="text-[11px] font-semibold tracking-widest uppercase text-slate-400 font-brand">
+                  רכבת קלה
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <FieldLabel label="קו" />
+                    <TextInput
+                      value={draft.train_line ?? ''}
+                      onChange={v => handleField('train_line', v)}
+                      placeholder="אדום"
+                    />
+                  </div>
+                  <div>
+                    <FieldLabel label="תחנה" />
+                    <TextInput
+                      value={draft.train_station ?? ''}
+                      onChange={v => handleField('train_station', v)}
+                      placeholder="גן עיר"
+                    />
+                  </div>
                 </div>
                 <div>
-                  <FieldLabel label="תחנת רכבת" />
-                  <TextInput
-                    value={draft.train_station ?? ''}
-                    onChange={v => handleField('train_station', v)}
-                    placeholder="תחנה מרכזית"
-                  />
-                </div>
-              </div>
-              <div>
-                <FieldLabel label="דקות הליכה מרכבת" />
-                <NumberInput
-                  value={draft.train_walk_minutes}
-                  onChange={v => handleField('train_walk_minutes', v)}
-                  placeholder="5"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <FieldLabel label="חניון" />
-                  <TextInput
-                    value={draft.parking_lot ?? ''}
-                    onChange={v => handleField('parking_lot', v)}
-                    placeholder="חניון A"
-                  />
-                </div>
-                <div>
-                  <FieldLabel label="דקות הליכה מחניון" />
+                  <FieldLabel label="דקות הליכה" />
                   <NumberInput
-                    value={draft.parking_walk_minutes}
-                    onChange={v => handleField('parking_walk_minutes', v)}
-                    placeholder="3"
+                    value={draft.train_walk_minutes}
+                    onChange={v => handleField('train_walk_minutes', v)}
+                    placeholder="5"
                   />
                 </div>
-              </div>
+              </FieldGroup>
+              <FieldGroup>
+                <p className="text-[11px] font-semibold tracking-widest uppercase text-slate-400 font-brand">
+                  חניה
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <FieldLabel label="שם חניון" />
+                    <TextInput
+                      value={draft.parking_lot ?? ''}
+                      onChange={v => handleField('parking_lot', v)}
+                      placeholder="חניון A"
+                    />
+                  </div>
+                  <div>
+                    <FieldLabel label="דקות הליכה" />
+                    <NumberInput
+                      value={draft.parking_walk_minutes}
+                      onChange={v => handleField('parking_walk_minutes', v)}
+                      placeholder="3"
+                    />
+                  </div>
+                </div>
+              </FieldGroup>
             </Section>
 
             {/* Section 5: Footer */}
-            <Section title="סיום" defaultOpen={false}>
+            <Section title="טקסט סיום" icon={AlignLeft} defaultOpen={false}>
               <div>
                 <FieldLabel label="הערה תחתונה" />
                 <TextArea
                   value={draft.footer_note ?? ''}
                   onChange={v => handleField('footer_note', v)}
-                  placeholder="נא לאשר הגעה עד..."
+                  placeholder="נא לאשר הגעה עד ה-1 בספטמבר..."
                 />
+                <FieldHint>מוצג מעל כפתור האישור</FieldHint>
               </div>
               <div>
                 <FieldLabel label="הודעת סיום" />
                 <TextArea
                   value={draft.closing_message ?? ''}
                   onChange={v => handleField('closing_message', v)}
-                  placeholder="נשמח לראותכם!"
+                  placeholder="מחכים לראותכם! 💛"
                 />
+                <FieldHint>מוצג בגדול מתחת לציטוט הסיום</FieldHint>
               </div>
             </Section>
 
-            {/* Bottom spacing on mobile (preview hidden) */}
-            <div className="h-8 lg:hidden" />
           </div>
 
-          {/* Preview (left side in RTL — desktop only) */}
+          {/* ── Preview (desktop only, sticky) ── */}
           <div className="hidden lg:block sticky top-8 self-start shrink-0">
             {event && (
               <LivePreview
@@ -528,13 +632,14 @@ export default function DashboardSettings() {
               />
             )}
           </div>
+
         </div>
       </div>
 
-      {/* Mobile preview overlay */}
+      {/* ── Mobile preview overlay ── */}
       {showMobilePreview && (
         <div
-          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 lg:hidden"
+          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-6 lg:hidden"
           onClick={() => setShowMobilePreview(false)}
         >
           <div onClick={e => e.stopPropagation()}>
@@ -547,20 +652,48 @@ export default function DashboardSettings() {
               />
             )}
           </div>
+          <button
+            onClick={() => setShowMobilePreview(false)}
+            className="absolute top-5 left-5 p-2 text-white/70 hover:text-white transition-colors"
+          >
+            ✕
+          </button>
         </div>
       )}
 
-      {/* Toast stack */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-60 flex flex-col gap-2 items-center">
+      {/* ── Mobile sticky save bar ── */}
+      {isDirty && (
+        <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 px-4 py-3
+                        bg-white/90 backdrop-blur-md border-t border-slate-100 shadow-lg">
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="w-full flex items-center justify-center gap-2 py-3 text-sm font-brand font-semibold
+                       text-white bg-violet-600 rounded-2xl shadow-sm
+                       hover:bg-violet-700 active:scale-[0.98]
+                       disabled:opacity-50 disabled:cursor-not-allowed
+                       transition-all duration-150"
+          >
+            <Save className="w-4 h-4" />
+            {saving ? 'שומר...' : 'שמור שינויים'}
+          </button>
+        </div>
+      )}
+
+      {/* ── Toast stack ── */}
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-60 flex flex-col gap-2 items-center pointer-events-none">
         {toasts.map(t => (
           <div
             key={t.id}
-            className={`px-5 py-2.5 rounded-xl text-sm font-brand shadow-lg animate-in fade-in slide-in-from-bottom-2 ${
+            className={[
+              'px-5 py-2.5 rounded-xl text-sm font-brand font-medium shadow-lg',
+              'animate-in fade-in slide-in-from-bottom-2',
               t.kind === 'error'
                 ? 'bg-rose-600 text-white'
-                : 'bg-emerald-600 text-white'
-            }`}
+                : 'bg-slate-800 text-white',
+            ].join(' ')}
           >
+            {t.kind === 'success' && <span className="ml-1.5">✓</span>}
             {t.message}
           </div>
         ))}
