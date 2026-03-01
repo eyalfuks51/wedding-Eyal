@@ -35,6 +35,7 @@ import { type Invitation, type RsvpStatus, EditGuestSheet } from '@/components/d
 import { TEMPLATE_LABELS, MSG_STATUS_MAP } from '@/components/dashboard/constants';
 import DashboardNav from '@/components/dashboard/DashboardNav';
 import GuestUploadModal from '@/components/dashboard/GuestUploadModal';
+import { exportGuests } from '../lib/guest-excel';
 
 interface MessageLog {
   id:            string;
@@ -1174,15 +1175,25 @@ export default function Dashboard() {
     setIsMessageModalOpen(false);
   };
 
+  function handleExportAll() {
+    const date = new Date().toISOString().slice(0, 10);
+    exportGuests(filtered, `מוזמנים_${date}.xlsx`);
+  }
+
+  function handleExportSelected() {
+    const date = new Date().toISOString().slice(0, 10);
+    exportGuests(selectedGuestsArray, `מוזמנים_נבחרים_${date}.xlsx`);
+  }
+
   // ── Derived loading / error ───────────────────────────────────────────────
 
-  const loading = eventLoading || invLoading;
   const error   = notFound ? 'אירוע לא נמצא' : invError;
 
   // ── Render guards ─────────────────────────────────────────────────────────
-
-  if (loading) return <Spinner />;
-  if (error)   return <ErrorView message={error} />;
+  // Only the initial event load shows the full-page spinner.
+  // Invitation reloads must NOT unmount the page (it kills open modals).
+  if (eventLoading) return <Spinner />;
+  if (error)        return <ErrorView message={error} />;
 
   const colSpan = 6
     + (colVis.side       ? 1 : 0)
@@ -1291,6 +1302,7 @@ export default function Dashboard() {
               ייבוא
             </button>
             <button
+              onClick={handleExportAll}
               className="shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm font-medium font-brand rounded-xl transition-colors"
             >
               <Download className="w-4 h-4" />
@@ -1668,7 +1680,10 @@ export default function Dashboard() {
               שלח הודעה
             </button>
 
-            <button className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-xl text-xs font-medium font-brand transition-colors whitespace-nowrap">
+            <button
+              onClick={handleExportSelected}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-xl text-xs font-medium font-brand transition-colors whitespace-nowrap"
+            >
               <Download className="w-3.5 h-3.5" />
               ייצוא
             </button>
