@@ -364,37 +364,22 @@ export default function DashboardSettings() {
               {isDirty ? 'יש שינויים שלא נשמרו' : 'כל השינויים נשמרו'}
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            {/* Mobile preview */}
-            <button
-              onClick={() => setShowMobilePreview(true)}
-              className="lg:hidden flex items-center gap-1.5 px-4 py-2 text-sm font-brand font-medium
-                         text-violet-600 bg-violet-50 rounded-xl hover:bg-violet-100 transition-colors"
-            >
-              <Eye className="w-4 h-4" />
-              תצוגה
-            </button>
-            {/* Save — desktop */}
-            <button
-              onClick={handleSave}
-              disabled={!isDirty || saving}
-              className="hidden lg:flex items-center gap-2 px-5 py-2.5 text-sm font-brand font-semibold
-                         text-white bg-violet-600 rounded-xl shadow-sm
-                         hover:bg-violet-700 active:scale-95
-                         disabled:opacity-40 disabled:cursor-not-allowed
-                         transition-all duration-150"
-            >
-              <Save className="w-4 h-4" />
-              {saving ? 'שומר...' : 'שמור שינויים'}
-            </button>
-          </div>
+          {/* Mobile preview toggle */}
+          <button
+            onClick={() => setShowMobilePreview(true)}
+            className="lg:hidden flex items-center gap-1.5 px-4 py-2 text-sm font-brand font-medium
+                       text-violet-600 bg-violet-50 rounded-xl hover:bg-violet-100 transition-colors"
+          >
+            <Eye className="w-4 h-4" />
+            תצוגה
+          </button>
         </div>
 
         {/* Split: form (right in RTL) + preview (left in RTL) */}
         <div className="flex gap-8 items-start">
 
           {/* ── Form ── */}
-          <div className="flex-1 min-w-0 space-y-3 pb-24 lg:pb-0">
+          <div className="flex-1 min-w-0 space-y-3">
 
             {/* Section 1: Couple details */}
             <Section title="פרטי הזוג" icon={Heart}>
@@ -619,13 +604,42 @@ export default function DashboardSettings() {
               </div>
             </Section>
 
+            {/* ── Sticky save bar — lives inside form column so it respects form width ── */}
+            <div
+              className={[
+                'sticky bottom-0 z-30 -mx-1 px-1 pt-3 pb-4 transition-all duration-300',
+                isDirty
+                  ? 'translate-y-0 opacity-100'
+                  : 'translate-y-4 opacity-0 pointer-events-none',
+              ].join(' ')}
+            >
+              <div className="bg-white/90 backdrop-blur-md border border-slate-100 rounded-2xl shadow-lg px-4 py-3">
+                <button
+                  onClick={handleSave}
+                  disabled={saving}
+                  className={[
+                    'w-full flex items-center justify-center gap-2 py-3 lg:py-2.5',
+                    'text-sm font-brand font-semibold rounded-xl',
+                    'active:scale-[0.98]',
+                    'disabled:opacity-50 disabled:cursor-not-allowed',
+                    'transition-all duration-150',
+                    isDirty && !saving
+                      ? 'text-white bg-violet-600 hover:bg-violet-700 shadow-md shadow-violet-200'
+                      : 'text-white bg-violet-600 hover:bg-violet-700',
+                  ].join(' ')}
+                >
+                  <Save className="w-4 h-4" />
+                  {saving ? 'שומר...' : 'שמור שינויים'}
+                </button>
+              </div>
+            </div>
+
           </div>
 
           {/* ── Preview (desktop only, sticky) ── */}
           <div className="hidden lg:block sticky top-8 self-start shrink-0">
             {event && (
               <LivePreview
-                templateId={(event as any).template_id ?? 'wedding-default'}
                 event={event as any}
                 config={draft}
                 width={320}
@@ -645,7 +659,6 @@ export default function DashboardSettings() {
           <div onClick={e => e.stopPropagation()}>
             {event && (
               <LivePreview
-                templateId={(event as any).template_id ?? 'wedding-default'}
                 event={event as any}
                 config={draft}
                 width={300}
@@ -661,24 +674,6 @@ export default function DashboardSettings() {
         </div>
       )}
 
-      {/* ── Mobile sticky save bar ── */}
-      {isDirty && (
-        <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 px-4 py-3
-                        bg-white/90 backdrop-blur-md border-t border-slate-100 shadow-lg">
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="w-full flex items-center justify-center gap-2 py-3 text-sm font-brand font-semibold
-                       text-white bg-violet-600 rounded-2xl shadow-sm
-                       hover:bg-violet-700 active:scale-[0.98]
-                       disabled:opacity-50 disabled:cursor-not-allowed
-                       transition-all duration-150"
-          >
-            <Save className="w-4 h-4" />
-            {saving ? 'שומר...' : 'שמור שינויים'}
-          </button>
-        </div>
-      )}
 
       {/* ── Toast stack ── */}
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-60 flex flex-col gap-2 items-center pointer-events-none">
