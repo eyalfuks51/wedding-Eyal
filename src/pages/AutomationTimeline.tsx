@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef, Fragment, useMemo } from 'react';
+import { Navigate } from 'react-router-dom';
 import {
   Sparkles,
   Bell,
@@ -11,6 +12,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEventContext } from '@/contexts/EventContext';
+import { useFeatureAccess } from '@/hooks/useFeatureAccess';
 import {
   fetchAutomationSettings,
   fetchMessageStatsPerStage,
@@ -712,6 +714,7 @@ function ToastContainer({ toasts }: { toasts: Toast[] }) {
 
 export default function AutomationTimeline() {
   const { event, isLoading: eventLoading } = useEventContext();
+  const { canManageGuests } = useFeatureAccess();
 
   const [settings, setSettings]       = useState<AutomationSettingRow[]>([]);
   const [stats, setStats]             = useState<Record<string, StageStats>>({});
@@ -956,6 +959,8 @@ export default function AutomationTimeline() {
   const editIsDynamicNudge = editSetting
     ? (DYNAMIC_NUDGE_NAMES as readonly string[]).includes(editSetting.stage_name)
     : false;
+
+  if (!canManageGuests) return <Navigate to="/dashboard/settings" replace />;
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-brand" dir="rtl">

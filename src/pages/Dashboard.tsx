@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { Navigate } from 'react-router-dom';
 import {
   Search,
   Users,
@@ -15,6 +16,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useEventContext } from '@/contexts/EventContext';
+import { useFeatureAccess } from '@/hooks/useFeatureAccess';
 import {
   GlassCard,
   GlassCardHeader,
@@ -845,6 +847,7 @@ export default function Dashboard() {
 
   // ── Event data via context (resolved by ProtectedRoute) ──────────────────
   const { event, isLoading: eventLoading } = useEventContext();
+  const { canManageGuests } = useFeatureAccess();
 
   // ── Invitations loading/error (separate from event loading) ───────────────
   const [invLoading, setInvLoading] = useState(false);
@@ -1184,6 +1187,7 @@ export default function Dashboard() {
   // Invitation reloads must NOT unmount the page (it kills open modals).
   if (eventLoading) return <Spinner />;
   if (error)        return <ErrorView message={error} />;
+  if (!canManageGuests) return <Navigate to="/dashboard/settings" replace />;
 
   const colSpan = 6
     + (colVis.side       ? 1 : 0)
