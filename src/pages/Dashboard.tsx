@@ -14,7 +14,7 @@ import {
   X,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { useEvent } from '../hooks/useEvent';
+import { useEventContext } from '@/contexts/EventContext';
 import {
   GlassCard,
   GlassCardHeader,
@@ -63,12 +63,6 @@ interface Kpis {
 const EMPTY_FORM = { group_name: '', phones: [''], side: '', guest_group: '', invited_pax: 1 };
 type FormFields  = { group_name: string; phones: string[]; side: string; guest_group: string; invited_pax: number };
 
-interface EventData {
-  id: string;
-  slug: string;
-  content_config: Record<string, unknown> | null;
-}
-
 interface BulkMessageGuest {
   id: string;
   group_name: string | null;
@@ -97,8 +91,6 @@ const COL_OPTIONS: Array<{ key: keyof ColVis; label: string }> = [
 ];
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-
-const SLUG = 'hagit-and-itai';
 
 // dot: Tailwind bg-* class for the coloured indicator dot inside the badge
 const STATUS_MAP: Record<string, { label: string; classes: string; dot: string }> = {
@@ -851,10 +843,8 @@ function MessageHistorySheet({ invitation, logs, loading, onClose }: MessageHist
 export default function Dashboard() {
   const [invitations, setInvitations] = useState<Invitation[]>([]);
 
-  // ── Event data via hook (consistent with app architecture) ────────────────
-  const { event: rawEvent, loading: eventLoading, notFound } =
-    useEvent(SLUG) as { event: EventData | null; loading: boolean; notFound: boolean };
-  const event = rawEvent;
+  // ── Event data via context (resolved by ProtectedRoute) ──────────────────
+  const { event, isLoading: eventLoading } = useEventContext();
 
   // ── Invitations loading/error (separate from event loading) ───────────────
   const [invLoading, setInvLoading] = useState(false);
@@ -1187,7 +1177,7 @@ export default function Dashboard() {
 
   // ── Derived loading / error ───────────────────────────────────────────────
 
-  const error   = notFound ? 'אירוע לא נמצא' : invError;
+  const error   = invError;
 
   // ── Render guards ─────────────────────────────────────────────────────────
   // Only the initial event load shows the full-page spinner.
@@ -1280,7 +1270,7 @@ export default function Dashboard() {
                 ניהול הזמנות
               </h1>
               <p className="text-xs text-slate-400 font-brand mt-0.5 truncate">
-                {event?.slug || SLUG}
+                {event?.slug}
               </p>
             </div>
           </div>

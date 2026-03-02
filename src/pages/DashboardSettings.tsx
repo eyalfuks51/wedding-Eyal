@@ -4,14 +4,12 @@ import {
   Heart, CalendarDays, Clock, Car, AlignLeft,
   GripVertical,
 } from 'lucide-react';
-import { useEvent } from '@/hooks/useEvent';
+import { useEventContext } from '@/contexts/EventContext';
 import { updateEventContentConfig } from '@/lib/supabase';
 import DashboardNav from '@/components/dashboard/DashboardNav';
 import LivePreview from '@/components/dashboard/LivePreview';
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
-
-const SLUG = 'hagit-and-itai';
 
 type ToastKind = 'success' | 'error';
 interface Toast { id: number; message: string; kind: ToastKind }
@@ -267,7 +265,7 @@ function SettingsSkeleton() {
 // ─── Main component ────────────────────────────────────────────────────────────
 
 export default function DashboardSettings() {
-  const { event, loading: eventLoading } = useEvent(SLUG);
+  const { event, isLoading: eventLoading } = useEventContext();
   const [draft, setDraft]       = useState<ContentConfig>({});
   const [original, setOriginal] = useState<ContentConfig>({});
   const [saving, setSaving]     = useState(false);

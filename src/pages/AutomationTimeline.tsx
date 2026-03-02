@@ -10,7 +10,7 @@ import {
   Plus,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useEvent } from '../hooks/useEvent';
+import { useEventContext } from '@/contexts/EventContext';
 import {
   fetchAutomationSettings,
   fetchMessageStatsPerStage,
@@ -80,8 +80,6 @@ function getStageIcon(stageName: StageName, size: 'sm' | 'lg' = 'sm'): React.Rea
   const map = size === 'lg' ? ICON_MAP_LG : ICON_MAP;
   return map[meta.icon] ?? <Bell className={size === 'lg' ? 'w-5 h-5' : 'w-4 h-4'} />;
 }
-
-const SLUG = 'hagit-and-itai';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -713,7 +711,7 @@ function ToastContainer({ toasts }: { toasts: Toast[] }) {
 // ─── Main page ───────────────────────────────────────────────────────────────
 
 export default function AutomationTimeline() {
-  const { event, loading: eventLoading } = useEvent(SLUG);
+  const { event, isLoading: eventLoading } = useEventContext();
 
   const [settings, setSettings]       = useState<AutomationSettingRow[]>([]);
   const [stats, setStats]             = useState<Record<string, StageStats>>({});
@@ -972,7 +970,7 @@ export default function AutomationTimeline() {
               <h1 className="text-base font-bold text-slate-800 font-danidin leading-none">
                 ציר זמן אוטומציה
               </h1>
-              <p className="text-xs text-slate-400 font-brand mt-0.5">{SLUG}</p>
+              <p className="text-xs text-slate-400 font-brand mt-0.5">{event?.slug}</p>
             </div>
           </div>
 
