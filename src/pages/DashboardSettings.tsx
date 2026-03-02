@@ -5,6 +5,7 @@ import {
   GripVertical,
 } from 'lucide-react';
 import { useEventContext } from '@/contexts/EventContext';
+import { useFeatureAccess } from '@/hooks/useFeatureAccess';
 import { updateEventContentConfig } from '@/lib/supabase';
 import DashboardNav from '@/components/dashboard/DashboardNav';
 import LivePreview from '@/components/dashboard/LivePreview';
@@ -266,6 +267,7 @@ function SettingsSkeleton() {
 
 export default function DashboardSettings() {
   const { event, isLoading: eventLoading } = useEventContext();
+  const { canManageGuests } = useFeatureAccess();
   const [draft, setDraft]       = useState<ContentConfig>({});
   const [original, setOriginal] = useState<ContentConfig>({});
   const [saving, setSaving]     = useState(false);
@@ -353,6 +355,16 @@ export default function DashboardSettings() {
     <div dir="rtl" className="min-h-screen bg-gradient-to-br from-slate-50 to-violet-50/30 px-4 py-8 sm:px-8">
       <div className="mx-auto max-w-7xl">
         <DashboardNav />
+
+        {!canManageGuests && (
+          <div
+            dir="rtl"
+            className="mb-6 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800 font-brand"
+          >
+            <span className="font-semibold">האירוע שלכם במצב טיוטה</span>
+            {' — '}Preview ועריכת עיצוב פעילים. גישה לניהול אורחים ו-WhatsApp תיפתח לאחר אישור.
+          </div>
+        )}
 
         {/* Page header */}
         <div className="flex items-center justify-between mb-7">
