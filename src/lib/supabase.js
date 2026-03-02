@@ -267,3 +267,43 @@ export const submitRsvp = async (rsvpData, eventId) => {
     throw new Error('אירעה שגיאה בשליחת האישור. אנא נסו שוב.');
   }
 };
+
+/**
+ * Fetch the event linked to the currently authenticated user.
+ * Returns null if the user has no event yet (new user → show onboarding).
+ */
+export const fetchEventForUser = async () => {
+  if (!supabase) throw new Error('Supabase is not configured');
+  const { data, error } = await supabase
+    .from('user_events')
+    .select('role, events(id, slug, template_id, content_config, event_date, automation_config, status)')
+    .limit(1)
+    .maybeSingle();
+  if (error) throw error;
+  return data?.events ?? null;
+};
+
+/**
+ * Create a new draft event and link it to the currently authenticated user.
+ * Called at the end of the onboarding wizard.
+ */
+export const createOnboardingEvent = async ({ slug, templateId, contentConfig }) => {
+  if (!supabase) throw new Error('Supabase is not configured');
+
+  const { data: event, error: eventError } = await supabase
+    .from('events')
+    .insert({ slug, template_id: templateId, content_config: contentConfig, status: 'draft' })
+    .select('id')
+    .single();
+  if (eventError) throw eventError;
+
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) throw new Error('Not authenticated');
+
+  const { error: linkError } = await supabase
+    .from('user_events')
+    .insert({ user_id: user.id, event_id: event.id, role: 'owner' });
+  if (linkError) throw linkError;
+
+  return event;
+};
