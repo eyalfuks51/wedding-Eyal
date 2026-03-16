@@ -7,17 +7,17 @@
 
 ### Database & Schema
 
-- [ ] **DB-01**: `public.users` table has `is_super_admin` boolean column (default false)
-- [ ] **DB-02**: Migration is non-breaking — all existing users get `is_super_admin = false`
+- [x] **DB-01**: `public.users` table has `is_super_admin` boolean column (default false)
+- [x] **DB-02**: Migration is non-breaking — all existing users get `is_super_admin = false`
 
 ### Multi-Event Context
 
 - [ ] **CTX-01**: `EventContext` fetches array of events for the authenticated user
-- [ ] **CTX-02**: Super admin users (`is_super_admin = true`) can fetch all events across the platform
+- [x] **CTX-02**: Super admin users (`is_super_admin = true`) can fetch all events across the platform
 - [ ] **CTX-03**: Regular users see only events linked via `user_events` join table
 - [ ] **CTX-04**: `currentEvent` state managed in context with `switchEvent(id)` method
 - [ ] **CTX-05**: `currentEventId` persisted in localStorage, falls back to first event on fresh login
-- [ ] **CTX-06**: `supabase.js` has query functions for multi-event fetching (all events + user events)
+- [x] **CTX-06**: `supabase.js` has query functions for multi-event fetching (all events + user events)
 
 ### Onboarding
 
@@ -93,14 +93,14 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DB-01 | Phase 1 | Pending |
-| DB-02 | Phase 1 | Pending |
+| DB-01 | Phase 1 | Complete |
+| DB-02 | Phase 1 | Complete |
 | CTX-01 | Phase 1 | Pending |
-| CTX-02 | Phase 1 | Pending |
+| CTX-02 | Phase 1 | Complete |
 | CTX-03 | Phase 1 | Pending |
 | CTX-04 | Phase 1 | Pending |
 | CTX-05 | Phase 1 | Pending |
-| CTX-06 | Phase 1 | Pending |
+| CTX-06 | Phase 1 | Complete |
 | ONB-01 | Phase 2 | Pending |
 | ONB-02 | Phase 2 | Pending |
 | ONB-03 | Phase 2 | Pending |
