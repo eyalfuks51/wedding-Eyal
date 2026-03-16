@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 04-01-PLAN.md (event switcher dropdown)
-last_updated: "2026-03-16T19:37:55.354Z"
+stopped_at: Completed 05-01-PLAN.md (UpgradeModal component + Timeline tab visibility)
+last_updated: "2026-03-16T19:54:56.491Z"
 last_activity: 2026-03-16 -- Completed 04-01 (Event Switcher dropdown in DashboardNav)
 progress:
   total_phases: 5
   completed_phases: 4
-  total_plans: 6
-  completed_plans: 6
+  total_plans: 9
+  completed_plans: 7
   percent: 80
 ---
 
@@ -56,6 +56,7 @@ Progress: [████████░░] 80%
 | Phase 02 P02 | 5 | 2 tasks | 1 files |
 | Phase 03 P01 | 5 | 2 tasks | 5 files |
 | Phase 04 P01 | 2 | 2 tasks | 2 files |
+| Phase 05-paywalls-upgrade-modal P01 | 2 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -82,6 +83,8 @@ Recent decisions affecting current work:
 - [Phase 03-01]: Dashboard.tsx redirect guard removed — draft users see guest table, Phase 5 adds UpgradeModal intercepts
 - [Phase 04-01]: EventSwitcher self-handles visibility via null return — DashboardNav renders unconditionally
 - [Phase 04-01]: mt-2 spacing between switcher and tabs only visible when switcher renders
+- [Phase 05-01]: UpgradeModal uses fixed backdrop + pointer-events pattern (NOT Radix Dialog) for consistency with StageEditModal
+- [Phase 05-01]: Timeline gateKey set to null — tab always visible so draft users can discover premium features
 
 ### Pending Todos
 
@@ -93,6 +96,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-16T19:33:11Z
-Stopped at: Completed 04-01-PLAN.md (event switcher dropdown)
+Last session: 2026-03-16T19:54:56.489Z
+Stopped at: Completed 05-01-PLAN.md (UpgradeModal component + Timeline tab visibility)
 Resume file: None

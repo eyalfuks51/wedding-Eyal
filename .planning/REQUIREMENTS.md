@@ -53,11 +53,11 @@
 
 ### Upgrade Modal
 
-- [ ] **UPG-01**: Reusable `UpgradeModal` component at `src/components/ui/UpgradeModal.tsx`
-- [ ] **UPG-02**: Modal uses existing design system (GlassCard/Radix Dialog patterns)
-- [ ] **UPG-03**: Modal explains premium benefits (unlimited guests, Excel import, WhatsApp automation)
-- [ ] **UPG-04**: "Upgrade" button shows "Coming Soon — Integration with Payment Gateway" toast
-- [ ] **UPG-05**: Modal is Hebrew RTL with `font-brand` / `font-danidin` typography
+- [x] **UPG-01**: Reusable `UpgradeModal` component at `src/components/ui/UpgradeModal.tsx`
+- [x] **UPG-02**: Modal uses existing design system (GlassCard/Radix Dialog patterns)
+- [x] **UPG-03**: Modal explains premium benefits (unlimited guests, Excel import, WhatsApp automation)
+- [x] **UPG-04**: "Upgrade" button shows "Coming Soon — Integration with Payment Gateway" toast
+- [x] **UPG-05**: Modal is Hebrew RTL with `font-brand` / `font-danidin` typography
 
 ### Protected Routes
 
@@ -121,11 +121,11 @@
 | PAY-04 | Phase 5 | Pending |
 | PAY-05 | Phase 5 | Pending |
 | PAY-06 | Phase 5 | Pending |
-| UPG-01 | Phase 5 | Pending |
-| UPG-02 | Phase 5 | Pending |
-| UPG-03 | Phase 5 | Pending |
-| UPG-04 | Phase 5 | Pending |
-| UPG-05 | Phase 5 | Pending |
+| UPG-01 | Phase 5 | Complete |
+| UPG-02 | Phase 5 | Complete |
+| UPG-03 | Phase 5 | Complete |
+| UPG-04 | Phase 5 | Complete |
+| UPG-05 | Phase 5 | Complete |
 | AUTH-01 | Phase 1 | Complete |
 | AUTH-02 | Phase 1 | Complete |
 

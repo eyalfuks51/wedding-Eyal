@@ -89,7 +89,7 @@ Plans:
   3. A draft event user adding a guest beyond the 20-guest limit sees the UpgradeModal
   4. The UpgradeModal displays premium benefits in Hebrew RTL and its CTA button shows a "Coming Soon" toast
   5. An active event user never encounters any paywall intercepts
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 
 Plans:
 - [ ] 05-01-PLAN.md -- UpgradeModal component + DashboardNav Timeline tab visibility fix
@@ -107,4 +107,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 2. Onboarding Refinement | 2/2 | Complete   | 2026-03-16 |
 | 3. Feature Gating | 1/1 | Complete   | 2026-03-16 |
 | 4. Dashboard Navigation | 1/1 | Complete   | 2026-03-16 |
-| 5. Paywalls & Upgrade Modal | 0/3 | Not started | - |
+| 5. Paywalls & Upgrade Modal | 1/3 | In Progress|  |
