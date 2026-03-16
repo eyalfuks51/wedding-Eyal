@@ -847,7 +847,7 @@ export default function Dashboard() {
 
   // ── Event data via context (resolved by ProtectedRoute) ──────────────────
   const { currentEvent, isLoading: eventLoading } = useEventContext();
-  const { canManageGuests } = useFeatureAccess();
+  const { canImportGuests, canExportGuests, canSendMessages } = useFeatureAccess();
 
   // ── Invitations loading/error (separate from event loading) ───────────────
   const [invLoading, setInvLoading] = useState(false);
@@ -1187,7 +1187,7 @@ export default function Dashboard() {
   // Invitation reloads must NOT unmount the page (it kills open modals).
   if (eventLoading) return <Spinner />;
   if (error)        return <ErrorView message={error} />;
-  if (!canManageGuests) return <Navigate to="/dashboard/settings" replace />;
+  // Draft users (canImportGuests=false) can still view the guest table.
 
   const colSpan = 6
     + (colVis.side       ? 1 : 0)

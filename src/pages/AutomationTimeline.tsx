@@ -714,7 +714,7 @@ function ToastContainer({ toasts }: { toasts: Toast[] }) {
 
 export default function AutomationTimeline() {
   const { currentEvent, isLoading: eventLoading } = useEventContext();
-  const { canManageGuests } = useFeatureAccess();
+  const { canAccessTimeline } = useFeatureAccess();
 
   const [settings, setSettings]       = useState<AutomationSettingRow[]>([]);
   const [stats, setStats]             = useState<Record<string, StageStats>>({});
@@ -960,7 +960,7 @@ export default function AutomationTimeline() {
     ? (DYNAMIC_NUDGE_NAMES as readonly string[]).includes(editSetting.stage_name)
     : false;
 
-  if (!canManageGuests) return <Navigate to="/dashboard/settings" replace />;
+  if (!canAccessTimeline) return <Navigate to="/dashboard/settings" replace />;
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-brand" dir="rtl">

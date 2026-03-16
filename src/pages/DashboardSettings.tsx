@@ -267,7 +267,7 @@ function SettingsSkeleton() {
 
 export default function DashboardSettings() {
   const { currentEvent, isLoading: eventLoading } = useEventContext();
-  const { canManageGuests } = useFeatureAccess();
+  const { canAccessTimeline } = useFeatureAccess();
   const [draft, setDraft]       = useState<ContentConfig>({});
   const [original, setOriginal] = useState<ContentConfig>({});
   const [saving, setSaving]     = useState(false);
@@ -356,7 +356,7 @@ export default function DashboardSettings() {
       <div className="mx-auto max-w-7xl">
         <DashboardNav />
 
-        {!canManageGuests && (
+        {!canAccessTimeline && (
           <div
             dir="rtl"
             className="mb-6 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800 font-brand"

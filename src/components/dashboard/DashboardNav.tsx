@@ -2,17 +2,17 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useFeatureAccess } from '@/hooks/useFeatureAccess';
 
 const ALL_TABS = [
-  { path: '/dashboard',          label: 'אורחים',  requiresActive: true  },
-  { path: '/dashboard/timeline', label: 'ציר זמן', requiresActive: true  },
-  { path: '/dashboard/settings', label: 'הגדרות',  requiresActive: false },
+  { path: '/dashboard',          label: 'אורחים',  gateKey: null                           },
+  { path: '/dashboard/timeline', label: 'ציר זמן', gateKey: 'canAccessTimeline' as const   },
+  { path: '/dashboard/settings', label: 'הגדרות',  gateKey: null                           },
 ] as const;
 
 export default function DashboardNav() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { canManageGuests } = useFeatureAccess();
+  const access = useFeatureAccess();
 
-  const tabs = ALL_TABS.filter(tab => !tab.requiresActive || canManageGuests);
+  const tabs = ALL_TABS.filter(tab => !tab.gateKey || access[tab.gateKey]);
 
   return (
     <nav dir="rtl" className="flex gap-1 bg-white/60 backdrop-blur-sm rounded-xl p-1 mb-6 w-fit font-brand">
