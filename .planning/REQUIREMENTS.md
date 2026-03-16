@@ -21,11 +21,11 @@
 
 ### Onboarding
 
-- [ ] **ONB-01**: Onboarding page is standalone — does NOT render `DashboardNav`
+- [x] **ONB-01**: Onboarding page is standalone — does NOT render `DashboardNav`
 - [x] **ONB-02**: Wizard creates event with `status = 'draft'` and auto-generates slug
 - [x] **ONB-03**: Wizard links new event to user via `user_events` table
-- [ ] **ONB-04**: On completion, user sees success UI with their live public link (`/:slug`)
-- [ ] **ONB-05**: After success, user is redirected to `/dashboard/settings`
+- [x] **ONB-04**: On completion, user sees success UI with their live public link (`/:slug`)
+- [x] **ONB-05**: After success, user is redirected to `/dashboard/settings`
 
 ### Feature Gating
 
@@ -101,11 +101,11 @@
 | CTX-04 | Phase 1 | Complete |
 | CTX-05 | Phase 1 | Complete |
 | CTX-06 | Phase 1 | Complete |
-| ONB-01 | Phase 2 | Pending |
+| ONB-01 | Phase 2 | Complete |
 | ONB-02 | Phase 2 | Complete |
 | ONB-03 | Phase 2 | Complete |
-| ONB-04 | Phase 2 | Pending |
-| ONB-05 | Phase 2 | Pending |
+| ONB-04 | Phase 2 | Complete |
+| ONB-05 | Phase 2 | Complete |
 | GATE-01 | Phase 3 | Pending |
 | GATE-02 | Phase 3 | Pending |
 | GATE-03 | Phase 3 | Pending |

@@ -13,7 +13,7 @@ Transform the existing single-event Wedding RSVP platform into a freemium multi-
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Database & Multi-Event Context** - Schema migration and EventContext refactor for multi-event support (completed 2026-03-16)
-- [ ] **Phase 2: Onboarding Refinement** - Standalone wizard creates draft events with success UX
+- [x] **Phase 2: Onboarding Refinement** - Standalone wizard creates draft events with success UX (completed 2026-03-16)
 - [ ] **Phase 3: Feature Gating** - useFeatureAccess hook enforces draft/active permission boundaries
 - [ ] **Phase 4: Dashboard Navigation** - Event Switcher dropdown and multi-event routing
 - [ ] **Phase 5: Paywalls & Upgrade Modal** - Intercept premium actions with UpgradeModal for draft events
@@ -45,7 +45,7 @@ Plans:
   2. Completing the wizard creates an event with status 'draft' and a working public URL
   3. After completion, the user sees a success screen with their live link, then is redirected to /dashboard/settings
   4. The new event appears in the user's event list (via user_events join)
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 - [ ] 02-01-PLAN.md -- Data layer fixes (createOnboardingEvent + slug generation) + auth guard on /onboarding
@@ -105,7 +105,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Database & Multi-Event Context | 2/2 | Complete   | 2026-03-16 |
-| 2. Onboarding Refinement | 1/2 | In Progress|  |
+| 2. Onboarding Refinement | 2/2 | Complete   | 2026-03-16 |
 | 3. Feature Gating | 0/2 | Not started | - |
 | 4. Dashboard Navigation | 0/1 | Not started | - |
 | 5. Paywalls & Upgrade Modal | 0/3 | Not started | - |
