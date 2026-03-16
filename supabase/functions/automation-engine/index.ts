@@ -12,9 +12,10 @@ interface AutomationSetting {
   days_before:   number;
   target_status: string;
   event: {
-    event_date:     string;
-    slug:           string;
-    content_config: Record<string, unknown>;
+    event_date:       string;
+    slug:             string;
+    content_config:   Record<string, unknown>;
+    automation_config: { auto_pilot?: boolean } | null;
   };
 }
 
@@ -102,7 +103,7 @@ serve(async (req) => {
     .from("automation_settings")
     .select(`
       id, event_id, stage_name, days_before, target_status,
-      event:events ( event_date, slug, content_config )
+      event:events ( event_date, slug, content_config, automation_config )
     `)
     .eq("is_active", true);
 
@@ -129,6 +130,17 @@ serve(async (req) => {
 
   for (const setting of settings) {
     const { event_id, stage_name, days_before, target_status, event } = setting;
+
+    // Auto-pilot gate: skip queuing new messages if the event owner has paused automation.
+    // Already-queued pending rows are unaffected — the scheduler will still dispatch them.
+    const autoPilotEnabled = event.automation_config?.auto_pilot ?? true;
+    if (!autoPilotEnabled) {
+      console.log(
+        `[automation-engine] Skipping ${stage_name} for event ${event_id} — auto_pilot is off.`,
+      );
+      stageResults.push({ stage: stage_name, event_id, queued: 0, skipped: 0 });
+      continue;
+    }
 
     // Calculate days until the event (floored to whole days)
     const eventDate = new Date(event.event_date);

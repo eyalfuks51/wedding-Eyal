@@ -9,8 +9,6 @@
 //
 // Assets (all from /assets/templates/elegant/):
 //   monstrea.png        → hero top-right, pushed into margin
-//   necklace.png        → footer bottom-right corner
-//   Wine explotion.png  → full-width section divider (schedule → RSVP)
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
@@ -31,7 +29,7 @@ $white:        #FEFEFE;
 .el {
   direction:  rtl;
   min-height: 100dvh;
-  overflow-x: hidden;
+  overflow-x: clip;
   background: $cream-1;
   font-family: 'Polin', 'Heebo', sans-serif;
   font-weight: 400;
@@ -282,23 +280,6 @@ $white:        #FEFEFE;
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // WINE EXPLOSION — full-width section divider
-  // ─────────────────────────────────────────────────────────────────────────
-  &__wine-divider {
-    width:       100%;
-    overflow:    hidden;
-    line-height: 0;        // prevents inline-block gap beneath the img
-    display:     block;
-
-    img {
-      width:      100%;
-      height:     auto;
-      display:    block;
-      object-fit: cover;
-    }
-  }
-
-  // ─────────────────────────────────────────────────────────────────────────
   // RSVP WRAPPER — overrides for Boho-Luxe brand fit
   // ─────────────────────────────────────────────────────────────────────────
   &__rsvp-wrapper {
@@ -459,28 +440,14 @@ $white:        #FEFEFE;
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // FOOTER — necklace anchored at bottom-right
+  // FOOTER
   // ─────────────────────────────────────────────────────────────────────────
   &__footer {
     position:   relative;
     background: $forest-deep;
-    padding:    2.5rem 2rem 3.5rem;   // extra bottom padding gives necklace space
+    padding:    2.5rem 2rem;
     text-align: center;
-    overflow:   visible;              // allow necklace to slightly bleed beyond
-  }
-
-  // Necklace: bottom-right corner, natural angle, partially off-screen
-  &__asset--necklace {
-    bottom:    -10px;
-    right:     -8px;
-    width:     min(42vw, 240px);
-    transform: rotate(3deg);           // subtle tilt matching its natural drape angle
-
-    @media (max-width: 480px) {
-      width:  min(52vw, 190px);
-      bottom: -6px;
-      right:  -10px;
-    }
+    overflow:   hidden;
   }
 
   &__footer-inner {

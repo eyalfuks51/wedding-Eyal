@@ -3,8 +3,6 @@
  *
  * HARDCODED (specific to this template's assets & aesthetic):
  *   • monstrea.png      — hero top-right corner (pushed far into margin, text-safe)
- *   • necklace.png      — footer bottom-right corner
- *   • Wine explotion.png — full-width divider between schedule and RSVP
  *   • Color palette: warm cream + deep forest green + champagne gold
  *   • Typography: same fonts as WeddingDefaultTemplate
  *     (Danidin for names, Gravitas One for dates/titles, Dancing Script for quote, Polin/Heebo body)
@@ -94,24 +92,6 @@ function ElegantTemplate({ event, config = {} }) {
         {
           y: 0, opacity: 1, duration: 0.85, ease: 'power2.out',
           scrollTrigger: { trigger: '.el__closing-block', start: 'top 85%', once: true },
-        }
-      );
-
-      // ── Wine divider: cinematic fade + subtle de-scale ──
-      gsap.fromTo('.el__wine-divider',
-        { opacity: 0, scale: 1.04 },
-        {
-          opacity: 1, scale: 1, duration: 1.3, ease: 'power2.out',
-          scrollTrigger: { trigger: '.el__wine-divider', start: 'top 88%', once: true },
-        }
-      );
-
-      // ── Necklace in footer: slides in from bottom-right on scroll ──
-      gsap.fromTo('.el__asset--necklace',
-        { x: 40, y: 30, opacity: 0 },
-        {
-          x: 0, y: 0, opacity: 1, duration: 1.2, ease: 'power2.out',
-          scrollTrigger: { trigger: '.el__footer', start: 'top 90%', once: true },
         }
       );
 
@@ -232,16 +212,6 @@ function ElegantTemplate({ event, config = {} }) {
       )}
 
       {/* ════════════════════════════════════════
-          WINE EXPLOSION — full-width section divider
-      ════════════════════════════════════════ */}
-      <div className="el__wine-divider" aria-hidden="true">
-        <img
-          src="/assets/templates/elegant/Wine explotion.png"
-          alt=""
-        />
-      </div>
-
-      {/* ════════════════════════════════════════
           RSVP
       ════════════════════════════════════════ */}
       <div className="el__rsvp-wrapper">
@@ -293,14 +263,9 @@ function ElegantTemplate({ event, config = {} }) {
       </section>
 
       {/* ════════════════════════════════════════
-          FOOTER — necklace anchored bottom-right
+          FOOTER
       ════════════════════════════════════════ */}
       <footer className="el__footer">
-
-        {/* Necklace: drifts in from bottom-right corner */}
-        <div className="el__asset el__asset--necklace" aria-hidden="true">
-          <img src="/assets/templates/elegant/necklace.png" alt="" />
-        </div>
 
         <div className="el__footer-inner">
           <p className="el__developed-by">

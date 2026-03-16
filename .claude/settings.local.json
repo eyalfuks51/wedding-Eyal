@@ -1,10 +1,48 @@
 {
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
   "permissions": {
     "allow": [
       "Bash(cd /c/dev/github/personal/Wedding-Eyal && npm install react-router-dom 2>&1)",
       "Bash(cd /c/dev/github/personal/Wedding-Eyal && npm run build 2>&1)",
       "Bash(ls:*)",
-      "Bash(cd /c/dev/github/personal/Wedding-Eyal && npm install lucide-react && npm install -D tailwindcss@3 postcss autoprefixer 2>&1)"
+      "Bash(cd /c/dev/github/personal/Wedding-Eyal && npm install lucide-react && npm install -D tailwindcss@3 postcss autoprefixer 2>&1)",
+      "Bash(cd:*)",
+      "Bash(node:*)",
+      "Bash(powershell:*)",
+      "Bash(printf:*)",
+      "Bash(cd /c/dev/github/personal/Wedding-Eyal && npm run lint 2>&1)",
+      "Bash(cd /c/dev/github/personal/Wedding-Eyal && npx eslint src/components/dashboard/EditGuestSheet.tsx 2>&1)",
+      "Bash(git:*)",
+      "Bash(cd /c/dev/github/personal/Wedding-Eyal && npx eslint src/pages/Dashboard.tsx 2>&1)",
+      "Bash(cd /c/dev/github/personal/Wedding-Eyal && npx tsc --noEmit 2>&1)",
+      "Bash(cd /c/dev/github/personal/Wedding-Eyal && npx eslint src/pages/Dashboard.tsx src/components/dashboard/EditGuestSheet.tsx 2>&1)",
+      "Bash(npx tsc:*)",
+      "Bash(rm:*)",
+      "WebFetch(domain:yahoo-fantasy-node-docs.vercel.app)",
+      "WebFetch(domain:developer.yahoo.com)",
+      "Bash(npm install:*)",
+      "Bash(npx vite:*)",
+      "Bash(xargs grep -l \"interface\\\\|type\")",
+      "Bash(find . -name \"*.sql\" -type f -exec grep -l \"events\" {} ;)",
+      "Bash(xargs grep -l \"events.*RLS\\\\|enable.*rls\\\\|ALTER TABLE events\")",
+      "Bash(xargs grep -l \"CREATE TABLE events\")",
+      "Bash(npm test:*)",
+      "Read(//c/dev/screenshots//**)",
+      "Bash(curl -s http://localhost:5173/src/lib/guest-excel.ts)",
+      "Bash(curl -s http://localhost:5173/src/components/dashboard/GuestUploadModal.tsx)",
+      "Bash(npm run:*)",
+      "Bash(npx supabase:*)",
+      "Read(//c/Users/Eyal/.claude/plugins/cache/ui-ux-pro-max-skill/ui-ux-pro-max/2.0.1/.claude/skills/ui-ux-pro-max/**)",
+      "Bash(python scripts/search.py \"wedding invitation RSVP elegant luxury premium romantic\" --design-system -p \"WeddingModernTemplate\" -f markdown)",
+      "Bash(python3:*)",
+      "Bash(py:*)",
+      "Bash(dir:*)"
+    ],
+    "additionalDirectories": [
+      "C:\\dev\\github\\personal\\the-grind-fantasy\\src\\pages",
+      "C:\\dev\\github\\personal\\the-grind-fantasy\\src\\services"
     ]
   }
 }

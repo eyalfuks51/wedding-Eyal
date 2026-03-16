@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
-import { Upload, Download, FileSpreadsheet, CheckCircle2, AlertTriangle, X, Loader2 } from 'lucide-react';
+import { Upload, Download, FileSpreadsheet, CheckCircle2, AlertTriangle, XCircle, X, Loader2 } from 'lucide-react';
 import { downloadTemplate, parseGuestFile, type ParseResult } from '@/lib/guest-excel';
 import { bulkUpsertInvitations } from '@/lib/supabase';
 
@@ -49,38 +49,54 @@ export default function GuestUploadModal({ isOpen, eventId, onClose, onSuccess }
     setError(null);
     setStep('uploading');
 
+    // Step 1: Parse the file — if this fails, go back to instructions
+    let result: ParseResult;
     try {
-      const result = await parseGuestFile(file);
-      setParseResult(result);
-
-      if (result.valid.length === 0 && result.errors.length > 0) {
-        // All rows failed validation — show results immediately
-        setStep('results');
-        setProcessing(false);
-        return;
-      }
-
-      if (result.valid.length === 0) {
-        setError('הקובץ ריק — לא נמצאו שורות עם נתונים');
-        setStep('instructions');
-        setProcessing(false);
-        return;
-      }
-
-      // Upsert valid rows
-      const upsert = await bulkUpsertInvitations(eventId, result.valid);
-      setUpsertResult(upsert);
-      setStep('results');
-
-      // If any rows succeeded, notify parent to refresh
-      if (upsert.inserted > 0 || upsert.updated > 0) {
-        onSuccess();
-      }
+      result = await parseGuestFile(file);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'שגיאה בעיבוד הקובץ');
       setStep('instructions');
-    } finally {
       setProcessing(false);
+      return;
+    }
+
+    setParseResult(result);
+
+    // Edge case: all rows failed validation
+    if (result.valid.length === 0 && result.errors.length > 0) {
+      setStep('results');
+      setProcessing(false);
+      return;
+    }
+
+    // Edge case: completely empty file
+    if (result.valid.length === 0) {
+      setError('הקובץ ריק — לא נמצאו שורות עם נתונים');
+      setStep('instructions');
+      setProcessing(false);
+      return;
+    }
+
+    // Step 2: Upsert valid rows — errors are captured, never thrown
+    let upsert: UpsertResult = { inserted: 0, updated: 0, errors: [] };
+    try {
+      upsert = await bulkUpsertInvitations(eventId, result.valid);
+    } catch (upsertErr: unknown) {
+      upsert.errors.push({
+        group_name: 'שגיאת מערכת',
+        phone: '',
+        error: upsertErr instanceof Error ? upsertErr.message : 'שגיאה בשמירה לבסיס הנתונים',
+      });
+    }
+
+    // Step 3: ALWAYS show results — no outer catch can override this
+    setUpsertResult(upsert);
+    setStep('results');
+    setProcessing(false);
+
+    // Step 4: Notify parent to refresh (isolated — cannot affect results display)
+    if (upsert.inserted > 0 || upsert.updated > 0) {
+      try { onSuccess(); } catch { /* never interfere with results */ }
     }
   };
 
@@ -178,12 +194,25 @@ export default function GuestUploadModal({ isOpen, eventId, onClose, onSuccess }
             {/* ─── Step: Results ─── */}
             {step === 'results' && (
               <div className="space-y-4">
-                {/* Success summary */}
+                {/* Conditional header message */}
+                {upsertResult && (upsertResult.inserted > 0 || upsertResult.updated > 0) && (
+                  <p className="text-sm font-medium text-slate-700 font-brand text-center">
+                    {(parseResult?.warnings?.length ?? 0) > 0 ||
+                     (parseResult?.errors?.length ?? 0) > 0 ||
+                     (upsertResult?.errors?.length ?? 0) > 0
+                      ? 'הקובץ נקלט בהצלחה, אך שים לב לפרטים הבאים:'
+                      : 'הקובץ נקלט בהצלחה'}
+                  </p>
+                )}
+
+                {/* ✅ Success count banner */}
                 {upsertResult && (upsertResult.inserted > 0 || upsertResult.updated > 0) && (
                   <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 font-brand">
                     <div className="flex items-center gap-2 text-emerald-700 mb-1">
                       <CheckCircle2 className="w-4 h-4" />
-                      <span className="text-sm font-medium">העלאה הושלמה בהצלחה</span>
+                      <span className="text-sm font-medium">
+                        נקלטו בהצלחה: {upsertResult.inserted + upsertResult.updated} רשומות
+                      </span>
                     </div>
                     <div className="flex gap-4 text-xs text-emerald-600 mt-1">
                       {upsertResult.inserted > 0 && <span>{upsertResult.inserted} נוספו</span>}
@@ -192,34 +221,43 @@ export default function GuestUploadModal({ isOpen, eventId, onClose, onSuccess }
                   </div>
                 )}
 
-                {/* Validation errors from parsing */}
-                {parseResult && parseResult.errors.length > 0 && (
+                {/* ⚠️ Warnings section (amber) */}
+                {parseResult && (parseResult.warnings?.length ?? 0) > 0 && (
                   <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 font-brand">
                     <div className="flex items-center gap-2 text-amber-700 mb-2">
                       <AlertTriangle className="w-4 h-4" />
-                      <span className="text-sm font-medium">{parseResult.errors.length} שורות לא עלו (ולידציה)</span>
+                      <span className="text-sm font-medium">
+                        אזהרות ({parseResult.warnings.length}) — נקלטו אך דורשות השלמה ידנית
+                      </span>
                     </div>
                     <div className="max-h-40 overflow-y-auto space-y-1.5">
-                      {parseResult.errors.map((err, i) => (
+                      {parseResult.warnings.map((w, i) => (
                         <div key={i} className="text-xs text-amber-800 bg-amber-100/60 rounded-lg px-3 py-1.5">
-                          <span className="font-medium">{err.group_name}</span>
-                          <span className="text-amber-600"> — {err.errors.join(', ')}</span>
+                          {w.message}
                         </div>
                       ))}
                     </div>
                   </div>
                 )}
 
-                {/* DB errors from upsert */}
-                {upsertResult && upsertResult.errors.length > 0 && (
+                {/* ❌ Errors section (rose) — combined parse + upsert errors */}
+                {((parseResult?.errors?.length ?? 0) > 0 || (upsertResult?.errors?.length ?? 0) > 0) && (
                   <div className="bg-rose-50 border border-rose-200 rounded-xl px-4 py-3 font-brand">
                     <div className="flex items-center gap-2 text-rose-700 mb-2">
-                      <AlertTriangle className="w-4 h-4" />
-                      <span className="text-sm font-medium">{upsertResult.errors.length} שגיאות שמירה</span>
+                      <XCircle className="w-4 h-4" />
+                      <span className="text-sm font-medium">
+                        לא נקלטו ({(parseResult?.errors?.length ?? 0) + (upsertResult?.errors?.length ?? 0)})
+                      </span>
                     </div>
                     <div className="max-h-40 overflow-y-auto space-y-1.5">
-                      {upsertResult.errors.map((err, i) => (
-                        <div key={i} className="text-xs text-rose-800 bg-rose-100/60 rounded-lg px-3 py-1.5">
+                      {parseResult?.errors?.map((err, i) => (
+                        <div key={`parse-${i}`} className="text-xs text-rose-800 bg-rose-100/60 rounded-lg px-3 py-1.5">
+                          <span className="font-medium">שורה {err.row_number}</span>
+                          <span className="text-rose-600"> — {err.errors.join(', ')}</span>
+                        </div>
+                      ))}
+                      {upsertResult?.errors?.map((err, i) => (
+                        <div key={`db-${i}`} className="text-xs text-rose-800 bg-rose-100/60 rounded-lg px-3 py-1.5">
                           <span className="font-medium">{err.group_name}</span>
                           <span className="text-rose-600"> — {err.error}</span>
                         </div>
@@ -229,7 +267,7 @@ export default function GuestUploadModal({ isOpen, eventId, onClose, onSuccess }
                 )}
 
                 {/* All failed, no success */}
-                {upsertResult && upsertResult.inserted === 0 && upsertResult.updated === 0 && upsertResult.errors.length > 0 && (
+                {upsertResult && upsertResult.inserted === 0 && upsertResult.updated === 0 && (
                   <div className="text-center text-sm text-slate-500 font-brand py-2">
                     לא הועלו מוזמנים. תקנו את השגיאות ונסו שוב.
                   </div>

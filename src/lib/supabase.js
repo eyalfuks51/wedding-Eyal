@@ -193,8 +193,9 @@ export const bulkUpsertInvitations = async (eventId, guests) => {
   const errors = [];
 
   for (const guest of guests) {
-    const primaryPhone = guest.phone_numbers[0];
-    const existingId = phoneToId.get(primaryPhone);
+    const primaryPhone = guest.phone_numbers[0] ?? null;
+    const existingId = primaryPhone ? phoneToId.get(primaryPhone) : undefined;
+    const dbGroupName = guest.group_name?.trim() || '';
 
     try {
       if (existingId) {
@@ -202,7 +203,7 @@ export const bulkUpsertInvitations = async (eventId, guests) => {
         const { error } = await supabase
           .from('invitations')
           .update({
-            group_name: guest.group_name,
+            group_name: dbGroupName,
             phone_numbers: guest.phone_numbers,
             invited_pax: guest.invited_pax,
             side: guest.side,
@@ -218,7 +219,7 @@ export const bulkUpsertInvitations = async (eventId, guests) => {
           .from('invitations')
           .insert({
             event_id: eventId,
-            group_name: guest.group_name,
+            group_name: dbGroupName,
             phone_numbers: guest.phone_numbers,
             invited_pax: guest.invited_pax,
             confirmed_pax: 0,
@@ -233,8 +234,8 @@ export const bulkUpsertInvitations = async (eventId, guests) => {
       }
     } catch (err) {
       errors.push({
-        group_name: guest.group_name,
-        phone: primaryPhone,
+        group_name: dbGroupName || 'ללא שם',
+        phone: primaryPhone || '',
         error: err.message || 'שגיאה לא ידועה',
       });
     }

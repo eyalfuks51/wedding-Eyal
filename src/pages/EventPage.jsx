@@ -3,12 +3,14 @@ import { useParams } from 'react-router-dom';
 import { useEvent } from '../hooks/useEvent';
 import WeddingDefaultTemplate from '../templates/WeddingDefaultTemplate/WeddingDefaultTemplate';
 import ElegantTemplate from '../templates/ElegantTemplate/ElegantTemplate';
+import WeddingModernTemplate from '../templates/WeddingModernTemplate/WeddingModernTemplate';
 import NotFoundPage from './NotFoundPage';
 
 // Register new templates here. The key must match event.template_id in the DB.
 const TEMPLATES = {
   'wedding-default': WeddingDefaultTemplate,
   'elegant':         ElegantTemplate,
+  'wedding-modern':  WeddingModernTemplate,
 };
 
 function LoadingSpinner() {

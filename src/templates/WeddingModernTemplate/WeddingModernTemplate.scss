@@ -1,0 +1,626 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// WeddingModernTemplate — "Zine / Retro Bold"
+//
+// Palette from refGREEN.png:
+//   $green   — vivid kelly green (hero, schedule sections)
+//   $mustard — bold yellow (RSVP section, title badges, accents)
+//   $orange  — burnt orange/tomato (directions section)
+//   $black   — near-black borders, hard shadows, outlines
+//   $white   — card surfaces, form backgrounds
+//
+// Key techniques:
+//   • CSS linear-gradient grid overlay on every section
+//   • box-shadow: Xpx Xpx 0 $black  — hard retro shadow, zero blur
+//   • filter: drop-shadow()          — shadow follows clip-path contour
+//   • clip-path: polygon(…)          — jagged ticket edges on RSVP card
+//   • Inline SVG daisies / clovers / stamp — declarative in JSX
+//
+// BEM namespace: .wm
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── Design tokens ─────────────────────────────────────────────────────────────
+$green:   #35A853;
+$mustard: #F5C518;
+$orange:  #E05A2B;
+$black:   #111111;
+$white:   #FAFAFA;
+
+// ── Mixins ────────────────────────────────────────────────────────────────────
+
+// Fine square grid drawn over a solid colour
+@mixin grid-bg($line: rgba(0,0,0,0.09), $size: 26px) {
+  background-image:
+    linear-gradient($line 1px, transparent 1px),
+    linear-gradient(90deg, $line 1px, transparent 1px);
+  background-size: $size $size;
+}
+
+// Hard-edged drop shadow — no blur radius
+@mixin hard($x: 5px, $y: 5px, $c: $black) {
+  box-shadow: #{$x} #{$y} 0 $c;
+}
+
+// ── Base ──────────────────────────────────────────────────────────────────────
+.wm {
+  direction:   rtl;
+  min-height:  100dvh;
+  overflow-x:  clip;
+  font-family: 'Polin', 'Heebo', sans-serif;
+  background:  $green;
+
+  // ── Shared decoration positioning ──────────────────────────────────────────
+  &__deco {
+    position:       absolute;
+    pointer-events: none;
+    z-index:        2;
+    user-select:    none;
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  //  HERO
+  // ════════════════════════════════════════════════════════════════════════════
+  &__hero {
+    position:        relative;
+    min-height:      100dvh;
+    background-color: $green;
+    @include grid-bg(rgba(0,0,0,0.11), 26px);
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    padding:         5rem 1.5rem 4rem;
+    text-align:      center;
+    overflow:        hidden;
+  }
+
+  // Floating deco positions
+  &__deco--hero-tl { top: -10px;  left: -15px;  transform: rotate(-18deg); }
+  &__deco--hero-tr { top: 10px;   right: -8px;  transform: rotate(14deg);  }
+  &__deco--hero-br { bottom: 48px; right: 24px; transform: rotate(9deg);   }
+  &__deco--hero-bl { bottom: 16px; left: 16px;  transform: rotate(-6deg);  opacity: 0.82; }
+
+  // Black content box — hard shadow, thick border
+  &__hero-box {
+    position:   relative;
+    z-index:    3;
+    max-width:  560px;
+    width:      100%;
+    background: $black;
+    border:     3px solid $black;
+    padding:    2.5rem 2rem;
+    @include hard(8px, 8px, $mustard);
+  }
+
+  &__quote {
+    font-family:   'Dancing Script', cursive;
+    font-size:     clamp(1rem, 3vw, 1.3rem);
+    color:         $mustard;
+    line-height:   1.6;
+    margin-bottom: 0.6rem;
+    direction:     ltr;
+  }
+
+  &__names {
+    font-family:    'Danidin', serif;
+    font-size:      clamp(4rem, 14vw, 7.5rem);
+    font-weight:    700;
+    color:          $mustard;
+    line-height:    0.9;
+    letter-spacing: 0.02em;
+    margin:         0.5rem 0;
+    // Stacked text shadow — retro depth effect
+    text-shadow:    5px 5px 0 $black, -2px -2px 0 rgba(0,0,0,0.25);
+    direction:      rtl;
+  }
+
+  &__invitation {
+    font-size:   clamp(0.84rem, 2.2vw, 0.94rem);
+    color:       rgba($white, 0.75);
+    line-height: 1.85;
+    margin-top:  0.4rem;
+  }
+
+  // Date block: bordered mustard accent box
+  &__date-block {
+    display:         flex;
+    flex-direction:  column;
+    align-items:     center;
+    gap:             0.1rem;
+    margin:          1rem auto;
+    padding:         0.85rem 1.25rem;
+    border:          2px solid $mustard;
+    @include hard(4px, 4px, $mustard);
+    max-width:       260px;
+  }
+
+  &__date-dow {
+    font-size:      0.67rem;
+    color:          $mustard;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    font-weight:    700;
+  }
+
+  &__date-number {
+    font-family:    'Gravitas One', serif;
+    font-size:      clamp(2.4rem, 10vw, 5.5rem);
+    color:          $white;
+    letter-spacing: 0.08em;
+    line-height:    1;
+    direction:      ltr;
+  }
+
+  &__date-heb {
+    font-size: 0.76rem;
+    color:     rgba($white, 0.58);
+    direction: rtl;
+  }
+
+  // Venue: mustard label tag
+  &__venue-tag {
+    display:         inline-flex;
+    flex-direction:  column;
+    align-items:     center;
+    gap:             0.15rem;
+    margin-top:      1rem;
+    background:      $mustard;
+    border:          2px solid $black;
+    padding:         0.55rem 1.1rem;
+    @include hard(3px, 3px);
+  }
+
+  &__venue-name {
+    font-family:    'Gravitas One', serif;
+    font-size:      clamp(1rem, 3.5vw, 1.3rem);
+    color:          $black;
+    letter-spacing: 0.03em;
+  }
+
+  &__venue-address {
+    font-size: 0.8rem;
+    color:     rgba($black, 0.6);
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  //  RSVP
+  // ════════════════════════════════════════════════════════════════════════════
+  &__rsvp-section {
+    position:         relative;
+    background-color: $mustard;
+    @include grid-bg(rgba(0,0,0,0.08), 26px);
+    padding:          3rem 1.5rem 4rem;
+    display:          flex;
+    justify-content:  center;
+    overflow:         hidden;
+  }
+
+  &__deco--rsvp-tr { top: 12px;  right: 12px; transform: rotate(22deg);  }
+  &__deco--rsvp-bl { bottom: 20px; left: 10px; transform: rotate(-14deg); }
+
+  // Wrapper: filter:drop-shadow follows the clip-path contour of .wm__rsvp-card
+  &__rsvp-shadow {
+    width:     100%;
+    max-width: 480px;
+    // 0-blur outline + hard offset shadow — both follow the jagged clip-path
+    filter:
+      drop-shadow(0 0 1.5px #{$black})
+      drop-shadow(6px 6px 0 #{$black});
+  }
+
+  // Ticket card: jagged top + bottom via clip-path polygon
+  &__rsvp-card {
+    background: $white;
+    overflow:   hidden;
+    clip-path: polygon(
+      /* ── jagged top edge (40 teeth, 2.5% pitch, 3.5% deep) ── */
+      0% 3.5%,   2.5% 0%,   5% 3.5%,   7.5% 0%,   10% 3.5%,
+      12.5% 0%,  15% 3.5%,  17.5% 0%,  20% 3.5%,   22.5% 0%,
+      25% 3.5%,  27.5% 0%,  30% 3.5%,  32.5% 0%,   35% 3.5%,
+      37.5% 0%,  40% 3.5%,  42.5% 0%,  45% 3.5%,   47.5% 0%,
+      50% 3.5%,  52.5% 0%,  55% 3.5%,  57.5% 0%,   60% 3.5%,
+      62.5% 0%,  65% 3.5%,  67.5% 0%,  70% 3.5%,   72.5% 0%,
+      75% 3.5%,  77.5% 0%,  80% 3.5%,  82.5% 0%,   85% 3.5%,
+      87.5% 0%,  90% 3.5%,  92.5% 0%,  95% 3.5%,   97.5% 0%,
+      100% 3.5%,
+      /* ── right side ── */
+      100% 96.5%,
+      /* ── jagged bottom edge (reverse) ── */
+      97.5% 100%,  95% 96.5%,  92.5% 100%,  90% 96.5%,
+      87.5% 100%,  85% 96.5%,  82.5% 100%,  80% 96.5%,
+      77.5% 100%,  75% 96.5%,  72.5% 100%,  70% 96.5%,
+      67.5% 100%,  65% 96.5%,  62.5% 100%,  60% 96.5%,
+      57.5% 100%,  55% 96.5%,  52.5% 100%,  50% 96.5%,
+      47.5% 100%,  45% 96.5%,  42.5% 100%,  40% 96.5%,
+      37.5% 100%,  35% 96.5%,  32.5% 100%,  30% 96.5%,
+      27.5% 100%,  25% 96.5%,  22.5% 100%,  20% 96.5%,
+      17.5% 100%,  15% 96.5%,  12.5% 100%,  10% 96.5%,
+       7.5% 100%,   5% 96.5%,   2.5% 100%,   0% 96.5%
+    );
+
+    // ── RsvpForm overrides (visual only — no logic change) ──────────────────
+
+    // Strip frame images / WeddingDefault decorations
+    .frame-border-top,
+    .frame-border-bottom,
+    .rsvp__decoration { display: none; }
+
+    .rsvp.red-border {
+      border:     none;
+      background: transparent;
+      max-width:  100%;
+    }
+
+    .rsvp__container {
+      max-width: 100%;
+      padding:   2.75rem 2rem 3.25rem;
+    }
+
+    .rsvp__title {
+      font-family:    'Danidin', serif;
+      font-size:      clamp(1.9rem, 5.5vw, 2.4rem);
+      color:          $black;
+      text-shadow:    3px 3px 0 $mustard;
+      letter-spacing: 0.02em;
+    }
+
+    .rsvp__explanation {
+      font-size:   0.84rem;
+      color:       rgba($black, 0.62);
+      line-height: 1.8;
+    }
+
+    // Inputs: square corners, hard shadow
+    .rsvp__input,
+    .rsvp__select {
+      border-radius: 0;
+      border:        2px solid $black;
+      font-family:   'Polin', 'Heebo', sans-serif;
+      color:         $black;
+      background:    $white;
+      @include hard(3px, 3px);
+      transition:    box-shadow 0.12s ease;
+
+      &:focus {
+        outline:    none;
+        box-shadow: 3px 3px 0 $mustard;
+      }
+    }
+
+    // Yes/No toggle buttons
+    .rsvp__button {
+      border-radius: 0;
+      border:        2px solid $black;
+      color:         $black;
+      background:    $white;
+      font-family:   'Polin', 'Heebo', sans-serif;
+      font-weight:   700;
+      cursor:        pointer;
+      @include hard(3px, 3px);
+      transition:    box-shadow 0.1s ease, transform 0.1s ease;
+
+      &:hover {
+        background:  $mustard;
+        box-shadow:  2px 2px 0 $black;
+        transform:   translate(1px, 1px);
+      }
+
+      &--active {
+        background:  $black;
+        color:       $mustard;
+        box-shadow:  2px 2px 0 $mustard;
+      }
+
+      &--decline.rsvp__button--active {
+        background:  $orange;
+        color:       $white;
+        box-shadow:  2px 2px 0 $black;
+      }
+    }
+
+    // Conditional sub-section (parking, guest count)
+    .rsvp__conditional {
+      border-radius: 0;
+      background:    rgba($mustard, 0.12);
+      border-left:   4px solid $mustard;
+    }
+
+    // Custom checkbox
+    .rsvp__checkbox-custom {
+      border-radius: 0;
+      border:        2px solid $black;
+    }
+
+    .rsvp__checkbox:checked + .rsvp__checkbox-custom {
+      background:   $black;
+      border-color: $black;
+    }
+
+    // Submit: orange, uppercase, hard shadow — the loudest element
+    .rsvp__submit {
+      background:     $orange;
+      color:          $white;
+      border-radius:  0;
+      border:         2px solid $black;
+      font-family:    'Polin', 'Heebo', sans-serif;
+      font-size:      1rem;
+      font-weight:    700;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      padding:        0.9rem;
+      margin-top:     0.75rem;
+      cursor:         pointer;
+      @include hard(5px, 5px);
+      transition:     box-shadow 0.1s ease, transform 0.1s ease;
+
+      &:hover:not(:disabled) {
+        box-shadow: 2px 2px 0 $black;
+        transform:  translate(3px, 3px);
+      }
+
+      &:disabled {
+        background: rgba($black, 0.15);
+        color:      rgba($black, 0.35);
+        box-shadow: none;
+        cursor:     not-allowed;
+      }
+    }
+
+    // Error & success states
+    .rsvp__error {
+      border-radius: 0;
+      background:    rgba($orange, 0.1);
+      color:         $orange;
+      border:        2px solid $orange;
+    }
+
+    .rsvp__success-icon  {
+      background:    $green;
+      color:         $white;
+      border-radius: 0;
+      border:        2px solid $black;
+    }
+    .rsvp__success-title { color: $black; }
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  //  SCHEDULE
+  // ════════════════════════════════════════════════════════════════════════════
+  &__schedule-section {
+    position:         relative;
+    background-color: $green;
+    @include grid-bg(rgba(0,0,0,0.1), 26px);
+    padding:          4.5rem 2rem 5rem;
+    text-align:       center;
+    overflow:         hidden;
+  }
+
+  &__deco--sched-tl { top: 16px;    left: 16px;   transform: rotate(-12deg); opacity: 0.75; }
+  &__deco--sched-br { bottom: 20px; right: 20px;  transform: rotate(10deg);  opacity: 0.75; }
+
+  &__schedule-inner {
+    position:  relative;
+    max-width: 640px;
+    margin:    0 auto;
+    z-index:   2;
+  }
+
+  // Label badge: mustard pill, hard shadow
+  &__section-label {
+    display:        inline-block;
+    font-family:    'Gravitas One', serif;
+    font-size:      clamp(1.4rem, 4.5vw, 1.9rem);
+    color:          $black;
+    background:     $mustard;
+    padding:        0.3rem 1.4rem;
+    border:         3px solid $black;
+    @include hard(5px, 5px);
+    letter-spacing: 0.07em;
+    margin-bottom:  2.5rem;
+  }
+
+  &__schedule {
+    display:         flex;
+    justify-content: center;
+    gap:             1.75rem;
+    direction:       ltr;
+    flex-wrap:       wrap;
+
+    @media (max-width: 480px) { gap: 1.25rem; }
+  }
+
+  &__schedule-item {
+    display:        flex;
+    flex-direction: column;
+    align-items:    center;
+    gap:            0.55rem;
+    background:     $white;
+    border:         2px solid $black;
+    padding:        1.1rem 1.25rem 0.9rem;
+    @include hard(4px, 4px);
+    min-width:      88px;
+  }
+
+  // Icon square: mustard badge
+  &__schedule-icon-wrap {
+    width:           48px;
+    height:          48px;
+    background:      $mustard;
+    border:          2px solid $black;
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    flex-shrink:     0;
+  }
+
+  &__schedule-icon {
+    width:      30px;
+    height:     30px;
+    object-fit: contain;
+    filter:     brightness(0);
+  }
+
+  &__schedule-time {
+    font-family:    'Gravitas One', serif;
+    font-size:      1.05rem;
+    color:          $black;
+    letter-spacing: 0.04em;
+    direction:      ltr;
+  }
+
+  &__schedule-label {
+    font-size: 0.8rem;
+    color:     rgba($black, 0.65);
+    direction: rtl;
+  }
+
+  // Closing message: black box, mustard Dancing Script
+  &__closing-block {
+    max-width: 460px;
+    margin:    2.5rem auto 0;
+    padding:   1.5rem 1.75rem;
+    background: $black;
+    border:     2px solid $black;
+    @include hard(6px, 6px, $mustard);
+    text-align: center;
+  }
+
+  &__footer-note {
+    font-size:   0.87rem;
+    color:       rgba($white, 0.72);
+    line-height: 1.85;
+    white-space: pre-line;
+  }
+
+  &__closing {
+    font-family:    'Dancing Script', cursive;
+    font-size:      clamp(1.1rem, 3vw, 1.4rem);
+    color:          $mustard;
+    line-height:    1.75;
+    white-space:    pre-line;
+    margin-top:     0.5rem;
+    letter-spacing: 0.01em;
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  //  DIRECTIONS
+  // ════════════════════════════════════════════════════════════════════════════
+  &__directions {
+    position:         relative;
+    background-color: $orange;
+    @include grid-bg(rgba(0,0,0,0.10), 26px);
+    padding:          4.5rem 2rem 5rem;
+    text-align:       center;
+    overflow:         hidden;
+  }
+
+  &__deco--dir-tr { top: 18px; right: 18px; transform: rotate(16deg); opacity: 0.88; }
+
+  &__directions-inner {
+    position:  relative;
+    max-width: 560px;
+    margin:    0 auto;
+    z-index:   2;
+  }
+
+  &__directions-title {
+    display:        inline-block;
+    font-family:    'Gravitas One', serif;
+    font-size:      clamp(1.9rem, 6vw, 2.9rem);
+    color:          $black;
+    background:     $white;
+    padding:        0.25rem 1.25rem;
+    border:         3px solid $black;
+    @include hard(7px, 7px);
+    margin-bottom:  2.5rem;
+    letter-spacing: 0.04em;
+  }
+
+  &__transport-item {
+    display:        flex;
+    flex-direction: column;
+    gap:            0.3rem;
+    margin:         1.25rem 0;
+    padding:        0.75rem 1rem;
+    border:         2px solid $black;
+    background:     rgba($white, 0.12);
+    @include hard(3px, 3px);
+  }
+
+  &__transport-label {
+    font-size:      0.67rem;
+    color:          $black;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    font-weight:    700;
+    background:     $mustard;
+    padding:        0.1rem 0.45rem;
+    align-self:     flex-start;
+  }
+
+  &__transport-value {
+    font-size:   0.92rem;
+    color:       $black;
+    line-height: 1.65;
+  }
+
+  &__address {
+    font-size:   0.78rem;
+    color:       rgba($black, 0.5);
+    margin-top:  1.25rem;
+  }
+
+  // CTA button: black with mustard shadow
+  &__nav-btn {
+    display:         inline-block;
+    margin-top:      2rem;
+    padding:         0.72rem 2.75rem;
+    background:      $black;
+    color:           $mustard;
+    font-family:     'Polin', 'Heebo', sans-serif;
+    font-size:       0.9rem;
+    font-weight:     700;
+    letter-spacing:  0.12em;
+    text-transform:  uppercase;
+    text-decoration: none;
+    border:          3px solid $black;
+    cursor:          pointer;
+    @include hard(6px, 6px, $mustard);
+    transition:      box-shadow 0.1s ease, transform 0.1s ease;
+
+    &:hover {
+      box-shadow:      3px 3px 0 $mustard;
+      transform:       translate(3px, 3px);
+      text-decoration: none;
+    }
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  //  FOOTER
+  // ════════════════════════════════════════════════════════════════════════════
+  &__footer {
+    background: $black;
+    padding:    2.5rem 2rem;
+    text-align: center;
+  }
+
+  &__developed-by {
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    gap:             0.5rem;
+    font-size:       0.78rem;
+    color:           rgba($white, 0.28);
+  }
+
+  &__footer-link {
+    display:     flex;
+    align-items: center;
+    color:       inherit;
+    &:hover { text-decoration: none; }
+  }
+
+  &__footer-logo {
+    width:   48px;
+    opacity: 0.32;
+    filter:  invert(1);
+  }
+}

@@ -39,7 +39,7 @@ export default function LivePreview({ event, config, width = 320 }: LivePreviewP
     <div className="flex flex-col items-center gap-3">
       {/* Phone frame shell */}
       <div
-        className="relative rounded-[2.5rem] border-[6px] border-slate-800 bg-slate-800 shadow-2xl overflow-hidden"
+        className="relative rounded-[2.5rem] border-[6px] border-solid border-slate-800 bg-slate-800 shadow-2xl overflow-hidden"
         style={{ width: `${width + 12}px`, height: `${frameH + 12}px` }}
       >
         {/* Notch */}
@@ -52,13 +52,15 @@ export default function LivePreview({ event, config, width = 320 }: LivePreviewP
           onLoad={sendConfig}
           title="תצוגה מקדימה"
           style={{
+            position:        'absolute',
+            top:             0,
+            left:            0,
             display:         'block',
             width:           `${PHONE_W}px`,
             height:          `${PHONE_H}px`,
             border:          'none',
             transform:       `scale(${scale})`,
             transformOrigin: 'top left',
-            pointerEvents:   'none',
           }}
         />
       </div>
