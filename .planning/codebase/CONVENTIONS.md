@@ -1,158 +1,103 @@
 # Coding Conventions
 
-**Analysis Date:** 2026-03-03
+## Language & Type System
 
-## Naming Patterns
+- **Mixed JS/TS codebase:** Original pages and templates in `.jsx`, newer dashboard and auth code in `.tsx`
+- **TypeScript:** `strict: false`, `allowJs: true`, `checkJs: false` — relaxed typing
+- **Interfaces over types:** Dashboard components define interfaces inline (e.g., `interface Invitation`, `interface MessageLog`)
+- **No shared type definitions file** — types are defined locally where used, sometimes re-exported (e.g., `Invitation` from `EditGuestSheet.tsx`)
 
-**Files:**
-- React components: PascalCase (e.g., `EditGuestSheet.tsx`, `DashboardNav.tsx`)
-- Custom hooks: `use` prefix in camelCase (e.g., `useEvent.js`, `useEventContext.tsx`, `useFeatureAccess.ts`)
-- Utility modules: camelCase (e.g., `supabase.js`, `guest-excel.ts`, `utils.ts`)
-- Constants files: lowercase with hyphens for multi-word (e.g., `constants.ts`)
-- Type/interface files: Same as content (not separate `.d.ts` files)
+## Component Patterns
 
-**Functions:**
-- camelCase for all function names (including React components if lowercase, e.g., `submitRsvp`, `fetchEventBySlug`)
-- Async functions named descriptively (e.g., `fetchEventBySlug`, `bulkUpsertInvitations`, `updateEventContentConfig`)
-- Helper/micro-functions within components often use camelCase (e.g., `handleSubmit`, `handleInputChange`, `setForm`)
+### React Components
+- **Function components only** — no class components anywhere
+- **Named exports** for reusable components (e.g., `export function ProtectedRoute`)
+- **Default exports** for pages and templates (e.g., `export default function LoginPage`)
+- **Props destructuring** in function signature
+- **Hooks at top of component** — standard React hook ordering
 
-**Variables:**
-- camelCase for state and local variables (e.g., `eventData`, `formError`, `isSaving`, `phoneToId`)
-- UPPER_SNAKE_CASE for module-level constants (e.g., `CANONICAL_STAGES`, `DYNAMIC_NUDGE_NAMES`, `ALL_STAGE_NAMES`, `EMPTY_FORM`)
-- Single-letter abbreviations acceptable in tight loops (e.g., `s` for stage, `d` for date)
-- Boolean flags prefixed with `is` or `has` (e.g., `isLoading`, `isActive`, `hasError`, `isAutomated`)
+### State Management
+- **React Context** for global state:
+  - `AuthContext` — auth session (user, signOut)
+  - `EventContext` — current user's event data (for dashboard)
+- **Local state** via `useState` for component-level concerns
+- **No Redux, Zustand, or other state libraries**
+- **No React Query or SWR** — data fetching is manual `useEffect` + `useState`
 
-**Types:**
-- PascalCase for all type/interface names (e.g., `EditGuestSheetProps`, `Invitation`, `RsvpStatus`, `AutomationSettingRow`)
-- Type unions and discriminated unions preferred over enums (e.g., `RsvpStatus = 'pending' | 'attending' | 'declined'`)
-- Generic types named descriptively (e.g., `WhatsAppTemplates = Record<string, { singular: string; plural: string }>`)
+### Data Fetching Pattern
+```jsx
+// Consistent pattern across the codebase:
+const [data, setData] = useState(null);
+const [loading, setLoading] = useState(true);
 
-## Code Style
+useEffect(() => {
+  let cancelled = false;
+  fetchSomething()
+    .then(result => { if (!cancelled) setData(result); })
+    .finally(() => { if (!cancelled) setLoading(false); });
+  return () => { cancelled = true; };
+}, [dependency]);
+```
 
-**Formatting:**
-- No Prettier config present — code follows ESLint rules and manual consistency
-- Semicolons required at end of statements
-- Single quotes in JSX attributes and strings (observed in most files)
-- Trailing commas in multi-line objects/arrays
-- 2-space indentation (standard JS/TS)
+### Supabase Data Access
+- **Centralized in `src/lib/supabase.js`** — all queries, mutations, and RPC calls
+- **Thin wrappers:** Each function does one Supabase call, throws on error
+- **No caching layer** — every call hits the database directly
+- **Error pattern:** `if (error) throw error` — errors bubble to calling component
 
-**Linting:**
-- Tool: ESLint v9.39.1 with flat config (`eslint.config.js`)
-- Extends: `@eslint/js` recommended, `eslint-plugin-react-hooks/flat/recommended`, `eslint-plugin-react-refresh/vite`
-- Key rule: `no-unused-vars` set to `error` but with pattern `^[A-Z_]` to allow uppercase/underscore-prefixed unused variables (likely for intentional patterns or exports)
-- No React-specific linting rule overrides beyond hooks/refresh plugins
+## Styling Approach
 
-**TypeScript:**
-- `tsconfig.json` has `strict: false` — type safety is optional, not enforced
-- `allowJs: true` and `checkJs: false` — allows mixed `.js` and `.ts` files without type-checking all `.js`
-- JSX compiled with `react-jsx` (modern JSX transform, no React import required)
+### Dual System: SCSS + Tailwind
+- **Templates and shared components:** SCSS files co-located with components
+- **Dashboard and newer pages:** Tailwind utility classes inline
+- **SCSS variables** (`src/styles/_variables.scss`): colors, spacing, typography, breakpoints
+- **SCSS mixins** (`src/styles/_mixins.scss`): responsive breakpoints, flex utilities, button/input bases
+- **Global reset** in `src/styles/global.scss` (Tailwind preflight disabled)
 
-## Import Organization
+### RTL
+- All UI is RTL Hebrew — `direction: rtl` set globally in `body`
+- `dir="rtl"` also set on individual page root divs
+- Tailwind's `text-right` / `text-left` used for alignment overrides
 
-**Order:**
-1. External libraries and React (e.g., `import { useState } from 'react'`)
-2. Lucide/UI icons (e.g., `import { Search, Users } from 'lucide-react'`)
-3. Local utilities and hooks (e.g., `import { supabase } from '@/lib/supabase'`)
-4. Local components (e.g., `import EditGuestSheet from '@/components/dashboard/EditGuestSheet'`)
-5. Type imports (e.g., `import type { Invitation } from '@/components/dashboard/EditGuestSheet'`)
-6. Local styles (e.g., `import './RsvpForm.scss'`)
-
-**Path Aliases:**
-- `@/*` resolves to `./src/*` (configured in `tsconfig.json` and `vite.config.js`)
-- Consistently used throughout: `@/lib/supabase`, `@/components/ui/glass-card`, `@/contexts/EventContext`
-- Always use alias paths, never relative `../../../` imports
+### Design Tokens
+- **Primary accent:** `violet-600` (dashboard), `$primary: #800b21` (templates)
+- **Neutral palette:** `slate-*` (dashboard)
+- **Fonts:** `font-brand` (Polin) for body, `font-danidin` (Danidin) for headings
 
 ## Error Handling
 
-**Patterns:**
-- Async/await with try-catch blocks for error isolation (seen in `supabase.js` module)
-- Supabase calls follow consistent pattern: destructure `{ data, error }`, throw on error
-  ```javascript
-  const { data, error } = await supabase.from('table').select(...);
-  if (error) throw error;
-  return data;
-  ```
-- Component-level errors stored in state (e.g., `formError`, `errorMessage`) and displayed to user
-- Silent failures logged to console on some error paths (e.g., `console.error`, `console.warn`)
-- Cancellation flags used in effect cleanup (e.g., `let cancelled = false; return () => { cancelled = true }`) to prevent state updates on unmounted components
-- No global error boundary observed — error handling is per-component or per-async-function
+- **Supabase functions:** Throw errors with Hebrew messages for user-facing errors
+- **Edge functions:** `try/catch` with structured JSON error responses, console.error logging
+- **Components:** Minimal error boundaries — errors shown via state variables or toast notifications
+- **No global error boundary component**
 
-**Error Messages:**
-- Hebrew error messages used throughout (e.g., "שגיאה בטעינת הנתונים", "שם קבוצה")
-- User-facing messages in Hebrew; internal logging messages can be English or Hebrew
-- Generic fallback messages on parse failures (e.g., `'שגיאה לא ידועה'`)
+## File Organization
 
-## Logging
+- **One component per file** (with occasional small helper components in same file)
+- **Co-located styles:** SCSS files next to their component (e.g., `Hero/Hero.scss`)
+- **Dashboard components flat:** All dashboard-specific components in `src/components/dashboard/`
+- **No barrel files (index.ts)** — direct imports from file paths
 
-**Framework:** `console` only (no logging library)
+## Import Style
 
-**Patterns:**
-- `console.warn()` for non-critical issues (e.g., Supabase credentials missing)
-- `console.error()` for failures and exceptions (e.g., RSVP submission errors)
-- Typically logs error message and minimal context
-- No structured logging; messages are unformatted strings
-- No debug/info/trace levels observed
+- **Absolute imports** with `@/` alias for `src/` (e.g., `import { supabase } from '@/lib/supabase'`)
+- **Relative imports** also used, especially in older code (e.g., `import { useEvent } from '../hooks/useEvent'`)
+- **Named imports preferred** — destructured from modules
+- **Lucide icons imported individually** (e.g., `import { Search, Users } from 'lucide-react'`)
 
-## Comments
+## Edge Function Conventions
 
-**When to Comment:**
-- Section dividers (e.g., `// ─── Types ────────────────────────────────────────────────────────`)
-- JSDoc-style block comments for exported functions (e.g., `/** Fetch all automation_settings rows for an event, ordered by days_before DESC */`)
-- Inline comments for non-obvious logic or workarounds (e.g., explanation of GSAP animation flow, column width calculations)
-- Rarely used for obvious code (most functions are self-documenting)
+- **Deno runtime** with URL imports (`https://deno.land/std`, `https://esm.sh/`)
+- **`serve()` wrapper** from Deno std library
+- **Service role key** for admin operations (bypasses RLS)
+- **Console logging** with `[function-name]` prefix for traceability
+- **Structured JSON responses** with appropriate HTTP status codes
+- **Environment variables** via `Deno.env.get()` with `!` assertion or explicit validation
 
-**JSDoc/TSDoc:**
-- Minimal usage observed
-- When present, follows standard JSDoc format with `/** ... */` blocks
-- Parameters and return types documented in JSDoc (e.g., `/** Update a single automation_settings row (toggle is_active, change days_before) */`)
-- `@deprecated` tags used (e.g., `/** @deprecated Use CANONICAL_STAGES or ALL_STAGE_NAMES instead */`)
+## Database Conventions
 
-## Function Design
-
-**Size:**
-- Most functions 20–80 lines
-- Larger pages/components (e.g., `Dashboard.tsx`) broken into micro-components (e.g., `Spinner`, `ErrorView`, `KpiCard`)
-- Utility functions kept focused (e.g., `normalizePhone`, `isValidPhone` are 1–5 lines each)
-
-**Parameters:**
-- Destructured object parameters preferred (e.g., `{ invitation, sides, onClose, onSave }`)
-- Required parameters passed as direct props; optional params use defaults
-- TypeScript interfaces defined for complex prop shapes (e.g., `EditGuestSheetProps`, `KpiCardProps`)
-
-**Return Values:**
-- Functions return objects for multiple values (e.g., `{ event, loading, notFound }` from `useEvent`)
-- Async functions return single values or throw on error
-- Components return JSX or null (for conditional rendering)
-
-## Module Design
-
-**Exports:**
-- Named exports for reusable components, hooks, utilities (e.g., `export function EditGuestSheet(...)`)
-- Default export for page components (e.g., `export default Dashboard`)
-- Type exports with `export type` or `export interface` when types need to be imported elsewhere
-- Exported types often re-used to avoid duplication (e.g., `EditGuestSheetProps` imported in `Dashboard.tsx`)
-
-**Barrel Files:**
-- NOT used; components are imported from their direct paths (e.g., `@/components/dashboard/EditGuestSheet`, not `@/components/dashboard`)
-- Keeps imports explicit and tree-shaking friendly
-
-## Specific Conventions
-
-**React Hooks:**
-- Custom hooks follow the `use` prefix convention strictly
-- Effect cleanup functions used to prevent state updates on unmounted components
-- State names concise (e.g., `loading`, `event`, `saving`) but unambiguous in context
-
-**Tailwind Utilities:**
-- Font utilities from custom config: `font-brand` (Polin) for body/UI, `font-danidin` (Danidin) for headings
-- Tailwind `preflight: false` in config because `global.scss` handles CSS reset
-- Custom class utilities like `cn()` from `@/lib/utils` for conditional class merging (shadcn-style pattern)
-
-**Async/State Management:**
-- Local component state with `useState` — no global state management library (e.g., Redux, Zustand)
-- Context API used for app-level state (e.g., `EventContext`, `AuthContext`)
-- Supabase client (`@/lib/supabase.js`) acts as the single async data layer — all DB calls go through it
-
----
-
-*Convention analysis: 2026-03-03*
+- **Timestamp-prefixed migrations** (e.g., `20260302100000_auth_multitenant_schema.sql`)
+- **`SECURITY DEFINER` RPCs** with `SET search_path = public` for safety
+- **RLS policies** named descriptively (e.g., `Allow anon select automation_settings`)
+- **JSONB for flexible config** (`content_config`, `automation_config` on `events` table)
+- **Atomic updates via RPC** — `jsonb_set` for partial JSONB updates instead of full-row replacement

@@ -1,140 +1,78 @@
 # External Integrations
 
-**Analysis Date:** 2026-03-03
+## Supabase (Primary Backend)
 
-## APIs & External Services
+**Role:** Database, authentication, real-time, edge functions, RPC
+**Client:** `src/lib/supabase.js` — singleton `createClient` with anon key
+**Auth:** Google OAuth via `supabase.auth.signInWithOAuth({ provider: 'google' })`
 
-**WhatsApp Messaging:**
-- Green API (`api.greenapi.com`) - WhatsApp message delivery provider
-  - SDK/Client: Native Deno `fetch` (HTTP REST API)
-  - Auth: `GREEN_API_INSTANCE_ID` + `GREEN_API_TOKEN` (env vars)
-  - Usage: `supabase/functions/whatsapp-scheduler/index.ts` sends pending messages via `/waInstance{id}/sendMessage/{token}` endpoint
-  - Phone format: Converts Israeli numbers to international format for chatId (`972...@c.us`)
-  - Operating hours: Respects Shabbat schedule (Sun–Thu 09:00–20:59, Fri 09:00–13:59, Sat 20:00–20:59, Asia/Jerusalem timezone)
+### Tables
+- `events` — central event config (slug, template_id, content_config JSONB, automation_config JSONB, status)
+- `invitations` — guest groups with phone numbers, RSVP status, automation opt-out
+- `arrival_permits` — frontend RSVP submissions (upsert by event_id + phone)
+- `message_logs` — WhatsApp message queue and history
+- `automation_settings` — per-stage automation config (days_before, is_active, target_status)
+- `users` — mirrors `auth.users` via trigger
+- `user_events` — join table linking users to events (owner/co-owner roles)
 
-**Google Sheets Sync:**
-- Google Sheets API v4 - RSVP data synchronization
-  - SDK/Client: `npm:google-auth-library@10.3.0` (Deno-compatible)
-  - Auth: Service Account (email + private key)
-    - `GOOGLE_SERVICE_ACCOUNT_EMAIL` - Service account email
-    - `GOOGLE_PRIVATE_KEY` - Private key (newline-escaped)
-  - Usage: `supabase/functions/sync-to-sheets/index.ts` reads/writes guest RSVP data
-  - Endpoints:
-    - `GET /spreadsheets/{id}` - Fetch sheet metadata
-    - `GET /spreadsheets/{id}/values/{sheet}!B:B` - Read phone numbers to find existing rows
-    - `PUT /spreadsheets/{id}/values/{sheet}!A{row}:E{row}` - Update existing row
-    - `POST /spreadsheets/{id}/values/{sheet}!A:E:append` - Append new row
-  - Triggered by database webhook on `arrival_permits` INSERT/UPDATE
+### RPC Functions
+- `update_whatsapp_template(p_event_id, p_stage_name, p_singular, p_plural)` — atomic JSONB patch
+- `toggle_auto_pilot(p_event_id, p_enabled)` — toggle automation master switch
+- `delete_dynamic_nudge(p_setting_id)` — guarded deletion of nudge stages
 
-## Data Storage
+### Database Triggers
+- `sheets_sync_trigger` — fires on `arrival_permits` INSERT/UPDATE → calls `sync-to-sheets` edge function
+- `on_auth_user_created` — fires on `auth.users` INSERT → creates `public.users` row
 
-**Primary Database:**
-- Supabase PostgreSQL
-  - Connection: Via `@supabase/supabase-js` with `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`
-  - Client: Supabase JavaScript SDK (wrapper around PostgREST API)
-  - Tables queried/managed:
-    - `events` - Wedding event configuration, content, automation settings
-    - `invitations` - Guest list with RSVP status
-    - `arrival_permits` - RSVP form submissions from attendees
-    - `message_logs` - WhatsApp message history and queue
-    - `automation_settings` - Funnel stage configuration (icebreaker, nudge, ultimatum, etc.)
-    - `user_events` - User-to-event relationships for multi-tenant auth
-  - RLS (Row-Level Security): Enabled for `arrival_permits` (anon can INSERT/UPDATE/SELECT)
-  - RPCs (Stored Procedures):
-    - `update_whatsapp_template(p_event_id, p_stage_name, p_singular, p_plural)` - Atomically updates WhatsApp message templates
-    - `toggle_auto_pilot(p_event_id, p_enabled)` - Toggles automation master switch
-    - `delete_dynamic_nudge(p_setting_id)` - Deletes a nudge stage (guarded, fails if messages exist)
+### RLS Policies
+- `arrival_permits` — anon SELECT, INSERT, UPDATE (all open)
+- `automation_settings` — anon SELECT, UPDATE, INSERT (with stage_name whitelist)
 
-**File Storage:**
-- Not used - Local filesystem only (no cloud storage integration)
+## Google Sheets API
 
-**Caching:**
-- Not detected - Queries run direct to Supabase; no Redis/Memcached
+**Role:** Sync RSVP data to Google Sheets for external visibility
+**Edge Function:** `supabase/functions/sync-to-sheets/index.ts`
+**Auth:** Google Service Account (`GOOGLE_SERVICE_ACCOUNT_EMAIL`, `GOOGLE_PRIVATE_KEY`)
+**Flow:**
+1. Database webhook triggers on `arrival_permits` changes
+2. Edge function queries `events.google_sheet_id`
+3. Searches column B for phone number → updates existing row or appends new row
+**API:** Google Sheets v4 REST API (direct `fetch` calls, no SDK)
 
-## Authentication & Identity
+## Green API (WhatsApp)
 
-**Auth Provider:**
-- Supabase Auth (built-in PostgreSQL auth)
-  - Implementation: Custom email/password flow with session management
-  - Session stored in `AuthContext.tsx` via `supabase.auth.getSession()` and `onAuthStateChange()` listener
-  - User-to-event mapping via `user_events` table (multi-tenant)
-  - Protected routes via `ProtectedRoute` component that checks `useAuth()` context
-  - Env vars: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
+**Role:** Outbound WhatsApp messaging for automated RSVP follow-ups
+**Edge Functions:**
+- `supabase/functions/whatsapp-scheduler/index.ts` — processes pending `message_logs`, sends via Green API
+- `supabase/functions/whatsapp-webhook/index.ts` — receives inbound messages, sends auto-reply (PAUSED)
 
-**Feature Gating:**
-- Custom hook: `useFeatureAccess()` in `src/hooks/useFeatureAccess.ts`
-  - Checks `events.status` field (draft vs active) to gate automation UI features
-  - Draft users see limited dashboard; active users see full feature set
+**Credentials:** `GREEN_API_INSTANCE_ID`, `GREEN_API_TOKEN` (per-request validation in scheduler)
+**API Endpoint:** `https://api.greenapi.com/waInstance{id}/sendMessage/{token}`
+**Phone Format:** Israeli numbers normalized to `972XXXXXXXXX@c.us`
+**Operating Hours:** Sun-Thu 09-21, Fri 09-14, Sat 20-21 (Asia/Jerusalem timezone)
+**Batch Size:** Up to 15 pending messages per invocation
 
-## Monitoring & Observability
+## Automation Engine
 
-**Error Tracking:**
-- Not detected - No Sentry, DataDog, or similar
+**Edge Function:** `supabase/functions/automation-engine/index.ts`
+**Role:** Evaluates automation stages and queues messages into `message_logs`
+**Flow:**
+1. Fetches all active `automation_settings` with joined event data
+2. Checks auto-pilot gate, event date proximity, stage timing
+3. Fetches eligible invitations by `rsvp_status` and `is_automated` flag
+4. Deduplicates against existing `message_logs`
+5. Interpolates WhatsApp templates with `{{name}}`, `{{couple_names}}`, `{{link}}`, `{{waze_link}}`
+6. Bulk inserts new `pending` rows into `message_logs`
 
-**Logs:**
-- Console logging via `console.log()` and `console.error()` in:
-  - React components (state transitions, form submissions)
-  - Supabase functions (Deno `console.*` in edge functions)
-  - Supabase PostgREST responses (error details logged client-side)
-- Logs visible in: Browser DevTools console, Supabase function logs dashboard
+**Scheduling:** pg_cron jobs configured in `supabase/migrations/20260304090000_schedule_automation_cron.sql`
 
-## CI/CD & Deployment
+## Vercel
 
-**Hosting:**
-- Static site deployment (Vite build output `dist/`)
-  - Can be deployed to: Vercel, Netlify, GitHub Pages, or any static host
-  - Environment variables passed at build/runtime via `.env.local` or platform secrets
+**Role:** Frontend hosting and deployment
+**Config:** `.vercel/project.json` — Vite build output
+**No custom Vercel serverless functions** — all backend logic in Supabase Edge Functions
 
-**Edge Functions Deployment:**
-- Supabase Functions (Deno runtime)
-  - Deployed via `supabase functions deploy` command
-  - Functions located in `supabase/functions/`
-  - Require environment variables set in Supabase dashboard:
-    - `GREEN_API_INSTANCE_ID`, `GREEN_API_TOKEN` (for whatsapp-scheduler)
-    - `GOOGLE_SERVICE_ACCOUNT_EMAIL`, `GOOGLE_PRIVATE_KEY` (for sync-to-sheets)
-    - `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (for admin client in edge functions)
+## Google Fonts (CDN)
 
-**CI Pipeline:**
-- Not detected - Manual deployments only
-
-**Database Migrations:**
-- Supabase migrations framework (`supabase/migrations/`)
-  - Deploy via `supabase db push` command
-  - Versioned SQL files with timestamps
-
-## Environment Configuration
-
-**Required env vars (Frontend):**
-- `VITE_SUPABASE_URL` - Supabase project URL (e.g., `https://your-project.supabase.co`)
-- `VITE_SUPABASE_ANON_KEY` - Public API key for anonymous access
-
-**Required env vars (Edge Functions):**
-- `GREEN_API_INSTANCE_ID` - Green API WhatsApp instance ID
-- `GREEN_API_TOKEN` - Green API authentication token
-- `GOOGLE_SERVICE_ACCOUNT_EMAIL` - Google Cloud service account email
-- `GOOGLE_PRIVATE_KEY` - Google Cloud private key (with newlines encoded as `\\n`)
-- `SUPABASE_URL` - Supabase URL (auto-provided by Supabase)
-- `SUPABASE_SERVICE_ROLE_KEY` - Service role key for admin access (auto-provided by Supabase)
-
-**Secrets location:**
-- Frontend: `.env.local` (git-ignored)
-- Edge Functions: Supabase dashboard → Project Settings → Edge Functions → Secrets
-
-## Webhooks & Callbacks
-
-**Incoming (Database Triggers → Edge Functions):**
-- Database webhook: `sheets_sync_trigger` on `arrival_permits` table
-  - Fires on INSERT or UPDATE
-  - Calls `sync-to-sheets` edge function with webhook payload
-  - Syncs RSVP data to Google Sheets
-
-**Outgoing:**
-- Edge function: `whatsapp-scheduler` can be invoked via HTTP (polling or cron)
-  - Endpoint: `https://{project-id}.supabase.co/functions/v1/whatsapp-scheduler`
-  - Method: POST (optional `force_run=true` parameter to bypass operating hours)
-  - Returns: `{ processed, success, failed }`
-- Edge function: `whatsapp-webhook` (defined but not fully documented; inbound WhatsApp callbacks)
-
----
-
-*Integration audit: 2026-03-03*
+**Imported in:** `src/styles/global.scss`
+**Fonts:** Dancing Script, Heebo, Gravitas One, Rubik (fallbacks for templates)

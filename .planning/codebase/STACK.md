@@ -1,122 +1,68 @@
 # Technology Stack
 
-**Analysis Date:** 2026-03-03
+## Languages & Runtime
 
-## Languages
+| Layer | Language | Version |
+|-------|----------|---------|
+| Frontend | JavaScript (JSX) + TypeScript (TSX) | ES2020 target |
+| Backend (Edge Functions) | TypeScript | Deno runtime |
+| Database | SQL (PostgreSQL) | via Supabase |
+| Styling | SCSS + Tailwind CSS 3 | |
 
-**Primary:**
-- JavaScript (ES2020, ES2024 syntax support) - Frontend React components, utilities, hooks
-- TypeScript (4.x, strict mode disabled) - Type annotations for context, hooks, dashboard pages, edge functions
-- JSX/TSX - React component syntax throughout
+**Mixed JS/TS codebase:** Templates and core pages use `.jsx`, dashboard and newer components use `.tsx`. `strict: false` in `tsconfig.json`, `allowJs: true`.
 
-**Secondary:**
-- SCSS 1.97.3 - Component styling, template designs, global styles
-- BASH/Shell - Build scripts, Supabase migrations
-- Deno - Supabase edge functions (TypeScript runtime)
+## Frontend Framework
 
-## Runtime
+- **React 19** (`react@^19.2.0`, `react-dom@^19.2.0`)
+- **React Router 7** (`react-router-dom@^7.13.0`) — file-based route definitions in `src/App.jsx`
+- **Vite 7** (`vite@^7.2.4`) with `@vitejs/plugin-react`
+- **Entry point:** `src/main.jsx` → `BrowserRouter` → `AuthProvider` → `App`
 
-**Environment:**
-- Node.js 18+ (inferred from ES2020+ target)
+## Styling
 
-**Package Manager:**
-- npm (lockfile: `package-lock.json` present)
+- **Tailwind CSS 3** (`tailwindcss@^3.4.19`) — `preflight: false` (CSS reset handled by `global.scss`)
+- **SCSS** (`sass@^1.97.3`) — variables in `src/styles/_variables.scss`, mixins in `src/styles/_mixins.scss`
+- **PostCSS** with `autoprefixer` — configured inline in `vite.config.js`
+- **Custom fonts:** Polin (brand body), Danidin (display headings) — `@font-face` in `src/styles/global.scss`
+- **Tailwind utilities:** `font-brand` (Polin), `font-danidin` (Danidin) — configured in `tailwind.config.js`
+- **cn() utility:** `src/lib/utils.ts` — shadcn-style `clsx` + `tailwind-merge`
 
-## Frameworks
+## UI Libraries
 
-**Core:**
-- React 19.2.0 - Main UI framework
-- React Router 7.13.0 - Client-side routing (public event pages + protected admin dashboard)
-- React DOM 19.2.0 - DOM rendering
+- **Radix UI:** `@radix-ui/react-dialog` (Sheet drawer), `@radix-ui/react-label`, `@radix-ui/react-slot`
+- **Lucide React** (`lucide-react@^0.575.0`) — icon library
+- **class-variance-authority** (`cva@^0.7.1`) — component variant management
+- **GSAP** (`gsap@^3.14.2`) — scroll animations (used in `WeddingDefaultTemplate`)
+- **Custom glass-card component:** `src/components/ui/glass-card.tsx` — glassmorphism card primitives
 
-**Styling & UI Components:**
-- Tailwind CSS 3.4.19 - Utility-first CSS with custom font configuration
-- PostCSS 8.5.6 + Autoprefixer 10.4.24 - CSS processing pipeline
-- SCSS/Sass 1.97.3 - Compiled stylesheets for components and templates
-- Radix UI primitives:
-  - `@radix-ui/react-dialog` 1.1.15 - Modal/Sheet primitives
-  - `@radix-ui/react-label` 2.1.8 - Form labels
-  - `@radix-ui/react-slot` 1.2.4 - Slot composition pattern
-- class-variance-authority 0.7.1 - Component variant system
-- clsx 2.1.1 - Conditional class name merging
-- tailwind-merge 3.5.0 - Smart Tailwind class merging
+## Data & Backend
 
-**Icons & Graphics:**
-- Lucide React 0.575.0 - SVG icon library (used in dashboard, timeline, forms)
-- GSAP 3.14.2 - Animation library (scroll animations in Hero, RsvpForm, Map components, ElegantTemplate)
+- **Supabase JS** (`@supabase/supabase-js@^2.94.0`) — database client, auth, RPC calls
+- **Environment variables:** `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (via `import.meta.env`)
 
-**Tables & Data Export:**
-- xlsx 0.18.5 - Excel file parsing and generation (guest upload/download in dashboard)
-- file-saver 2.0.5 - Client-side file download utility
+## File Handling
 
-## Testing & Development
+- **xlsx** (`xlsx@^0.18.5`) — Excel template generation and guest list parsing
+- **file-saver** (`file-saver@^2.0.5`) — client-side file download
 
-**Linting:**
-- ESLint 9.39.1 - JavaScript/JSX linting
-  - @eslint/js 9.39.1 - ESLint recommended rules
-  - eslint-plugin-react-hooks 7.0.1 - React hooks rules
-  - eslint-plugin-react-refresh 0.4.24 - Vite/React refresh support
-- Globals 16.5.0 - Global variable definitions for ESLint
+## Build & Tooling
 
-**Build & Dev Server:**
-- Vite 7.2.4 - Build tool and dev server
-- @vitejs/plugin-react 5.1.1 - React JSX/Fast Refresh support
+- **Vite 7** — dev server, HMR, production builds
+- **ESLint 9** — `eslint-plugin-react-hooks`, `eslint-plugin-react-refresh` (JS/JSX files only)
+- **Path aliases:** `@/` → `src/` (configured in both `vite.config.js` and `tsconfig.json`)
+- **No test framework configured** — no Jest, Vitest, or testing dependencies
 
-**Code Generation & Types:**
-- @types/react 19.2.5 - React type definitions
-- @types/react-dom 19.2.3 - React DOM type definitions
-- @types/file-saver 2.0.7 - file-saver type definitions
+## Deployment
 
-## Key Dependencies
+- **Vercel** — `.vercel/project.json` present, Vite build output
+- **Supabase Edge Functions** — deployed separately (Deno runtime)
 
-**Critical:**
-- @supabase/supabase-js 2.94.0 - Supabase client for database, auth, and RPC calls
-  - Used in: `src/lib/supabase.js`, `src/contexts/AuthContext.tsx`, all dashboard pages
-  - Provides: Real-time subscriptions, PostgreSQL client, authentication state management
-- react-router-dom 7.13.0 - Client routing for multi-page SPA
+## Configuration Files
 
-**Infrastructure:**
-- Supabase (PostgreSQL backend) - Primary data store and authentication
-- Deno runtime - Supabase edge function runtime (`supabase/functions/`)
-
-## Configuration
-
-**Environment:**
-- `.env.local` - Local development credentials (not committed)
-- `.env.example` - Template for required environment variables
-  - `VITE_SUPABASE_URL` - Supabase project URL
-  - `VITE_SUPABASE_ANON_KEY` - Supabase anonymous API key
-
-**Build Configuration:**
-- `vite.config.js` - Vite configuration with React plugin and path aliases
-  - CSS processing: PostCSS + Tailwind + Autoprefixer (inlined)
-  - Path alias: `@/` resolves to `./src/`
-- `tailwind.config.js` - Custom font families (`font-brand` = Polin, `font-danidin` = Danidin)
-  - Disables preflight (CSS reset handled by `src/styles/global.scss`)
-- `postcss.config.js` - PostCSS plugins (tailwindcss, autoprefixer)
-- `tsconfig.json` - TypeScript configuration
-  - Target: ES2020
-  - JSX: react-jsx (automatic JSX runtime)
-  - Strict mode disabled
-  - Base URL and path aliases configured
-- `eslint.config.js` - ESLint flat config with React hooks and refresh plugins
-
-**Development Entry Points:**
-- `src/main.jsx` - React app root with BrowserRouter + AuthProvider
-- `index.html` - HTML entry point (served by Vite)
-
-## Platform Requirements
-
-**Development:**
-- Node.js 18+
-- npm 8+ (or compatible package manager)
-- Supabase account with configured database
-
-**Production:**
-- Vite build output (`dist/`) deployable to any static hosting (Vercel, Netlify, etc.)
-- Supabase cloud backend (or self-hosted Supabase instance)
-- Deno-compatible runtime for Supabase edge functions (provided by Supabase platform)
-
----
-
-*Stack analysis: 2026-03-03*
+| File | Purpose |
+|------|---------|
+| `vite.config.js` | Vite + React plugin, PostCSS inline config, `@/` alias |
+| `tailwind.config.js` | Content paths, custom font families, `preflight: false` |
+| `tsconfig.json` | `strict: false`, `allowJs: true`, `@/*` path alias |
+| `eslint.config.js` | ESLint 9 flat config, JS/JSX only |
+| `postcss.config.js` | PostCSS config (also inlined in Vite) |
