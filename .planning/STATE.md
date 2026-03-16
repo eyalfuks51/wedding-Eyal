@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 05-01-PLAN.md (UpgradeModal component + Timeline tab visibility)
-last_updated: "2026-03-16T19:54:56.491Z"
+stopped_at: Completed 05-03-PLAN.md (Timeline premium placeholder)
+last_updated: "2026-03-16T19:58:27.785Z"
 last_activity: 2026-03-16 -- Completed 04-01 (Event Switcher dropdown in DashboardNav)
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 9
-  completed_plans: 7
+  completed_plans: 8
   percent: 80
 ---
 
@@ -57,6 +57,7 @@ Progress: [████████░░] 80%
 | Phase 03 P01 | 5 | 2 tasks | 5 files |
 | Phase 04 P01 | 2 | 2 tasks | 2 files |
 | Phase 05-paywalls-upgrade-modal P01 | 2 | 2 tasks | 2 files |
+| Phase 05-paywalls-upgrade-modal P03 | 5 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -85,6 +86,7 @@ Recent decisions affecting current work:
 - [Phase 04-01]: mt-2 spacing between switcher and tabs only visible when switcher renders
 - [Phase 05-01]: UpgradeModal uses fixed backdrop + pointer-events pattern (NOT Radix Dialog) for consistency with StageEditModal
 - [Phase 05-01]: Timeline gateKey set to null — tab always visible so draft users can discover premium features
+- [Phase 05-paywalls-upgrade-modal]: Route-level paywall pattern: declare state hooks before early return, then render full placeholder instead of Navigate redirect
 
 ### Pending Todos
 
@@ -96,6 +98,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-16T19:54:56.489Z
-Stopped at: Completed 05-01-PLAN.md (UpgradeModal component + Timeline tab visibility)
+Last session: 2026-03-16T19:58:27.783Z
+Stopped at: Completed 05-03-PLAN.md (Timeline premium placeholder)
 Resume file: None

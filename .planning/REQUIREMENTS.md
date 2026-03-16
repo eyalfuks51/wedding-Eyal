@@ -44,7 +44,7 @@
 
 ### Paywall Intercepts
 
-- [ ] **PAY-01**: Timeline tab renders "Premium Feature / Upgrade" placeholder when `!canAccessTimeline`
+- [x] **PAY-01**: Timeline tab renders "Premium Feature / Upgrade" placeholder when `!canAccessTimeline`
 - [ ] **PAY-02**: Import button opens `UpgradeModal` instead of upload modal when `!canImportGuests`
 - [ ] **PAY-03**: Export button opens `UpgradeModal` when `!canExportGuests`
 - [ ] **PAY-04**: Add Guest button opens `UpgradeModal` when guest count >= `maxFreeGuests` and status is 'draft'
@@ -115,7 +115,7 @@
 | NAV-01 | Phase 4 | Complete |
 | NAV-02 | Phase 4 | Complete |
 | NAV-03 | Phase 4 | Complete |
-| PAY-01 | Phase 5 | Pending |
+| PAY-01 | Phase 5 | Complete |
 | PAY-02 | Phase 5 | Pending |
 | PAY-03 | Phase 5 | Pending |
 | PAY-04 | Phase 5 | Pending |
