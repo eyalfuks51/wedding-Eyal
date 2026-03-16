@@ -38,6 +38,7 @@ import { TEMPLATE_LABELS, MSG_STATUS_MAP } from '@/components/dashboard/constant
 import DashboardNav from '@/components/dashboard/DashboardNav';
 import GuestUploadModal from '@/components/dashboard/GuestUploadModal';
 import { exportGuests } from '../lib/guest-excel';
+import UpgradeModal from '@/components/ui/UpgradeModal';
 
 interface MessageLog {
   id:            string;
@@ -846,8 +847,8 @@ export default function Dashboard() {
   const [invitations, setInvitations] = useState<Invitation[]>([]);
 
   // ── Event data via context (resolved by ProtectedRoute) ──────────────────
-  const { currentEvent, isLoading: eventLoading } = useEventContext();
-  const { canImportGuests, canExportGuests, canSendMessages } = useFeatureAccess();
+  const { currentEvent, isLoading: eventLoading, isActive } = useEventContext();
+  const { canImportGuests, canExportGuests, canSendMessages, maxFreeGuests } = useFeatureAccess();
 
   // ── Invitations loading/error (separate from event loading) ───────────────
   const [invLoading, setInvLoading] = useState(false);
@@ -867,6 +868,7 @@ export default function Dashboard() {
   const [isModalOpen, setIsModalOpen]             = useState(false);
   const [isUploadOpen, setIsUploadOpen]           = useState(false);
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
+  const [upgradeOpen, setUpgradeOpen]             = useState(false);
   const [form, setForm]               = useState<FormFields>({ ...EMPTY_FORM });
   const [saving, setSaving]           = useState(false);
   const [formError, setFormError]     = useState<string | null>(null);
@@ -1059,6 +1061,10 @@ export default function Dashboard() {
     });
   };
 
+  // ── Paywall guard ─────────────────────────────────────────────────────────
+
+  const isAtGuestLimit = !isActive && invitations.length >= maxFreeGuests;
+
   // ── Modal helpers ─────────────────────────────────────────────────────────
 
   const openModal  = () => { setForm({ ...EMPTY_FORM }); setFormError(null); setIsModalOpen(true); };
@@ -1250,6 +1256,16 @@ export default function Dashboard() {
           onSuccess={reloadInvitations}
         />
       )}
+
+      <UpgradeModal
+        isOpen={upgradeOpen}
+        onClose={() => setUpgradeOpen(false)}
+        onUpgradeClick={() => {
+          setUpgradeOpen(false);
+          setToast('Coming Soon — שילוב עם שער תשלום בקרוב');
+          setTimeout(() => setToast(null), 3000);
+        }}
+      />
 
       {toast && (
         <div className={`fixed bottom-6 right-6 z-50 text-white text-sm font-medium font-brand px-4 py-2.5 rounded-xl shadow-lg ${
