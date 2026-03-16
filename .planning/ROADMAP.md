@@ -74,10 +74,10 @@ Plans:
   2. A user with exactly one event (non-super-admin) does not see the Event Switcher
   3. The Event Switcher includes a "Create New Event" link that navigates to /onboarding
   4. Selecting a different event from the dropdown switches the dashboard context immediately
-**Plans**: TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 04-01: TBD
+- [ ] 04-01-PLAN.md -- EventSwitcher component + DashboardNav integration
 
 ### Phase 5: Paywalls & Upgrade Modal
 **Goal**: Draft event users encounter clear upgrade prompts when attempting premium actions
