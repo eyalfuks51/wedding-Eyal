@@ -11,21 +11,30 @@ interface FormState { partner1: string; partner2: string; date: string; venue: s
 
 export default function OnboardingPage() {
   const navigate                        = useNavigate();
-  const [step, setStep]                 = useState<1 | 2 | 3>(1);
+  const [step, setStep]                 = useState<1 | 2 | 3 | 4>(1);
   const [templateId, setTemplateId]     = useState('elegant');
   const [form, setForm]                 = useState<FormState>({ partner1: '', partner2: '', date: '', venue: '' });
   const [saving, setSaving]             = useState(false);
   const [error, setError]               = useState('');
+  const [createdSlug, setCreatedSlug]   = useState<string | null>(null);
+  const [copied, setCopied]             = useState(false);
 
   const set = (key: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm(f => ({ ...f, [key]: e.target.value }));
+
+  const handleCopy = async () => {
+    if (!createdSlug) return;
+    await navigator.clipboard.writeText(`${window.location.origin}/${createdSlug}`);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const handleFinish = async () => {
     setSaving(true);
     setError('');
     try {
       const slug = generateSlug(form.partner1, form.partner2);
-      await createOnboardingEvent({
+      const event = await createOnboardingEvent({
         slug,
         templateId,
         contentConfig: {
@@ -37,7 +46,9 @@ export default function OnboardingPage() {
         partner2Name: form.partner2,
         eventDate: form.date || null,
       });
-      navigate('/dashboard/settings', { replace: true });
+      setCreatedSlug(event.slug);
+      localStorage.setItem('currentEventId', event.id);
+      setStep(4);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'שגיאה ביצירת האירוע');
       setSaving(false);
@@ -48,15 +59,17 @@ export default function OnboardingPage() {
     <div dir="rtl" className="min-h-screen bg-slate-50 flex items-center justify-center font-brand p-4">
       <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-lg">
 
-        {/* Progress bar */}
-        <div className="flex gap-2 mb-8">
-          {[1, 2, 3].map(n => (
-            <div
-              key={n}
-              className={`h-1.5 flex-1 rounded-full transition-colors ${n <= step ? 'bg-violet-600' : 'bg-slate-200'}`}
-            />
-          ))}
-        </div>
+        {/* Progress bar — hidden on success screen */}
+        {step < 4 && (
+          <div className="flex gap-2 mb-8">
+            {[1, 2, 3].map(n => (
+              <div
+                key={n}
+                className={`h-1.5 flex-1 rounded-full transition-colors ${n <= step ? 'bg-violet-600' : 'bg-slate-200'}`}
+              />
+            ))}
+          </div>
+        )}
 
         {step === 1 && (
           <>
@@ -139,6 +152,58 @@ export default function OnboardingPage() {
                 {saving ? 'יוצר...' : 'צור אירוע'}
               </button>
             </div>
+          </>
+        )}
+
+        {step === 4 && createdSlug && (
+          <>
+            {/* Success checkmark */}
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center">
+                <svg className="w-8 h-8 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            </div>
+            <h2 className="font-danidin text-2xl text-slate-800 mb-1 text-center">האירוע נוצר בהצלחה!</h2>
+            <p className="text-slate-500 text-sm mb-6 text-center">הנה הקישור לעמוד האירוע שלכם</p>
+
+            {/* Live link card */}
+            <div className="bg-violet-50 rounded-xl p-4 flex items-center justify-between gap-3 mb-6">
+              <a
+                href={`/${createdSlug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-violet-600 font-medium text-sm truncate flex-1 text-left"
+                dir="ltr"
+              >
+                {window.location.origin}/{createdSlug}
+              </a>
+              <button
+                onClick={handleCopy}
+                className="shrink-0 text-violet-600 hover:text-violet-700 p-2 rounded-lg hover:bg-violet-100 transition-colors"
+                title="העתק קישור"
+              >
+                {copied ? (
+                  <svg className="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                    <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                  </svg>
+                )}
+              </button>
+            </div>
+
+            {/* Continue button */}
+            <button
+              onClick={() => navigate('/dashboard/settings', { replace: true })}
+              className="w-full bg-violet-600 text-white rounded-xl py-3 text-sm font-medium hover:bg-violet-700 transition-colors"
+            >
+              המשיכו להגדרות
+            </button>
           </>
         )}
       </div>
