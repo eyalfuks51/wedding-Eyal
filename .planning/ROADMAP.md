@@ -60,11 +60,10 @@ Plans:
   2. A user with a draft event is denied access to Timeline, Import, Export, and Send Messages features
   3. A user with an active event can access all features without restriction
   4. The free guest limit of 20 is enforced for draft events
-**Plans**: TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 03-01: TBD
-- [ ] 03-02: TBD
+- [ ] 03-01-PLAN.md -- Refactor useFeatureAccess to six granular flags + update all consumer files
 
 ### Phase 4: Dashboard Navigation
 **Goal**: Users with multiple events can switch between them from the dashboard header
@@ -106,6 +105,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 |-------|----------------|--------|-----------|
 | 1. Database & Multi-Event Context | 2/2 | Complete   | 2026-03-16 |
 | 2. Onboarding Refinement | 2/2 | Complete   | 2026-03-16 |
-| 3. Feature Gating | 0/2 | Not started | - |
+| 3. Feature Gating | 0/1 | Not started | - |
 | 4. Dashboard Navigation | 0/1 | Not started | - |
 | 5. Paywalls & Upgrade Modal | 0/3 | Not started | - |
