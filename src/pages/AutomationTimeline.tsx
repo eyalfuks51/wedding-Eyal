@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useRef, Fragment, useMemo } from 'react';
-import { Navigate } from 'react-router-dom';
 import {
   Sparkles,
   Bell,
@@ -29,6 +28,8 @@ import {
   type StageName,
 } from '@/components/dashboard/constants';
 import DashboardNav from '@/components/dashboard/DashboardNav';
+import { GlassCard } from '@/components/ui/glass-card';
+import UpgradeModal from '@/components/ui/UpgradeModal';
 import StageEditModal from '@/components/dashboard/StageEditModal';
 import StageLogsSheet, { type StageLogsDrilldown, type DrilldownFilter } from '@/components/dashboard/StageLogsSheet';
 
@@ -727,6 +728,7 @@ export default function AutomationTimeline() {
   const [drilldown, setDrilldown]     = useState<StageLogsDrilldown | null>(null);
   const [toasts, setToasts]           = useState<Toast[]>([]);
   const [draftNudge, setDraftNudge] = useState<{ stage_name: string; days_before: number } | null>(null);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const drag = useDragScroll(scrollRef);
@@ -960,7 +962,59 @@ export default function AutomationTimeline() {
     ? (DYNAMIC_NUDGE_NAMES as readonly string[]).includes(editSetting.stage_name)
     : false;
 
-  if (!canAccessTimeline) return <Navigate to="/dashboard/settings" replace />;
+  if (!canAccessTimeline) {
+    return (
+      <div className="min-h-screen bg-slate-50 text-slate-900 font-brand" dir="rtl">
+        {/* ── Header ── */}
+        <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-sm border-b border-slate-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center gap-3 min-w-0">
+            <div className="w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center shrink-0">
+              <Calendar className="w-4 h-4 text-white" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-base font-bold text-slate-800 font-danidin leading-none">
+                ציר זמן אוטומציה
+              </h1>
+            </div>
+          </div>
+        </header>
+
+        {/* ── Main content ── */}
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <DashboardNav />
+
+          <div className="flex items-center justify-center py-20">
+            <GlassCard className="max-w-md w-full rounded-3xl text-center p-8">
+              <div className="mx-auto w-16 h-16 bg-violet-100 rounded-full flex items-center justify-center mb-4">
+                <Calendar className="w-8 h-8 text-violet-600" />
+              </div>
+              <h2 className="font-danidin text-2xl text-slate-900 mb-2">ציר הזמן</h2>
+              <p className="text-slate-600 mb-6 leading-relaxed">
+                נהלו את כל תהליך האוטומציה של ההודעות — תזכורות, ניגנובים, והודעות לוגיסטיקה — הכל ממקום אחד.
+              </p>
+              <button
+                onClick={() => setUpgradeOpen(true)}
+                className="bg-violet-600 hover:bg-violet-700 text-white rounded-xl px-6 py-3 w-full font-medium transition-colors"
+              >
+                שדרגו לגרסה המלאה
+              </button>
+            </GlassCard>
+          </div>
+        </main>
+
+        <UpgradeModal
+          isOpen={upgradeOpen}
+          onClose={() => setUpgradeOpen(false)}
+          onUpgradeClick={() => {
+            setUpgradeOpen(false);
+            showToast('בקרוב! נציג עם הפרטים.');
+          }}
+        />
+
+        <ToastContainer toasts={toasts} />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-brand" dir="rtl">
