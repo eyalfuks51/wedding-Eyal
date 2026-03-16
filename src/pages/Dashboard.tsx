@@ -1298,21 +1298,21 @@ export default function Dashboard() {
           {/* Action buttons — RTL renders right-to-left, so הוסף מוזמן appears first (right) */}
           <div className="flex items-center gap-3 shrink-0">
             <button
-              onClick={openModal}
+              onClick={() => isAtGuestLimit ? setUpgradeOpen(true) : openModal()}
               className="shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 active:bg-violet-800 text-white text-sm font-medium font-brand rounded-xl transition-colors shadow-sm"
             >
               <UserPlus className="w-4 h-4" />
               הוסף מוזמן
             </button>
             <button
-              onClick={() => setIsUploadOpen(true)}
+              onClick={() => canImportGuests ? setIsUploadOpen(true) : setUpgradeOpen(true)}
               className="shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm font-medium font-brand rounded-xl transition-colors"
             >
               <Upload className="w-4 h-4" />
               ייבוא
             </button>
             <button
-              onClick={handleExportAll}
+              onClick={() => canExportGuests ? handleExportAll() : setUpgradeOpen(true)}
               className="shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm font-medium font-brand rounded-xl transition-colors"
             >
               <Download className="w-4 h-4" />
@@ -1683,7 +1683,7 @@ export default function Dashboard() {
           <div className="flex items-center gap-2">
 
             <button
-              onClick={() => setIsMessageModalOpen(true)}
+              onClick={() => canSendMessages ? setIsMessageModalOpen(true) : setUpgradeOpen(true)}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-violet-600 hover:bg-violet-500 active:bg-violet-700 rounded-xl text-xs font-medium font-brand transition-colors whitespace-nowrap"
             >
               <Send className="w-3.5 h-3.5" />
@@ -1691,7 +1691,7 @@ export default function Dashboard() {
             </button>
 
             <button
-              onClick={handleExportSelected}
+              onClick={() => canExportGuests ? handleExportSelected() : setUpgradeOpen(true)}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-xl text-xs font-medium font-brand transition-colors whitespace-nowrap"
             >
               <Download className="w-3.5 h-3.5" />
