@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Database & Multi-Event Context** - Schema migration and EventContext refactor for multi-event support (completed 2026-03-16)
 - [x] **Phase 2: Onboarding Refinement** - Standalone wizard creates draft events with success UX (completed 2026-03-16)
-- [ ] **Phase 3: Feature Gating** - useFeatureAccess hook enforces draft/active permission boundaries
+- [x] **Phase 3: Feature Gating** - useFeatureAccess hook enforces draft/active permission boundaries (completed 2026-03-16)
 - [ ] **Phase 4: Dashboard Navigation** - Event Switcher dropdown and multi-event routing
 - [ ] **Phase 5: Paywalls & Upgrade Modal** - Intercept premium actions with UpgradeModal for draft events
 
@@ -60,7 +60,7 @@ Plans:
   2. A user with a draft event is denied access to Timeline, Import, Export, and Send Messages features
   3. A user with an active event can access all features without restriction
   4. The free guest limit of 20 is enforced for draft events
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
 - [ ] 03-01-PLAN.md -- Refactor useFeatureAccess to six granular flags + update all consumer files
@@ -105,6 +105,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 |-------|----------------|--------|-----------|
 | 1. Database & Multi-Event Context | 2/2 | Complete   | 2026-03-16 |
 | 2. Onboarding Refinement | 2/2 | Complete   | 2026-03-16 |
-| 3. Feature Gating | 0/1 | Not started | - |
+| 3. Feature Gating | 1/1 | Complete   | 2026-03-16 |
 | 4. Dashboard Navigation | 0/1 | Not started | - |
 | 5. Paywalls & Upgrade Modal | 0/3 | Not started | - |

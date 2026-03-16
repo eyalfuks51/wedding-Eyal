@@ -29,12 +29,12 @@
 
 ### Feature Gating
 
-- [ ] **GATE-01**: `useFeatureAccess` returns `canAccessSettings: true` (always open)
-- [ ] **GATE-02**: `useFeatureAccess` returns `canAccessTimeline: true` only if event status === 'active'
-- [ ] **GATE-03**: `useFeatureAccess` returns `canImportGuests: true` only if event status === 'active'
-- [ ] **GATE-04**: `useFeatureAccess` returns `canExportGuests: true` only if event status === 'active'
-- [ ] **GATE-05**: `useFeatureAccess` returns `canSendMessages: true` only if event status === 'active'
-- [ ] **GATE-06**: `useFeatureAccess` returns `maxFreeGuests: 20`
+- [x] **GATE-01**: `useFeatureAccess` returns `canAccessSettings: true` (always open)
+- [x] **GATE-02**: `useFeatureAccess` returns `canAccessTimeline: true` only if event status === 'active'
+- [x] **GATE-03**: `useFeatureAccess` returns `canImportGuests: true` only if event status === 'active'
+- [x] **GATE-04**: `useFeatureAccess` returns `canExportGuests: true` only if event status === 'active'
+- [x] **GATE-05**: `useFeatureAccess` returns `canSendMessages: true` only if event status === 'active'
+- [x] **GATE-06**: `useFeatureAccess` returns `maxFreeGuests: 20`
 
 ### Dashboard Navigation
 
@@ -106,12 +106,12 @@
 | ONB-03 | Phase 2 | Complete |
 | ONB-04 | Phase 2 | Complete |
 | ONB-05 | Phase 2 | Complete |
-| GATE-01 | Phase 3 | Pending |
-| GATE-02 | Phase 3 | Pending |
-| GATE-03 | Phase 3 | Pending |
-| GATE-04 | Phase 3 | Pending |
-| GATE-05 | Phase 3 | Pending |
-| GATE-06 | Phase 3 | Pending |
+| GATE-01 | Phase 3 | Complete |
+| GATE-02 | Phase 3 | Complete |
+| GATE-03 | Phase 3 | Complete |
+| GATE-04 | Phase 3 | Complete |
+| GATE-05 | Phase 3 | Complete |
+| GATE-06 | Phase 3 | Complete |
 | NAV-01 | Phase 4 | Pending |
 | NAV-02 | Phase 4 | Pending |
 | NAV-03 | Phase 4 | Pending |

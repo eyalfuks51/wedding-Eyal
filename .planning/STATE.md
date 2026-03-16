@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-02-PLAN.md (Onboarding success screen)
-last_updated: "2026-03-16T18:56:48.347Z"
+stopped_at: Completed 03-01-PLAN.md (granular feature flags)
+last_updated: "2026-03-16T19:11:19.786Z"
 last_activity: 2026-03-16 -- Completed 01-01 (Super Admin column + AuthContext.isSuperAdmin)
 progress:
   total_phases: 5
-  completed_phases: 2
-  total_plans: 4
-  completed_plans: 4
+  completed_phases: 3
+  total_plans: 5
+  completed_plans: 5
   percent: 50
 ---
 
@@ -54,6 +54,7 @@ Progress: [█████░░░░░] 50%
 | Phase 01 P02 | 5 | 2 tasks | 5 files |
 | Phase 02 P01 | 2 | 2 tasks | 3 files |
 | Phase 02 P02 | 5 | 2 tasks | 1 files |
+| Phase 03 P01 | 5 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -75,6 +76,9 @@ Recent decisions affecting current work:
 - [Phase 02]: RequireAuth implemented inline in App.jsx — simpler than ProtectedRoute as onboarding needs no EventProvider
 - [Phase 02]: Step 4 hides progress bar to give a celebration feel rather than a process step
 - [Phase 02]: localStorage.currentEventId set synchronously in handleFinish before setStep(4) so EventProvider has it on /dashboard/settings mount
+- [Phase 03-01]: canAccessSettings is true as const for type-narrowed literal type in Phase 5
+- [Phase 03-01]: DashboardNav uses gateKey pattern for explicit per-tab access control
+- [Phase 03-01]: Dashboard.tsx redirect guard removed — draft users see guest table, Phase 5 adds UpgradeModal intercepts
 
 ### Pending Todos
 
@@ -86,6 +90,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-16T18:52:54.809Z
-Stopped at: Completed 02-02-PLAN.md (Onboarding success screen)
+Last session: 2026-03-16T19:11:19.784Z
+Stopped at: Completed 03-01-PLAN.md (granular feature flags)
 Resume file: None
