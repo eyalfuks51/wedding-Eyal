@@ -260,7 +260,6 @@ export const submitRsvp = async (rsvpData, eventId) => {
       attending:     rsvpData.attending,
       guests_count:  rsvpData.guest_count,
       needs_parking: rsvpData.needs_parking,
-      updated_at:    new Date().toISOString(),
     }], { onConflict: 'event_id,phone' });
 
   if (error) {
