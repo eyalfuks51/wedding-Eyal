@@ -12,7 +12,7 @@ Transform the existing single-event Wedding RSVP platform into a freemium multi-
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Database & Multi-Event Context** - Schema migration and EventContext refactor for multi-event support
+- [x] **Phase 1: Database & Multi-Event Context** - Schema migration and EventContext refactor for multi-event support (completed 2026-03-16)
 - [ ] **Phase 2: Onboarding Refinement** - Standalone wizard creates draft events with success UX
 - [ ] **Phase 3: Feature Gating** - useFeatureAccess hook enforces draft/active permission boundaries
 - [ ] **Phase 4: Dashboard Navigation** - Event Switcher dropdown and multi-event routing
@@ -30,7 +30,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Refreshing the browser preserves the previously selected event (localStorage persistence)
   4. A user with no events is redirected to onboarding; a user with events lands on the dashboard
   5. All existing single-event users and public slug pages continue working without changes
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 - [ ] 01-01-PLAN.md -- Migration (is_super_admin + super admin RLS) + query functions + AuthContext extension
@@ -104,7 +104,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Database & Multi-Event Context | 1/2 | In Progress|  |
+| 1. Database & Multi-Event Context | 2/2 | Complete   | 2026-03-16 |
 | 2. Onboarding Refinement | 0/2 | Not started | - |
 | 3. Feature Gating | 0/2 | Not started | - |
 | 4. Dashboard Navigation | 0/1 | Not started | - |

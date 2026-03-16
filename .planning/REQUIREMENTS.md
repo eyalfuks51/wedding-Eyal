@@ -12,11 +12,11 @@
 
 ### Multi-Event Context
 
-- [ ] **CTX-01**: `EventContext` fetches array of events for the authenticated user
+- [x] **CTX-01**: `EventContext` fetches array of events for the authenticated user
 - [x] **CTX-02**: Super admin users (`is_super_admin = true`) can fetch all events across the platform
-- [ ] **CTX-03**: Regular users see only events linked via `user_events` join table
-- [ ] **CTX-04**: `currentEvent` state managed in context with `switchEvent(id)` method
-- [ ] **CTX-05**: `currentEventId` persisted in localStorage, falls back to first event on fresh login
+- [x] **CTX-03**: Regular users see only events linked via `user_events` join table
+- [x] **CTX-04**: `currentEvent` state managed in context with `switchEvent(id)` method
+- [x] **CTX-05**: `currentEventId` persisted in localStorage, falls back to first event on fresh login
 - [x] **CTX-06**: `supabase.js` has query functions for multi-event fetching (all events + user events)
 
 ### Onboarding
@@ -61,8 +61,8 @@
 
 ### Protected Routes
 
-- [ ] **AUTH-01**: `ProtectedRoute` handles multi-event: user with events → dashboard, user with no events → onboarding
-- [ ] **AUTH-02**: `ProtectedRoute` provides `EventProvider` context to all dashboard pages
+- [x] **AUTH-01**: `ProtectedRoute` handles multi-event: user with events → dashboard, user with no events → onboarding
+- [x] **AUTH-02**: `ProtectedRoute` provides `EventProvider` context to all dashboard pages
 
 ## v2 Requirements
 
@@ -95,11 +95,11 @@
 |-------------|-------|--------|
 | DB-01 | Phase 1 | Complete |
 | DB-02 | Phase 1 | Complete |
-| CTX-01 | Phase 1 | Pending |
+| CTX-01 | Phase 1 | Complete |
 | CTX-02 | Phase 1 | Complete |
-| CTX-03 | Phase 1 | Pending |
-| CTX-04 | Phase 1 | Pending |
-| CTX-05 | Phase 1 | Pending |
+| CTX-03 | Phase 1 | Complete |
+| CTX-04 | Phase 1 | Complete |
+| CTX-05 | Phase 1 | Complete |
 | CTX-06 | Phase 1 | Complete |
 | ONB-01 | Phase 2 | Pending |
 | ONB-02 | Phase 2 | Pending |
@@ -126,8 +126,8 @@
 | UPG-03 | Phase 5 | Pending |
 | UPG-04 | Phase 5 | Pending |
 | UPG-05 | Phase 5 | Pending |
-| AUTH-01 | Phase 1 | Pending |
-| AUTH-02 | Phase 1 | Pending |
+| AUTH-01 | Phase 1 | Complete |
+| AUTH-02 | Phase 1 | Complete |
 
 **Coverage:**
 - v1 requirements: 30 total
