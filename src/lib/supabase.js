@@ -340,28 +340,15 @@ export function generateSlug(p1, p2) {
 export const createOnboardingEvent = async ({ slug, templateId, contentConfig, partner1Name, partner2Name, eventDate }) => {
   if (!supabase) throw new Error('Supabase is not configured');
 
-  const { data: event, error: eventError } = await supabase
-    .from('events')
-    .insert({
-      slug,
-      template_id: templateId,
-      content_config: contentConfig,
-      status: 'draft',
-      partner1_name: partner1Name || null,
-      partner2_name: partner2Name || null,
-      event_date: eventDate || null,
-    })
-    .select('id, slug')
-    .single();
-  if (eventError) throw eventError;
+  const { data, error } = await supabase.rpc('create_onboarding_event', {
+    p_slug: slug,
+    p_template_id: templateId,
+    p_content_config: contentConfig,
+    p_partner1_name: partner1Name || null,
+    p_partner2_name: partner2Name || null,
+    p_event_date: eventDate || null,
+  });
+  if (error) throw error;
 
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
-  if (userError || !user) throw new Error('Not authenticated');
-
-  const { error: linkError } = await supabase
-    .from('user_events')
-    .insert({ user_id: user.id, event_id: event.id, role: 'owner' });
-  if (linkError) throw linkError;
-
-  return event;
+  return data;
 };
