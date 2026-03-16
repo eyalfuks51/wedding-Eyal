@@ -316,16 +316,42 @@ export const fetchEventForUser = async () => {
 };
 
 /**
+ * Generate a URL-safe slug from two partner names.
+ * Preserves Hebrew characters, Latin letters, digits, and hyphens.
+ * Appends a 6-char random suffix for uniqueness.
+ * The UNIQUE constraint on events.slug handles any (extremely rare) collision.
+ */
+export function generateSlug(p1, p2) {
+  const base = `${p1}-and-${p2}`
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9\u0590-\u05ff-]/g, '') // Keep Hebrew + Latin + digits + hyphens
+    .replace(/-+/g, '-')     // Collapse multiple hyphens
+    .replace(/^-|-$/g, '')   // Trim leading/trailing hyphens
+    .slice(0, 40);
+  const suffix = Math.random().toString(36).slice(2, 8);
+  return base ? `${base}-${suffix}` : `event-${suffix}`;
+}
+
+/**
  * Create a new draft event and link it to the currently authenticated user.
  * Called at the end of the onboarding wizard.
  */
-export const createOnboardingEvent = async ({ slug, templateId, contentConfig }) => {
+export const createOnboardingEvent = async ({ slug, templateId, contentConfig, partner1Name, partner2Name, eventDate }) => {
   if (!supabase) throw new Error('Supabase is not configured');
 
   const { data: event, error: eventError } = await supabase
     .from('events')
-    .insert({ slug, template_id: templateId, content_config: contentConfig, status: 'draft' })
-    .select('id')
+    .insert({
+      slug,
+      template_id: templateId,
+      content_config: contentConfig,
+      status: 'draft',
+      partner1_name: partner1Name || null,
+      partner2_name: partner2Name || null,
+      event_date: eventDate || null,
+    })
+    .select('id, slug')
     .single();
   if (eventError) throw eventError;
 

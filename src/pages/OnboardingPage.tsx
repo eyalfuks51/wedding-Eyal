@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createOnboardingEvent } from '@/lib/supabase';
+import { createOnboardingEvent, generateSlug } from '@/lib/supabase';
 
 const TEMPLATES = [
   { id: 'elegant',         label: 'Elegant',        desc: 'נייבי כהה + זהב, מינימליסטי' },
@@ -24,9 +24,7 @@ export default function OnboardingPage() {
     setSaving(true);
     setError('');
     try {
-      const base = `${form.partner1}-and-${form.partner2}`
-        .toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-      const slug = `${base}-${Date.now()}`;
+      const slug = generateSlug(form.partner1, form.partner2);
       await createOnboardingEvent({
         slug,
         templateId,
@@ -35,6 +33,9 @@ export default function OnboardingPage() {
           date_display: form.date,
           venue_name:   form.venue,
         },
+        partner1Name: form.partner1,
+        partner2Name: form.partner2,
+        eventDate: form.date || null,
       });
       navigate('/dashboard/settings', { replace: true });
     } catch (err: unknown) {
