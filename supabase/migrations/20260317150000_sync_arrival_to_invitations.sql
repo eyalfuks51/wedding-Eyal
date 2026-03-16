@@ -12,13 +12,25 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
+DECLARE
+  v_phone text := regexp_replace(NEW.phone, '\D', '', 'g');
+  v_normalized text;
 BEGIN
+  -- Normalize to 972-prefix (same as guest-excel.ts normalizePhone)
+  IF v_phone LIKE '972%' THEN
+    v_normalized := v_phone;
+  ELSIF v_phone LIKE '0%' THEN
+    v_normalized := '972' || substring(v_phone from 2);
+  ELSE
+    v_normalized := v_phone;
+  END IF;
+
   UPDATE invitations
   SET
     rsvp_status   = CASE WHEN NEW.attending THEN 'attending' ELSE 'declined' END,
     confirmed_pax = COALESCE(NEW.guests_count, 0)
   WHERE event_id = NEW.event_id
-    AND NEW.phone = ANY(phone_numbers);
+    AND (v_normalized = ANY(phone_numbers) OR v_phone = ANY(phone_numbers));
 
   RETURN NEW;
 END;
