@@ -45,7 +45,7 @@ Plans:
   2. Completing the wizard creates an event with status 'draft' and a working public URL
   3. After completion, the user sees a success screen with their live link, then is redirected to /dashboard/settings
   4. The new event appears in the user's event list (via user_events join)
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 - [ ] 02-01-PLAN.md -- Data layer fixes (createOnboardingEvent + slug generation) + auth guard on /onboarding
@@ -105,7 +105,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Database & Multi-Event Context | 2/2 | Complete   | 2026-03-16 |
-| 2. Onboarding Refinement | 0/2 | Not started | - |
+| 2. Onboarding Refinement | 1/2 | In Progress|  |
 | 3. Feature Gating | 0/2 | Not started | - |
 | 4. Dashboard Navigation | 0/1 | Not started | - |
 | 5. Paywalls & Upgrade Modal | 0/3 | Not started | - |
