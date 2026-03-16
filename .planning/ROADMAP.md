@@ -89,12 +89,12 @@ Plans:
   3. A draft event user adding a guest beyond the 20-guest limit sees the UpgradeModal
   4. The UpgradeModal displays premium benefits in Hebrew RTL and its CTA button shows a "Coming Soon" toast
   5. An active event user never encounters any paywall intercepts
-**Plans**: TBD
+**Plans:** 3 plans
 
 Plans:
-- [ ] 05-01: TBD
-- [ ] 05-02: TBD
-- [ ] 05-03: TBD
+- [ ] 05-01-PLAN.md -- UpgradeModal component + DashboardNav Timeline tab visibility fix
+- [ ] 05-02-PLAN.md -- Dashboard.tsx paywall intercepts (Import, Export, Add Guest, Send Message, bulk Export)
+- [ ] 05-03-PLAN.md -- AutomationTimeline premium placeholder for draft users
 
 ## Progress
 
