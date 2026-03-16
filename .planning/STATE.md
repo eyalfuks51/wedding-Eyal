@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 03-01-PLAN.md (granular feature flags)
-last_updated: "2026-03-16T19:14:15.272Z"
-last_activity: 2026-03-16 -- Completed 01-01 (Super Admin column + AuthContext.isSuperAdmin)
+stopped_at: Completed 04-01-PLAN.md (event switcher dropdown)
+last_updated: "2026-03-16T19:33:11Z"
+last_activity: 2026-03-16 -- Completed 04-01 (Event Switcher dropdown in DashboardNav)
 progress:
   total_phases: 5
-  completed_phases: 3
-  total_plans: 5
-  completed_plans: 5
-  percent: 50
+  completed_phases: 4
+  total_plans: 6
+  completed_plans: 6
+  percent: 80
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-16)
 
 **Core value:** Any couple can sign up, create a wedding event page, and start collecting RSVPs immediately -- free tier gently guides toward upgrade.
-**Current focus:** Phase 1: Database & Multi-Event Context
+**Current focus:** Phase 4: Dashboard Navigation (complete)
 
 ## Current Position
 
-Phase: 1 of 5 (Database & Multi-Event Context)
-Plan: 1 of 3 in current phase
-Status: In Progress
-Last activity: 2026-03-16 -- Completed 01-01 (Super Admin column + AuthContext.isSuperAdmin)
+Phase: 4 of 5 (Dashboard Navigation)
+Plan: 1 of 1 in current phase (complete)
+Status: Phase Complete
+Last activity: 2026-03-16 -- Completed 04-01 (Event Switcher dropdown in DashboardNav)
 
-Progress: [█████░░░░░] 50%
+Progress: [████████░░] 80%
 
 ## Performance Metrics
 
@@ -55,6 +55,7 @@ Progress: [█████░░░░░] 50%
 | Phase 02 P01 | 2 | 2 tasks | 3 files |
 | Phase 02 P02 | 5 | 2 tasks | 1 files |
 | Phase 03 P01 | 5 | 2 tasks | 5 files |
+| Phase 04 P01 | 2 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -79,6 +80,8 @@ Recent decisions affecting current work:
 - [Phase 03-01]: canAccessSettings is true as const for type-narrowed literal type in Phase 5
 - [Phase 03-01]: DashboardNav uses gateKey pattern for explicit per-tab access control
 - [Phase 03-01]: Dashboard.tsx redirect guard removed — draft users see guest table, Phase 5 adds UpgradeModal intercepts
+- [Phase 04-01]: EventSwitcher self-handles visibility via null return — DashboardNav renders unconditionally
+- [Phase 04-01]: mt-2 spacing between switcher and tabs only visible when switcher renders
 
 ### Pending Todos
 
@@ -90,6 +93,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-16T19:11:19.784Z
-Stopped at: Completed 03-01-PLAN.md (granular feature flags)
+Last session: 2026-03-16T19:33:11Z
+Stopped at: Completed 04-01-PLAN.md (event switcher dropdown)
 Resume file: None

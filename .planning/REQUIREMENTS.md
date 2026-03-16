@@ -38,9 +38,9 @@
 
 ### Dashboard Navigation
 
-- [ ] **NAV-01**: Event Switcher dropdown in `DashboardNav` shows list of user's events
-- [ ] **NAV-02**: Event Switcher only renders when `events.length > 1` or user is super admin
-- [ ] **NAV-03**: Event Switcher includes "Create New Event" link pointing to `/onboarding`
+- [x] **NAV-01**: Event Switcher dropdown in `DashboardNav` shows list of user's events
+- [x] **NAV-02**: Event Switcher only renders when `events.length > 1` or user is super admin
+- [x] **NAV-03**: Event Switcher includes "Create New Event" link pointing to `/onboarding`
 
 ### Paywall Intercepts
 
@@ -112,9 +112,9 @@
 | GATE-04 | Phase 3 | Complete |
 | GATE-05 | Phase 3 | Complete |
 | GATE-06 | Phase 3 | Complete |
-| NAV-01 | Phase 4 | Pending |
-| NAV-02 | Phase 4 | Pending |
-| NAV-03 | Phase 4 | Pending |
+| NAV-01 | Phase 4 | Complete |
+| NAV-02 | Phase 4 | Complete |
+| NAV-03 | Phase 4 | Complete |
 | PAY-01 | Phase 5 | Pending |
 | PAY-02 | Phase 5 | Pending |
 | PAY-03 | Phase 5 | Pending |

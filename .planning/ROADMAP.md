@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Database & Multi-Event Context** - Schema migration and EventContext refactor for multi-event support (completed 2026-03-16)
 - [x] **Phase 2: Onboarding Refinement** - Standalone wizard creates draft events with success UX (completed 2026-03-16)
 - [x] **Phase 3: Feature Gating** - useFeatureAccess hook enforces draft/active permission boundaries (completed 2026-03-16)
-- [ ] **Phase 4: Dashboard Navigation** - Event Switcher dropdown and multi-event routing
+- [x] **Phase 4: Dashboard Navigation** - Event Switcher dropdown and multi-event routing (completed 2026-03-16)
 - [ ] **Phase 5: Paywalls & Upgrade Modal** - Intercept premium actions with UpgradeModal for draft events
 
 ## Phase Details
@@ -74,10 +74,10 @@ Plans:
   2. A user with exactly one event (non-super-admin) does not see the Event Switcher
   3. The Event Switcher includes a "Create New Event" link that navigates to /onboarding
   4. Selecting a different event from the dropdown switches the dashboard context immediately
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
-- [ ] 04-01-PLAN.md -- EventSwitcher component + DashboardNav integration
+- [x] 04-01-PLAN.md -- EventSwitcher component + DashboardNav integration
 
 ### Phase 5: Paywalls & Upgrade Modal
 **Goal**: Draft event users encounter clear upgrade prompts when attempting premium actions
@@ -106,5 +106,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 1. Database & Multi-Event Context | 2/2 | Complete   | 2026-03-16 |
 | 2. Onboarding Refinement | 2/2 | Complete   | 2026-03-16 |
 | 3. Feature Gating | 1/1 | Complete   | 2026-03-16 |
-| 4. Dashboard Navigation | 0/1 | Not started | - |
+| 4. Dashboard Navigation | 1/1 | Complete   | 2026-03-16 |
 | 5. Paywalls & Upgrade Modal | 0/3 | Not started | - |
