@@ -45,11 +45,11 @@ Plans:
   2. Completing the wizard creates an event with status 'draft' and a working public URL
   3. After completion, the user sees a success screen with their live link, then is redirected to /dashboard/settings
   4. The new event appears in the user's event list (via user_events join)
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 02-01: TBD
-- [ ] 02-02: TBD
+- [ ] 02-01-PLAN.md -- Data layer fixes (createOnboardingEvent + slug generation) + auth guard on /onboarding
+- [ ] 02-02-PLAN.md -- Step 4 success screen with live link, copy button, and redirect to settings
 
 ### Phase 3: Feature Gating
 **Goal**: Draft event users can only access settings, while active event users have full platform access
