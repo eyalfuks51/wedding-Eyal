@@ -270,6 +270,37 @@ export const submitRsvp = async (rsvpData, eventId) => {
 };
 
 /**
+ * Fetch all events for the currently authenticated user via user_events join.
+ * Returns an array sorted by event_date DESC (newest first).
+ * Returns [] for users with no events.
+ */
+export const fetchEventsForUser = async () => {
+  if (!supabase) throw new Error('Supabase is not configured');
+  const { data, error } = await supabase
+    .from('user_events')
+    .select('events(id, slug, template_id, content_config, event_date, automation_config, status, partner1_name, partner2_name)');
+  if (error) throw error;
+  const results = (data ?? []).map(row => row.events).filter(Boolean);
+  // Sort client-side: avoids Supabase foreignTable ordering pitfall
+  return results.sort((a, b) => (b.event_date || '').localeCompare(a.event_date || ''));
+};
+
+/**
+ * Fetch ALL events — for super admins only.
+ * Regular users will get an empty array (RLS blocks access without the super admin policy).
+ * Returns array sorted by event_date DESC.
+ */
+export const fetchAllEvents = async () => {
+  if (!supabase) throw new Error('Supabase is not configured');
+  const { data, error } = await supabase
+    .from('events')
+    .select('id, slug, template_id, content_config, event_date, automation_config, status, partner1_name, partner2_name')
+    .order('event_date', { ascending: false });
+  if (error) throw error;
+  return data ?? [];
+};
+
+/**
  * Fetch the event linked to the currently authenticated user.
  * Returns null if the user has no event yet (new user → show onboarding).
  */
