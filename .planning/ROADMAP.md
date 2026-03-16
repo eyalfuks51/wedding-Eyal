@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Onboarding Refinement** - Standalone wizard creates draft events with success UX (completed 2026-03-16)
 - [x] **Phase 3: Feature Gating** - useFeatureAccess hook enforces draft/active permission boundaries (completed 2026-03-16)
 - [x] **Phase 4: Dashboard Navigation** - Event Switcher dropdown and multi-event routing (completed 2026-03-16)
-- [ ] **Phase 5: Paywalls & Upgrade Modal** - Intercept premium actions with UpgradeModal for draft events
+- [x] **Phase 5: Paywalls & Upgrade Modal** - Intercept premium actions with UpgradeModal for draft events (completed 2026-03-16)
 
 ## Phase Details
 
@@ -89,7 +89,7 @@ Plans:
   3. A draft event user adding a guest beyond the 20-guest limit sees the UpgradeModal
   4. The UpgradeModal displays premium benefits in Hebrew RTL and its CTA button shows a "Coming Soon" toast
   5. An active event user never encounters any paywall intercepts
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 - [ ] 05-01-PLAN.md -- UpgradeModal component + DashboardNav Timeline tab visibility fix
@@ -107,4 +107,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 2. Onboarding Refinement | 2/2 | Complete   | 2026-03-16 |
 | 3. Feature Gating | 1/1 | Complete   | 2026-03-16 |
 | 4. Dashboard Navigation | 1/1 | Complete   | 2026-03-16 |
-| 5. Paywalls & Upgrade Modal | 2/3 | In Progress|  |
+| 5. Paywalls & Upgrade Modal | 3/3 | Complete   | 2026-03-16 |

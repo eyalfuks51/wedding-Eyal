@@ -45,11 +45,11 @@
 ### Paywall Intercepts
 
 - [x] **PAY-01**: Timeline tab renders "Premium Feature / Upgrade" placeholder when `!canAccessTimeline`
-- [ ] **PAY-02**: Import button opens `UpgradeModal` instead of upload modal when `!canImportGuests`
-- [ ] **PAY-03**: Export button opens `UpgradeModal` when `!canExportGuests`
-- [ ] **PAY-04**: Add Guest button opens `UpgradeModal` when guest count >= `maxFreeGuests` and status is 'draft'
-- [ ] **PAY-05**: "שלח הודעה" (Send Message) bulk action opens `UpgradeModal` when `!canSendMessages`
-- [ ] **PAY-06**: Bulk Export action opens `UpgradeModal` when `!canExportGuests`
+- [x] **PAY-02**: Import button opens `UpgradeModal` instead of upload modal when `!canImportGuests`
+- [x] **PAY-03**: Export button opens `UpgradeModal` when `!canExportGuests`
+- [x] **PAY-04**: Add Guest button opens `UpgradeModal` when guest count >= `maxFreeGuests` and status is 'draft'
+- [x] **PAY-05**: "שלח הודעה" (Send Message) bulk action opens `UpgradeModal` when `!canSendMessages`
+- [x] **PAY-06**: Bulk Export action opens `UpgradeModal` when `!canExportGuests`
 
 ### Upgrade Modal
 
@@ -116,11 +116,11 @@
 | NAV-02 | Phase 4 | Complete |
 | NAV-03 | Phase 4 | Complete |
 | PAY-01 | Phase 5 | Complete |
-| PAY-02 | Phase 5 | Pending |
-| PAY-03 | Phase 5 | Pending |
-| PAY-04 | Phase 5 | Pending |
-| PAY-05 | Phase 5 | Pending |
-| PAY-06 | Phase 5 | Pending |
+| PAY-02 | Phase 5 | Complete |
+| PAY-03 | Phase 5 | Complete |
+| PAY-04 | Phase 5 | Complete |
+| PAY-05 | Phase 5 | Complete |
+| PAY-06 | Phase 5 | Complete |
 | UPG-01 | Phase 5 | Complete |
 | UPG-02 | Phase 5 | Complete |
 | UPG-03 | Phase 5 | Complete |

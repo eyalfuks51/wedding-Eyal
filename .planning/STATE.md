@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 05-03-PLAN.md (Timeline premium placeholder)
-last_updated: "2026-03-16T19:58:27.785Z"
+stopped_at: Completed 05-02-PLAN.md (Dashboard paywall intercepts)
+last_updated: "2026-03-16T19:59:20.858Z"
 last_activity: 2026-03-16 -- Completed 04-01 (Event Switcher dropdown in DashboardNav)
 progress:
   total_phases: 5
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 9
-  completed_plans: 8
+  completed_plans: 9
   percent: 80
 ---
 
@@ -58,6 +58,7 @@ Progress: [████████░░] 80%
 | Phase 04 P01 | 2 | 2 tasks | 2 files |
 | Phase 05-paywalls-upgrade-modal P01 | 2 | 2 tasks | 2 files |
 | Phase 05-paywalls-upgrade-modal P03 | 5 | 1 tasks | 1 files |
+| Phase 05-paywalls-upgrade-modal P02 | 2 | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -87,6 +88,8 @@ Recent decisions affecting current work:
 - [Phase 05-01]: UpgradeModal uses fixed backdrop + pointer-events pattern (NOT Radix Dialog) for consistency with StageEditModal
 - [Phase 05-01]: Timeline gateKey set to null — tab always visible so draft users can discover premium features
 - [Phase 05-paywalls-upgrade-modal]: Route-level paywall pattern: declare state hooks before early return, then render full placeholder instead of Navigate redirect
+- [Phase 05-paywalls-upgrade-modal]: [Phase 05-02]: isAtGuestLimit uses >= so reaching the limit triggers paywall before insert attempt
+- [Phase 05-paywalls-upgrade-modal]: [Phase 05-02]: Buttons remain clickable visually — modal explains upgrade path rather than disabling UI
 
 ### Pending Todos
 
@@ -98,6 +101,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-16T19:58:27.783Z
-Stopped at: Completed 05-03-PLAN.md (Timeline premium placeholder)
+Last session: 2026-03-16T19:59:20.856Z
+Stopped at: Completed 05-02-PLAN.md (Dashboard paywall intercepts)
 Resume file: None
