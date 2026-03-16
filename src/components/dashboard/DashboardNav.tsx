@@ -4,7 +4,7 @@ import EventSwitcher from './EventSwitcher';
 
 const ALL_TABS = [
   { path: '/dashboard',          label: 'אורחים',  gateKey: null                           },
-  { path: '/dashboard/timeline', label: 'ציר זמן', gateKey: 'canAccessTimeline' as const   },
+  { path: '/dashboard/timeline', label: 'ציר זמן', gateKey: null                           },
   { path: '/dashboard/settings', label: 'הגדרות',  gateKey: null                           },
 ] as const;
 
