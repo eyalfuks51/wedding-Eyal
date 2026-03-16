@@ -266,7 +266,7 @@ function SettingsSkeleton() {
 // ─── Main component ────────────────────────────────────────────────────────────
 
 export default function DashboardSettings() {
-  const { event, isLoading: eventLoading } = useEventContext();
+  const { currentEvent, isLoading: eventLoading } = useEventContext();
   const { canManageGuests } = useFeatureAccess();
   const [draft, setDraft]       = useState<ContentConfig>({});
   const [original, setOriginal] = useState<ContentConfig>({});
@@ -281,11 +281,11 @@ export default function DashboardSettings() {
   }, []);
 
   useEffect(() => {
-    if (!event) return;
-    const config = (event as any).content_config ?? {};
+    if (!currentEvent) return;
+    const config = (currentEvent as any).content_config ?? {};
     setDraft({ ...config });
     setOriginal({ ...config });
-  }, [event]);
+  }, [currentEvent]);
 
   const isDirty = useMemo(
     () => JSON.stringify(draft) !== JSON.stringify(original),
@@ -319,14 +319,14 @@ export default function DashboardSettings() {
   }, []);
 
   const handleSave = useCallback(async () => {
-    if (!event || !isDirty) return;
+    if (!currentEvent || !isDirty) return;
     setSaving(true);
     try {
       const toSave = { ...draft };
       if (original.whatsapp_templates) {
         toSave.whatsapp_templates = original.whatsapp_templates;
       }
-      await updateEventContentConfig((event as any).id, toSave);
+      await updateEventContentConfig((currentEvent as any).id, toSave);
       setOriginal({ ...toSave });
       showToast('ההגדרות נשמרו בהצלחה');
     } catch (err: unknown) {
@@ -334,7 +334,7 @@ export default function DashboardSettings() {
     } finally {
       setSaving(false);
     }
-  }, [event, draft, original, isDirty, showToast]);
+  }, [currentEvent, draft, original, isDirty, showToast]);
 
   // ── Loading ──
 
@@ -648,9 +648,9 @@ export default function DashboardSettings() {
 
           {/* ── Preview (desktop only, sticky) ── */}
           <div className="hidden lg:block sticky top-8 self-start shrink-0">
-            {event && (
+            {currentEvent && (
               <LivePreview
-                event={event as any}
+                event={currentEvent as any}
                 config={draft}
                 width={320}
               />
@@ -667,9 +667,9 @@ export default function DashboardSettings() {
           onClick={() => setShowMobilePreview(false)}
         >
           <div onClick={e => e.stopPropagation()}>
-            {event && (
+            {currentEvent && (
               <LivePreview
-                event={event as any}
+                event={currentEvent as any}
                 config={draft}
                 width={300}
               />

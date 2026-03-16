@@ -846,7 +846,7 @@ export default function Dashboard() {
   const [invitations, setInvitations] = useState<Invitation[]>([]);
 
   // ── Event data via context (resolved by ProtectedRoute) ──────────────────
-  const { event, isLoading: eventLoading } = useEventContext();
+  const { currentEvent, isLoading: eventLoading } = useEventContext();
   const { canManageGuests } = useFeatureAccess();
 
   // ── Invitations loading/error (separate from event loading) ───────────────
@@ -887,12 +887,12 @@ export default function Dashboard() {
   const [colVisOpen, setColVisOpen] = useState(false);
   const colVisRef                   = useRef<HTMLDivElement>(null);
 
-  // ── Invitations fetch — runs once event.id is available ──────────────────
+  // ── Invitations fetch — runs once currentEvent.id is available ──────────────────
 
   useEffect(() => {
-    if (!event?.id || !supabase) return;
+    if (!currentEvent?.id || !supabase) return;
     const sb = supabase;
-    const id = event.id;
+    const id = currentEvent.id;
 
     setInvLoading(true);
     setInvError(null);
@@ -907,18 +907,18 @@ export default function Dashboard() {
         setInvLoading(false);
       });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [event?.id]);
+  }, [currentEvent?.id]);
 
   const reloadInvitations = useCallback(() => {
-    if (!event?.id || !supabase) return;
+    if (!currentEvent?.id || !supabase) return;
     const sb = supabase;
     setInvLoading(true);
-    sb.from('invitations').select('*').eq('event_id', event.id).order('group_name', { ascending: true })
+    sb.from('invitations').select('*').eq('event_id', currentEvent.id).order('group_name', { ascending: true })
       .then(({ data, error }) => {
         if (!error && data) setInvitations(data as Invitation[]);
         setInvLoading(false);
       });
-  }, [event?.id]);
+  }, [currentEvent?.id]);
 
   // Batch-fetch the most-recent message_log for every invitation in one query.
   // Reduces client-side to Map<invitation_id, MessageLog> for O(1) badge lookup.
@@ -1084,9 +1084,9 @@ export default function Dashboard() {
   // ── WhatsApp bulk message ─────────────────────────────────────────────────
 
   const handleSendBulkMessage = async (payload: BulkMessagePayload) => {
-    if (!event || !supabase) return;
+    if (!currentEvent || !supabase) return;
     const { guests, messageType, content } = payload;
-    const { whatsapp_templates, couple_names, waze_link } = (event.content_config ?? {}) as Record<string, unknown>;
+    const { whatsapp_templates, couple_names, waze_link } = (currentEvent.content_config ?? {}) as Record<string, unknown>;
 
     // Safety: bail early if template mode is requested but no templates are configured
     if (messageType === 'template' && !whatsapp_templates) {
@@ -1094,7 +1094,7 @@ export default function Dashboard() {
       return;
     }
 
-    const eventLink = `https://yourdomain.com/${event.slug}`;
+    const eventLink = `https://yourdomain.com/${currentEvent.slug}`;
 
     // message_type value: the template key (e.g. 'icebreaker') for template sends, 'custom' otherwise
     const messageTypeValue = messageType === 'template' ? content : 'custom';
@@ -1136,7 +1136,7 @@ export default function Dashboard() {
       // 3. phone_numbers is already a string[] in the DB — one row per phone
       (guest.phone_numbers ?? []).filter(Boolean).forEach((phone: string) => {
         messageLogs.push({
-          event_id:      event.id,
+          event_id:      currentEvent.id,
           invitation_id: guest.id,
           phone,
           message_type:  messageTypeValue,
@@ -1211,7 +1211,7 @@ export default function Dashboard() {
         isOpen={isModalOpen}
         onClose={closeModal}
         onSuccess={handleGuestAdded}
-        eventId={event?.id ?? ''}
+        eventId={currentEvent?.id ?? ''}
         saving={saving}
         setSaving={setSaving}
         formError={formError}
@@ -1224,7 +1224,7 @@ export default function Dashboard() {
         isOpen={isMessageModalOpen}
         onClose={() => setIsMessageModalOpen(false)}
         selectedGuests={selectedGuestsArray}
-        eventConfig={event?.content_config ?? {}}
+        eventConfig={currentEvent?.content_config ?? {}}
         onSend={handleSendBulkMessage}
       />
 
@@ -1242,10 +1242,10 @@ export default function Dashboard() {
         onSave={handleGuestSave}
       />
 
-      {event?.id && (
+      {currentEvent?.id && (
         <GuestUploadModal
           isOpen={isUploadOpen}
-          eventId={event.id}
+          eventId={currentEvent.id}
           onClose={() => setIsUploadOpen(false)}
           onSuccess={reloadInvitations}
         />
@@ -1274,7 +1274,7 @@ export default function Dashboard() {
                 ניהול הזמנות
               </h1>
               <p className="text-xs text-slate-400 font-brand mt-0.5 truncate">
-                {event?.slug}
+                {currentEvent?.slug}
               </p>
             </div>
           </div>

@@ -12,12 +12,12 @@ function Spinner() {
 }
 
 function ProtectedRouteInner({ children }: { children: ReactNode }) {
-  const { user, loading: authLoading }      = useAuth();
-  const { event, isLoading: eventLoading }  = useEventContext();
+  const { user, loading: authLoading }                    = useAuth();
+  const { events, isLoading: eventLoading }               = useEventContext();
 
   if (authLoading || eventLoading) return <Spinner />;
-  if (!user)  return <Navigate to="/login"      replace />;
-  if (!event) return <Navigate to="/onboarding" replace />;
+  if (!user)              return <Navigate to="/login"      replace />;
+  if (events.length === 0) return <Navigate to="/onboarding" replace />;
 
   return <>{children}</>;
 }

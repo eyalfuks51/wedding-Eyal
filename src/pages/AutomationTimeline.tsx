@@ -713,7 +713,7 @@ function ToastContainer({ toasts }: { toasts: Toast[] }) {
 // ─── Main page ───────────────────────────────────────────────────────────────
 
 export default function AutomationTimeline() {
-  const { event, isLoading: eventLoading } = useEventContext();
+  const { currentEvent, isLoading: eventLoading } = useEventContext();
   const { canManageGuests } = useFeatureAccess();
 
   const [settings, setSettings]       = useState<AutomationSettingRow[]>([]);
@@ -750,12 +750,12 @@ export default function AutomationTimeline() {
 
   // Initial load
   useEffect(() => {
-    if (!event?.id) return;
+    if (!currentEvent?.id) return;
     setLoading(true);
-    setTemplates(((event as any).content_config?.whatsapp_templates ?? {}) as WhatsAppTemplates);
-    setAutoPilot((event as any).automation_config?.auto_pilot ?? true);
-    loadData(event.id).finally(() => setLoading(false));
-  }, [event?.id, loadData]);
+    setTemplates(((currentEvent as any).content_config?.whatsapp_templates ?? {}) as WhatsAppTemplates);
+    setAutoPilot((currentEvent as any).automation_config?.auto_pilot ?? true);
+    loadData(currentEvent.id).finally(() => setLoading(false));
+  }, [currentEvent?.id, loadData]);
 
   // ── Derived data ──
 
@@ -766,7 +766,7 @@ export default function AutomationTimeline() {
 
   const beforeEvent = useMemo(() => sorted.filter(s => s.days_before > 0), [sorted]);
   const afterEvent  = useMemo(() => sorted.filter(s => s.days_before <= 0), [sorted]);
-  const eventDate   = (event as any)?.event_date ? new Date((event as any).event_date) : null;
+  const eventDate   = (currentEvent as any)?.event_date ? new Date((currentEvent as any).event_date) : null;
   const isEmpty     = !loading && !eventLoading && settings.length === 0;
 
   const dynamicNudgeCount = useMemo(
@@ -828,10 +828,10 @@ export default function AutomationTimeline() {
   // ── Handlers ──
 
   const handleRefresh = async () => {
-    if (!event?.id) return;
+    if (!currentEvent?.id) return;
     setRefreshing(true);
     try {
-      await loadData(event.id);
+      await loadData(currentEvent.id);
       showToast('הנתונים עודכנו');
     } catch {
       showToast('שגיאה בטעינת הנתונים', 'error');
@@ -841,11 +841,11 @@ export default function AutomationTimeline() {
   };
 
   const handleAutoPilotToggle = async () => {
-    if (!event?.id) return;
+    if (!currentEvent?.id) return;
     const newValue = !autoPilot;
     setAutoPilot(newValue); // optimistic
     try {
-      await toggleAutoPilot(event.id, newValue);
+      await toggleAutoPilot(currentEvent.id, newValue);
       showToast(newValue ? 'טייס אוטומטי פעיל' : 'טייס אוטומטי מושבת');
     } catch {
       setAutoPilot(!newValue); // revert
@@ -892,13 +892,13 @@ export default function AutomationTimeline() {
   };
 
   const handleDraftNudgeSaved = async (updates: { is_active?: boolean; days_before?: number; singular?: string; plural?: string }) => {
-    if (!draftNudge || !event?.id) return;
+    if (!draftNudge || !currentEvent?.id) return;
     try {
-      await addDynamicNudge(event.id, draftNudge.stage_name, updates.days_before ?? draftNudge.days_before);
+      await addDynamicNudge(currentEvent.id, draftNudge.stage_name, updates.days_before ?? draftNudge.days_before);
       if (updates.singular !== undefined || updates.plural !== undefined) {
-        await updateWhatsAppTemplate(event.id, draftNudge.stage_name, updates.singular ?? '', updates.plural ?? '');
+        await updateWhatsAppTemplate(currentEvent.id, draftNudge.stage_name, updates.singular ?? '', updates.plural ?? '');
       }
-      await loadData(event.id);
+      await loadData(currentEvent.id);
       showToast('תזכורת חדשה נוספה');
     } catch (err: unknown) {
       showToast(err instanceof Error ? err.message : 'שגיאה בהוספת תזכורת', 'error');
@@ -908,11 +908,11 @@ export default function AutomationTimeline() {
   };
 
   const handleDeleteNudge = async () => {
-    if (!editSetting || !event?.id) return;
+    if (!editSetting || !currentEvent?.id) return;
     try {
       await deleteDynamicNudge(editSetting.id);
       setEditSetting(null);
-      await loadData(event.id);
+      await loadData(currentEvent.id);
       showToast('התזכורת נמחקה');
     } catch (err: unknown) {
       showToast(err instanceof Error ? err.message : 'שגיאה במחיקת התזכורת', 'error');
@@ -920,7 +920,7 @@ export default function AutomationTimeline() {
   };
 
   const handleAddNudge = () => {
-    if (!event?.id || !canAddNudge) return;
+    if (!currentEvent?.id || !canAddNudge) return;
     // Find next available dynamic nudge name
     const existing = settings.map(s => s.stage_name);
     const nextName = (['nudge_1', 'nudge_2', 'nudge_3'] as const).find(n => !existing.includes(n));
@@ -936,7 +936,7 @@ export default function AutomationTimeline() {
     // Create a local draft (not in DB yet) and open the modal
     const draft: AutomationSettingRow = {
       id: `draft-${nextName}`,
-      event_id: event.id,
+      event_id: currentEvent.id,
       stage_name: nextName as AutomationSettingRow['stage_name'],
       days_before: defaultDays,
       target_status: 'pending',
@@ -975,7 +975,7 @@ export default function AutomationTimeline() {
               <h1 className="text-base font-bold text-slate-800 font-danidin leading-none">
                 ציר זמן אוטומציה
               </h1>
-              <p className="text-xs text-slate-400 font-brand mt-0.5">{event?.slug}</p>
+              <p className="text-xs text-slate-400 font-brand mt-0.5">{currentEvent?.slug}</p>
             </div>
           </div>
 
@@ -1159,11 +1159,11 @@ export default function AutomationTimeline() {
       </main>
 
       {/* ── Stage Edit Modal ── */}
-      {event?.id && editSetting && (
+      {currentEvent?.id && editSetting && (
         <StageEditModal
           setting={editSetting}
           templates={templates}
-          eventId={event.id}
+          eventId={currentEvent.id}
           eventDate={eventDate}
           isDynamicNudge={editIsDynamicNudge}
           canDelete={!draftNudge && editIsDynamicNudge && !editSettingHasLogs}
@@ -1174,10 +1174,10 @@ export default function AutomationTimeline() {
       )}
 
       {/* ── Stage Logs Drilldown ── */}
-      {event?.id && (
+      {currentEvent?.id && (
         <StageLogsSheet
           drilldown={drilldown}
-          eventId={event.id}
+          eventId={currentEvent.id}
           onClose={() => setDrilldown(null)}
         />
       )}
