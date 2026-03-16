@@ -30,12 +30,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Refreshing the browser preserves the previously selected event (localStorage persistence)
   4. A user with no events is redirected to onboarding; a user with events lands on the dashboard
   5. All existing single-event users and public slug pages continue working without changes
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 01-01: TBD
-- [ ] 01-02: TBD
-- [ ] 01-03: TBD
+- [ ] 01-01-PLAN.md -- Migration (is_super_admin + super admin RLS) + query functions + AuthContext extension
+- [ ] 01-02-PLAN.md -- EventContext multi-event refactor + ProtectedRoute + dashboard consumer updates
 
 ### Phase 2: Onboarding Refinement
 **Goal**: New users complete a standalone wizard that creates a draft event and shows them their live public link
@@ -105,7 +104,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Database & Multi-Event Context | 0/3 | Not started | - |
+| 1. Database & Multi-Event Context | 0/2 | Planning complete | - |
 | 2. Onboarding Refinement | 0/2 | Not started | - |
 | 3. Feature Gating | 0/2 | Not started | - |
 | 4. Dashboard Navigation | 0/1 | Not started | - |
