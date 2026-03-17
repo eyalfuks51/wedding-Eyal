@@ -72,8 +72,8 @@
 
 ### E2E Testing
 
-- [ ] **E2E-01**: Playwright test navigates to RSVP form for test event, fills dummy data, submits, and asserts success
-- [ ] **E2E-02**: Test teardown deletes dummy submission from `arrival_permits` via Supabase client, leaving database clean
+- [x] **E2E-01**: Playwright test navigates to RSVP form for test event, fills dummy data, submits, and asserts success
+- [x] **E2E-02**: Test teardown deletes dummy submission from `arrival_permits` via Supabase client, leaving database clean
 
 ## v2 Requirements
 
