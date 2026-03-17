@@ -17,7 +17,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Feature Gating** - useFeatureAccess hook enforces draft/active permission boundaries (completed 2026-03-16)
 - [x] **Phase 4: Dashboard Navigation** - Event Switcher dropdown and multi-event routing (completed 2026-03-16)
 - [x] **Phase 5: Paywalls & Upgrade Modal** - Intercept premium actions with UpgradeModal for draft events (completed 2026-03-16)
-- [ ] **Phase 6: RSVP Architecture Refactor & Tech Debt Cleanup** - Inclusive RSVP flow with unmatched guest handling, legacy trigger/webhook removal
+- [x] **Phase 6: RSVP Architecture Refactor & Tech Debt Cleanup** - Inclusive RSVP flow with unmatched guest handling, legacy trigger/webhook removal (completed 2026-03-17)
+- [ ] **Phase 7: Testing & QA Infrastructure** - Vitest unit tests, phone normalization coverage, mandatory test standard for all future phases
 
 ## Phase Details
 
@@ -109,19 +110,36 @@ Plans:
   5. Admin dashboard surfaces unmatched RSVPs for manual linking or new invitation creation
 
 **Tasks:**
-- [ ] **6.1 DB:** Add `invitation_id` (uuid FK) and `match_status` (text: 'matched'/'unmatched') columns to `arrival_permits`
-- [ ] **6.2 DB:** Rewrite `sync_arrival_to_invitation` trigger to set `match_status` and `invitation_id` on match, allow insert on no-match
-- [ ] **6.3 DB:** Drop legacy duplicate trigger `sync_rsvp_to_invitations` and its function
-- [ ] **6.4 DB:** Remove Google Sheets webhook trigger (`sheets_sync_trigger`) entirely
-- [ ] **6.5 UI:** Add "Unmatched RSVPs" section/filter in Admin Dashboard for admin review and linking
+- [x] **6.1 DB:** Add `invitation_id` (uuid FK) and `match_status` (text: 'matched'/'unmatched') columns to `arrival_permits`
+- [x] **6.2 DB:** Rewrite `sync_arrival_to_invitation` trigger to set `match_status` and `invitation_id` on match, allow insert on no-match
+- [x] **6.3 DB:** Drop legacy duplicate trigger `sync_rsvp_to_invitations` and its function
+- [x] **6.4 DB:** Remove Google Sheets webhook trigger (`sheets_sync_trigger`) entirely
+- [x] **6.5 UI:** Add "Unmatched RSVPs" section/filter in Admin Dashboard for admin review and linking
 
 Plans:
-- [ ] 06-01-PLAN.md -- Database migration (schema changes + trigger rewrite + legacy cleanup)
+- [x] 06-01-PLAN.md -- Database migration (schema changes + trigger rewrite + legacy cleanup)
+
+### Phase 7: Testing & QA Infrastructure
+**Goal**: Establish a robust testing foundation with Vitest for unit tests and enforce a mandatory testing standard for all future development phases
+**Depends on**: Nothing (infrastructure phase)
+**Requirements**: TEST-01, TEST-02, TEST-03
+**Success Criteria** (what must be TRUE):
+  1. Vitest is configured and `npm run test` runs successfully
+  2. Phone normalization logic (`phone_core` equivalents, format handling) has comprehensive unit tests covering edge cases: `05x`, `+972`, `972`, with/without dashes, spaces, and international formats
+  3. CLAUDE.md development workflow section mandates E2E (Playwright) and unit tests (Vitest) as a completion requirement for all future phases
+
+**Tasks:**
+- [ ] **7.1 Infra:** Install and configure Vitest with proper TypeScript/JSX support
+- [ ] **7.2 Tests:** Write unit tests for phone normalization logic (05x, +972, 972, dashes, spaces, edge cases)
+- [ ] **7.3 Docs:** Update CLAUDE.md to mandate testing verification (Vitest + Playwright) before any phase can be marked complete
+
+Plans:
+- [ ] 07-01-PLAN.md -- Vitest setup, phone normalization tests, CLAUDE.md testing mandate
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -130,4 +148,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 3. Feature Gating | 1/1 | Complete   | 2026-03-16 |
 | 4. Dashboard Navigation | 1/1 | Complete   | 2026-03-16 |
 | 5. Paywalls & Upgrade Modal | 3/3 | Complete   | 2026-03-16 |
-| 6. RSVP Architecture Refactor & Tech Debt Cleanup | 0/1 | In Progress | - |
+| 6. RSVP Architecture Refactor & Tech Debt Cleanup | 1/1 | Complete   | 2026-03-17 |
+| 7. Testing & QA Infrastructure | 0/1 | Not Started | - |
