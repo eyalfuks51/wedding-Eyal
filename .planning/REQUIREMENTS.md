@@ -144,8 +144,8 @@
 | TEST-02 | Phase 7 | Complete |
 | TEST-03 | Phase 7 | Complete |
 
-| E2E-01 | Phase 8 | Not Started |
-| E2E-02 | Phase 8 | Not Started |
+| E2E-01 | Phase 8 | Complete |
+| E2E-02 | Phase 8 | Complete |
 
 **Coverage:**
 - v1 requirements: 35 total
