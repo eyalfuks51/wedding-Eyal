@@ -64,6 +64,12 @@
 - [x] **AUTH-01**: `ProtectedRoute` handles multi-event: user with events → dashboard, user with no events → onboarding
 - [x] **AUTH-02**: `ProtectedRoute` provides `EventProvider` context to all dashboard pages
 
+### Testing & QA
+
+- [x] **TEST-01**: Vitest configured and `npm run test` runs successfully
+- [x] **TEST-02**: Phone normalization has comprehensive unit tests covering 05x, +972, 972, dashes, spaces, edge cases
+- [x] **TEST-03**: CLAUDE.md mandates E2E (Playwright) and unit tests (Vitest) as completion requirement for all future phases
+
 ## v2 Requirements
 
 ### Payment Integration
@@ -129,9 +135,13 @@
 | AUTH-01 | Phase 1 | Complete |
 | AUTH-02 | Phase 1 | Complete |
 
+| TEST-01 | Phase 7 | Complete |
+| TEST-02 | Phase 7 | Complete |
+| TEST-03 | Phase 7 | Complete |
+
 **Coverage:**
-- v1 requirements: 30 total
-- Mapped to phases: 30
+- v1 requirements: 33 total
+- Mapped to phases: 33
 - Unmapped: 0 ✓
 
 ---
