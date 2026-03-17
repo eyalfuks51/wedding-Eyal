@@ -20,6 +20,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 6: RSVP Architecture Refactor & Tech Debt Cleanup** - Inclusive RSVP flow with unmatched guest handling, legacy trigger/webhook removal (completed 2026-03-17)
 - [x] **Phase 7: Testing & QA Infrastructure** - Vitest unit tests, phone normalization coverage, mandatory test standard for all future phases (completed 2026-03-17)
 - [ ] **Phase 8: E2E Testing Foundation** - Playwright RSVP flow test with database teardown against dedicated test event
+- [ ] **Phase 9: Phase 6 Documentation Retrofix** - Register orphaned RSVP requirements and create Phase 6 verification artifacts (Gap Closure)
+- [ ] **Phase 10: Integration Fixes & Code Quality** - Fix auth refresh, onboarding race, nav gating, stale data flash, and clean up tech debt (Gap Closure)
 
 ## Phase Details
 
@@ -148,10 +150,40 @@ Plans:
 Plans:
 - [ ] 08-01-PLAN.md -- Playwright RSVP flow test with Supabase teardown
 
+### Phase 9: Phase 6 Documentation Retrofix
+**Goal**: Formally register the 5 orphaned RSVP requirements and create retroactive verification artifacts for Phase 6, which was executed outside the GSD workflow
+**Depends on**: Phase 6
+**Requirements**: RSVP-01, RSVP-02, RSVP-03, RSVP-04, RSVP-05
+**Gap Closure:** Closes orphaned requirements from v1.0 audit
+**Success Criteria** (what must be TRUE):
+  1. RSVP-01 through RSVP-05 are registered in REQUIREMENTS.md with checkboxes and traceability entries
+  2. Phase 6 has a VERIFICATION.md confirming all 5 requirements are satisfied (code already exists)
+  3. Phase 6 planning directory exists with proper artifacts
+
+Plans:
+- [ ] 09-01-PLAN.md -- Register RSVP requirements + create Phase 6 verification artifacts
+
+### Phase 10: Integration Fixes & Code Quality
+**Goal**: Fix cross-phase integration bugs (auth refresh, onboarding race, nav gating, stale data) and clean up tech debt (dead code, divergent imports, cosmetic casts)
+**Depends on**: Phase 1, Phase 2, Phase 3, Phase 4
+**Requirements**: INT-01, INT-02, INT-03, INT-04, INT-05, INT-06, INT-07
+**Gap Closure:** Closes integration, flow, and tech debt gaps from v1.0 audit
+**Success Criteria** (what must be TRUE):
+  1. Super admin retains `isSuperAdmin = true` after token refresh without page reload
+  2. Onboarding completion reliably navigates to `/dashboard/settings` without redirect-back race
+  3. Draft users do not see the Timeline tab in `DashboardNav`
+  4. Switching events in the dashboard does not flash previous event's data
+  5. `AddGuestModal` uses the canonical `normalisePhone` from `phone.ts`
+  6. `fetchEventForUser` (dead code) removed from supabase.js; unused `Navigate` import removed from Dashboard.tsx
+  7. Cosmetic type casts in EventContext.tsx and AutomationTimeline.tsx are cleaned up
+
+Plans:
+- [ ] 10-01-PLAN.md -- Auth refresh + onboarding race + nav gating + stale data fixes + tech debt cleanup
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -163,3 +195,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 6. RSVP Architecture Refactor & Tech Debt Cleanup | 1/1 | Complete   | 2026-03-17 |
 | 7. Testing & QA Infrastructure | 1/1 | Complete   | 2026-03-17 |
 | 8. E2E Testing Foundation | 0/1 | Not Started | - |
+| 9. Phase 6 Documentation Retrofix | 0/1 | Not Started | - |
+| 10. Integration Fixes & Code Quality | 0/1 | Not Started | - |

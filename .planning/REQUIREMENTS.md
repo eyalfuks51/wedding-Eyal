@@ -75,6 +75,24 @@
 - [x] **E2E-01**: Playwright test navigates to RSVP form for test event, fills dummy data, submits, and asserts success
 - [x] **E2E-02**: Test teardown deletes dummy submission from `arrival_permits` via Supabase client, leaving database clean
 
+### RSVP Architecture
+
+- [ ] **RSVP-01**: Unmatched guest saved with `match_status = 'unmatched'` in `arrival_permits`
+- [ ] **RSVP-02**: Matched guest saved with `match_status = 'matched'` and linked `invitation_id` updated
+- [ ] **RSVP-03**: Legacy trigger `sync_rsvp_to_invitations` removed
+- [ ] **RSVP-04**: Google Sheets webhook trigger (`sheets_sync_trigger`) removed
+- [ ] **RSVP-05**: Admin dashboard surfaces unmatched RSVPs for manual linking or new invitation creation
+
+### Integration & Code Quality (Gap Closure)
+
+- [ ] **INT-01**: `AuthContext.onAuthStateChange` re-queries `is_super_admin` on token refresh — no stale false value
+- [ ] **INT-02**: Onboarding → dashboard redirect waits for `user_events` row visibility before navigating
+- [ ] **INT-03**: `DashboardNav` hides Timeline tab for draft users via `gateKey` (not just in-page paywall)
+- [ ] **INT-04**: `Dashboard.tsx` clears invitations state before re-fetching on `currentEvent` change — no stale flash
+- [ ] **INT-05**: `AddGuestModal` imports `normalisePhone` from `phone.ts` instead of inline implementation
+- [ ] **INT-06**: Dead code removed: orphaned `fetchEventForUser` in supabase.js, unused `Navigate` import in Dashboard.tsx
+- [ ] **INT-07**: Cosmetic type casts cleaned up in EventContext.tsx and AutomationTimeline.tsx
+
 ## v2 Requirements
 
 ### Payment Integration
@@ -147,11 +165,25 @@
 | E2E-01 | Phase 8 | Complete |
 | E2E-02 | Phase 8 | Complete |
 
+| RSVP-01 | Phase 9 | Pending |
+| RSVP-02 | Phase 9 | Pending |
+| RSVP-03 | Phase 9 | Pending |
+| RSVP-04 | Phase 9 | Pending |
+| RSVP-05 | Phase 9 | Pending |
+
+| INT-01 | Phase 10 | Pending |
+| INT-02 | Phase 10 | Pending |
+| INT-03 | Phase 10 | Pending |
+| INT-04 | Phase 10 | Pending |
+| INT-05 | Phase 10 | Pending |
+| INT-06 | Phase 10 | Pending |
+| INT-07 | Phase 10 | Pending |
+
 **Coverage:**
-- v1 requirements: 35 total
-- Mapped to phases: 35
+- v1 requirements: 47 total
+- Mapped to phases: 47
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-16*
-*Last updated: 2026-03-16 after initial definition*
+*Last updated: 2026-03-18 after gap closure phase creation*
