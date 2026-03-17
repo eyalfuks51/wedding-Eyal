@@ -70,6 +70,11 @@
 - [x] **TEST-02**: Phone normalization has comprehensive unit tests covering 05x, +972, 972, dashes, spaces, edge cases
 - [x] **TEST-03**: CLAUDE.md mandates E2E (Playwright) and unit tests (Vitest) as completion requirement for all future phases
 
+### E2E Testing
+
+- [ ] **E2E-01**: Playwright test navigates to RSVP form for test event, fills dummy data, submits, and asserts success
+- [ ] **E2E-02**: Test teardown deletes dummy submission from `arrival_permits` via Supabase client, leaving database clean
+
 ## v2 Requirements
 
 ### Payment Integration
@@ -139,9 +144,12 @@
 | TEST-02 | Phase 7 | Complete |
 | TEST-03 | Phase 7 | Complete |
 
+| E2E-01 | Phase 8 | Not Started |
+| E2E-02 | Phase 8 | Not Started |
+
 **Coverage:**
-- v1 requirements: 33 total
-- Mapped to phases: 33
+- v1 requirements: 35 total
+- Mapped to phases: 35
 - Unmapped: 0 ✓
 
 ---

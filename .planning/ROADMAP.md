@@ -18,7 +18,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 4: Dashboard Navigation** - Event Switcher dropdown and multi-event routing (completed 2026-03-16)
 - [x] **Phase 5: Paywalls & Upgrade Modal** - Intercept premium actions with UpgradeModal for draft events (completed 2026-03-16)
 - [x] **Phase 6: RSVP Architecture Refactor & Tech Debt Cleanup** - Inclusive RSVP flow with unmatched guest handling, legacy trigger/webhook removal (completed 2026-03-17)
-- [ ] **Phase 7: Testing & QA Infrastructure** - Vitest unit tests, phone normalization coverage, mandatory test standard for all future phases
+- [x] **Phase 7: Testing & QA Infrastructure** - Vitest unit tests, phone normalization coverage, mandatory test standard for all future phases (completed 2026-03-17)
+- [ ] **Phase 8: E2E Testing Foundation** - Playwright RSVP flow test with database teardown against dedicated test event
 
 ## Phase Details
 
@@ -134,12 +135,23 @@ Plans:
 - [ ] **7.3 Docs:** Update CLAUDE.md to mandate testing verification (Vitest + Playwright) before any phase can be marked complete
 
 Plans:
-- [ ] 07-01-PLAN.md -- Vitest setup, phone normalization tests, CLAUDE.md testing mandate
+- [x] 07-01-PLAN.md -- Vitest setup, phone normalization tests, CLAUDE.md testing mandate
+
+### Phase 8: E2E Testing Foundation
+**Goal**: Build a complete Playwright E2E test for the RSVP submission flow using a dedicated test event, with strict database teardown to keep the environment clean
+**Depends on**: Phase 7
+**Requirements**: E2E-01, E2E-02
+**Success Criteria** (what must be TRUE):
+  1. A Playwright test navigates to the RSVP form for the test event (`event_id: f95c0196-1fa7-441c-bc36-c0f9e833f2e8`), fills dummy data, submits, and asserts success feedback
+  2. After the test (pass or fail), a teardown step using the Supabase client deletes the dummy submission from `arrival_permits`, leaving the database perfectly clean
+
+Plans:
+- [ ] 08-01-PLAN.md -- Playwright RSVP flow test with Supabase teardown
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -149,4 +161,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 4. Dashboard Navigation | 1/1 | Complete   | 2026-03-16 |
 | 5. Paywalls & Upgrade Modal | 3/3 | Complete   | 2026-03-16 |
 | 6. RSVP Architecture Refactor & Tech Debt Cleanup | 1/1 | Complete   | 2026-03-17 |
-| 7. Testing & QA Infrastructure | 0/1 | Not Started | - |
+| 7. Testing & QA Infrastructure | 1/1 | Complete   | 2026-03-17 |
+| 8. E2E Testing Foundation | 0/1 | Not Started | - |
