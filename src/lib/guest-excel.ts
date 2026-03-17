@@ -1,6 +1,7 @@
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import type { Invitation } from '@/components/dashboard/EditGuestSheet';
+import { normalizePhone, isValidPhone } from './phone';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -53,20 +54,6 @@ const INSTRUCTIONS = [
   'משפחה / חברים / עבודה (אופציונלי)',
   'כן / לא, ברירת מחדל: כן',
 ];
-
-// ─── Phone normalization ─────────────────────────────────────────────────────
-
-function normalizePhone(raw: string): string {
-  const digits = String(raw).replace(/\D/g, '');
-  if (digits.startsWith('972')) return digits;
-  if (digits.startsWith('0')) return '972' + digits.slice(1);
-  return digits;
-}
-
-function isValidPhone(raw: string): boolean {
-  const digits = String(raw).replace(/\D/g, '');
-  return digits.length >= 9 && digits.length <= 12;
-}
 
 // ─── Template download ───────────────────────────────────────────────────────
 

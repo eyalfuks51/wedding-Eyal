@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from 'tailwindcss'
@@ -20,5 +21,11 @@ export default defineConfig({
       // in ESM packages ("type": "module") depending on the installed version.
       plugins: [tailwindcss, autoprefixer],
     },
+  },
+  test: {
+    globals: true,
+    environment: 'node',
+    include: ['src/**/*.test.{ts,tsx}'],
+    exclude: ['node_modules', 'tests'],
   },
 })
