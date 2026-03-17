@@ -351,3 +351,52 @@ export const createOnboardingEvent = async ({ slug, templateId, contentConfig, p
 
   return data;
 };
+
+/**
+ * Fetch all arrival_permits for an event that have not yet been matched to an invitation.
+ * Returns the full row for each unmatched permit, ordered newest-first.
+ * @param {string} eventId - UUID of the event
+ * @returns {Promise<Array>} Array of unmatched arrival_permit rows
+ */
+export const fetchUnmatchedPermits = async (eventId) => {
+  if (!supabase) throw new Error('Supabase is not configured');
+  const { data, error } = await supabase
+    .from('arrival_permits')
+    .select('*')
+    .eq('event_id', eventId)
+    .eq('match_status', 'unmatched')
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data ?? [];
+};
+
+/**
+ * Link an existing arrival_permit to an existing invitation via RPC.
+ * The RPC handles updating match_status and syncing RSVP data.
+ * @param {number} permitId - PK of the arrival_permit row
+ * @param {string} invitationId - UUID of the target invitation
+ * @returns {Promise<void>}
+ */
+export const linkPermitToInvitation = async (permitId, invitationId) => {
+  if (!supabase) throw new Error('Supabase is not configured');
+  const { error } = await supabase.rpc('link_permit_to_invitation', {
+    p_permit_id: permitId,
+    p_invitation_id: invitationId,
+  });
+  if (error) throw error;
+};
+
+/**
+ * Create a new invitation record from an unmatched arrival_permit via RPC.
+ * The RPC inserts the invitation, links the permit, and returns the new invitation UUID.
+ * @param {number} permitId - PK of the arrival_permit row
+ * @returns {Promise<string>} UUID of the newly created invitation
+ */
+export const createInvitationFromPermit = async (permitId) => {
+  if (!supabase) throw new Error('Supabase is not configured');
+  const { data, error } = await supabase.rpc('create_invitation_from_permit', {
+    p_permit_id: permitId,
+  });
+  if (error) throw error;
+  return data;
+};

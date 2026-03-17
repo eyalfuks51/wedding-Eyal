@@ -37,6 +37,8 @@ import { type Invitation, type RsvpStatus, EditGuestSheet } from '@/components/d
 import { TEMPLATE_LABELS, MSG_STATUS_MAP } from '@/components/dashboard/constants';
 import DashboardNav from '@/components/dashboard/DashboardNav';
 import GuestUploadModal from '@/components/dashboard/GuestUploadModal';
+import UnmatchedBanner from '@/components/dashboard/UnmatchedBanner';
+import UnmatchedResolutionSheet from '@/components/dashboard/UnmatchedResolutionSheet';
 import { exportGuests } from '../lib/guest-excel';
 import UpgradeModal from '@/components/ui/UpgradeModal';
 
@@ -884,6 +886,10 @@ export default function Dashboard() {
   // ── Edit guest drawer ─────────────────────────────────────────────────────
   const [editGuest, setEditGuest] = useState<Invitation | null>(null);
 
+  // ── Unmatched RSVP resolution ───────────────────────────────────────────
+  const [unmatchedCount, setUnmatchedCount] = useState(0);
+  const [resolutionOpen, setResolutionOpen] = useState(false);
+
   // ── Column visibility ─────────────────────────────────────────────────────
   const [colVis, setColVis]         = useState<ColVis>({ side: false, group: false, pax_split: false, automation: false });
   const [colVisOpen, setColVisOpen] = useState(false);
@@ -908,6 +914,13 @@ export default function Dashboard() {
         else setInvitations((data ?? []) as Invitation[]);
         setInvLoading(false);
       });
+
+    // Fetch unmatched RSVP count for the banner
+    sb.from('arrival_permits')
+      .select('id', { count: 'exact', head: true })
+      .eq('event_id', id)
+      .eq('match_status', 'unmatched')
+      .then(({ count }) => setUnmatchedCount(count ?? 0));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentEvent?.id]);
 
@@ -920,6 +933,12 @@ export default function Dashboard() {
         if (!error && data) setInvitations(data as Invitation[]);
         setInvLoading(false);
       });
+    // Also refresh unmatched count
+    sb.from('arrival_permits')
+      .select('id', { count: 'exact', head: true })
+      .eq('event_id', currentEvent.id)
+      .eq('match_status', 'unmatched')
+      .then(({ count }) => setUnmatchedCount(count ?? 0));
   }, [currentEvent?.id]);
 
   // Batch-fetch the most-recent message_log for every invitation in one query.
@@ -1257,6 +1276,16 @@ export default function Dashboard() {
         />
       )}
 
+      {currentEvent?.id && (
+        <UnmatchedResolutionSheet
+          open={resolutionOpen}
+          onOpenChange={setResolutionOpen}
+          eventId={currentEvent.id}
+          invitations={invitations}
+          onResolved={reloadInvitations}
+        />
+      )}
+
       <UpgradeModal
         isOpen={upgradeOpen}
         onClose={() => setUpgradeOpen(false)}
@@ -1377,6 +1406,11 @@ export default function Dashboard() {
           />
 
         </div>
+
+        {/* ════════════════════════════════════════════════════════════════
+            UNMATCHED RSVP BANNER
+        ════════════════════════════════════════════════════════════════ */}
+        <UnmatchedBanner count={unmatchedCount} onResolve={() => setResolutionOpen(true)} />
 
         {/* ════════════════════════════════════════════════════════════════
             FILTER / ACTION BAR

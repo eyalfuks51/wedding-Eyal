@@ -17,6 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Feature Gating** - useFeatureAccess hook enforces draft/active permission boundaries (completed 2026-03-16)
 - [x] **Phase 4: Dashboard Navigation** - Event Switcher dropdown and multi-event routing (completed 2026-03-16)
 - [x] **Phase 5: Paywalls & Upgrade Modal** - Intercept premium actions with UpgradeModal for draft events (completed 2026-03-16)
+- [ ] **Phase 6: RSVP Architecture Refactor & Tech Debt Cleanup** - Inclusive RSVP flow with unmatched guest handling, legacy trigger/webhook removal
 
 ## Phase Details
 
@@ -96,10 +97,31 @@ Plans:
 - [ ] 05-02-PLAN.md -- Dashboard.tsx paywall intercepts (Import, Export, Add Guest, Send Message, bulk Export)
 - [ ] 05-03-PLAN.md -- AutomationTimeline premium placeholder for draft users
 
+### Phase 6: RSVP Architecture Refactor & Tech Debt Cleanup
+**Goal**: Implement an inclusive RSVP flow where unmatched guests are accepted and flagged for admin review, and remove legacy Google Sheets sync infrastructure
+**Depends on**: Phase 1
+**Requirements**: RSVP-01, RSVP-02, RSVP-03, RSVP-04, RSVP-05
+**Success Criteria** (what must be TRUE):
+  1. A guest submitting an RSVP with a phone not in `invitations` is saved with `match_status = 'unmatched'`
+  2. A guest submitting an RSVP with a phone that matches an invitation is saved with `match_status = 'matched'` and the invitation is updated
+  3. The legacy duplicate trigger `sync_rsvp_to_invitations` is removed
+  4. The Google Sheets webhook trigger and edge function dependency are fully removed
+  5. Admin dashboard surfaces unmatched RSVPs for manual linking or new invitation creation
+
+**Tasks:**
+- [ ] **6.1 DB:** Add `invitation_id` (uuid FK) and `match_status` (text: 'matched'/'unmatched') columns to `arrival_permits`
+- [ ] **6.2 DB:** Rewrite `sync_arrival_to_invitation` trigger to set `match_status` and `invitation_id` on match, allow insert on no-match
+- [ ] **6.3 DB:** Drop legacy duplicate trigger `sync_rsvp_to_invitations` and its function
+- [ ] **6.4 DB:** Remove Google Sheets webhook trigger (`sheets_sync_trigger`) entirely
+- [ ] **6.5 UI:** Add "Unmatched RSVPs" section/filter in Admin Dashboard for admin review and linking
+
+Plans:
+- [ ] 06-01-PLAN.md -- Database migration (schema changes + trigger rewrite + legacy cleanup)
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -108,3 +130,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 3. Feature Gating | 1/1 | Complete   | 2026-03-16 |
 | 4. Dashboard Navigation | 1/1 | Complete   | 2026-03-16 |
 | 5. Paywalls & Upgrade Modal | 3/3 | Complete   | 2026-03-16 |
+| 6. RSVP Architecture Refactor & Tech Debt Cleanup | 0/1 | In Progress | - |
