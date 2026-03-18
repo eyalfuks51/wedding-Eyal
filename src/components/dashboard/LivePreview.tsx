@@ -5,7 +5,7 @@ const PHONE_W = 375;
 const PHONE_H = 812;
 
 interface LivePreviewProps {
-  event: { id: string; slug: string; template_id: string; event_date: string };
+  event: { id: string; slug: string; template_id: string; event_date: string | null };
   config: Record<string, any>;
   /** Visual width of the phone content area in px — scale is computed from this */
   width?: number;

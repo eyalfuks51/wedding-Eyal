@@ -44,13 +44,16 @@ function resolveCurrentEvent(events: EventData[]): EventData | null {
 const EventContext = createContext<EventContextValue | null>(null);
 
 export function EventProvider({ children }: { children: ReactNode }) {
-  const { user, isSuperAdmin }        = useAuth();
+  const { user, isSuperAdmin, loading: authLoading } = useAuth();
   const [events, setEvents]           = useState<EventData[]>([]);
   const [currentEvent, setCurrentEvent] = useState<EventData | null>(null);
   const [isLoading, setLoading]       = useState(true);
   const [tick, setTick]               = useState(0);
 
   useEffect(() => {
+    // Guard: defer until auth (including isSuperAdmin) is fully resolved
+    if (authLoading) return;
+
     // Guard: do not fetch until a user is authenticated
     if (!user?.id) {
       setEvents([]);
@@ -81,7 +84,7 @@ export function EventProvider({ children }: { children: ReactNode }) {
       });
 
     return () => { cancelled = true; };
-  }, [user?.id, isSuperAdmin, tick]);
+  }, [user?.id, isSuperAdmin, authLoading, tick]);
 
   const switchEvent = useCallback((id: string) => {
     const match = events.find(e => e.id === id);

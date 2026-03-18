@@ -282,7 +282,7 @@ export default function DashboardSettings() {
 
   useEffect(() => {
     if (!currentEvent) return;
-    const config = (currentEvent as any).content_config ?? {};
+    const config = (currentEvent.content_config ?? {}) as ContentConfig;
     setDraft({ ...config });
     setOriginal({ ...config });
   }, [currentEvent]);
@@ -326,7 +326,7 @@ export default function DashboardSettings() {
       if (original.whatsapp_templates) {
         toSave.whatsapp_templates = original.whatsapp_templates;
       }
-      await updateEventContentConfig((currentEvent as any).id, toSave);
+      await updateEventContentConfig(currentEvent.id, toSave);
       setOriginal({ ...toSave });
       showToast('ההגדרות נשמרו בהצלחה');
     } catch (err: unknown) {
@@ -650,7 +650,7 @@ export default function DashboardSettings() {
           <div className="hidden lg:block sticky top-8 self-start shrink-0">
             {currentEvent && (
               <LivePreview
-                event={currentEvent as any}
+                event={currentEvent}
                 config={draft}
                 width={320}
               />
@@ -669,7 +669,7 @@ export default function DashboardSettings() {
           <div onClick={e => e.stopPropagation()}>
             {currentEvent && (
               <LivePreview
-                event={currentEvent as any}
+                event={currentEvent}
                 config={draft}
                 width={300}
               />
