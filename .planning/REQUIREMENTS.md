@@ -77,11 +77,11 @@
 
 ### RSVP Architecture
 
-- [ ] **RSVP-01**: Unmatched guest saved with `match_status = 'unmatched'` in `arrival_permits`
-- [ ] **RSVP-02**: Matched guest saved with `match_status = 'matched'` and linked `invitation_id` updated
-- [ ] **RSVP-03**: Legacy trigger `sync_rsvp_to_invitations` removed
-- [ ] **RSVP-04**: Google Sheets webhook trigger (`sheets_sync_trigger`) removed
-- [ ] **RSVP-05**: Admin dashboard surfaces unmatched RSVPs for manual linking or new invitation creation
+- [x] **RSVP-01**: Unmatched guest saved with `match_status = 'unmatched'` in `arrival_permits`
+- [x] **RSVP-02**: Matched guest saved with `match_status = 'matched'` and linked `invitation_id` updated
+- [x] **RSVP-03**: Legacy trigger `sync_rsvp_to_invitations` removed
+- [x] **RSVP-04**: Google Sheets webhook trigger (`sheets_sync_trigger`) removed
+- [x] **RSVP-05**: Admin dashboard surfaces unmatched RSVPs for manual linking or new invitation creation
 
 ### Integration & Code Quality (Gap Closure)
 
@@ -165,11 +165,11 @@
 | E2E-01 | Phase 8 | Complete |
 | E2E-02 | Phase 8 | Complete |
 
-| RSVP-01 | Phase 9 | Pending |
-| RSVP-02 | Phase 9 | Pending |
-| RSVP-03 | Phase 9 | Pending |
-| RSVP-04 | Phase 9 | Pending |
-| RSVP-05 | Phase 9 | Pending |
+| RSVP-01 | Phase 6 | Complete |
+| RSVP-02 | Phase 6 | Complete |
+| RSVP-03 | Phase 6 | Complete |
+| RSVP-04 | Phase 6 | Complete |
+| RSVP-05 | Phase 6 | Complete |
 
 | INT-01 | Phase 10 | Pending |
 | INT-02 | Phase 10 | Pending |
