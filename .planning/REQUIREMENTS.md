@@ -93,6 +93,13 @@
 - [x] **INT-06**: Dead code removed: orphaned `fetchEventForUser` in supabase.js, unused `Navigate` import in Dashboard.tsx
 - [x] **INT-07**: Cosmetic type casts cleaned up in EventContext.tsx and AutomationTimeline.tsx
 
+### Final Polish (Gap Closure)
+
+- [ ] **POLISH-01**: `DashboardSettings.tsx` has zero `(currentEvent as any)` casts — uses typed `EventData` properties
+- [ ] **POLISH-02**: `EventContext` defers initial fetch until `isSuperAdmin` has resolved — no double-fetch flicker for super admins
+- [ ] **POLISH-03**: All ROADMAP.md plan checkboxes and phase statuses match actual completion state
+- [ ] **POLISH-04**: `.env.example` documents `VITE_SUPABASE_SERVICE_ROLE_KEY` with E2E teardown explanation
+
 ## v2 Requirements
 
 ### Payment Integration
@@ -179,9 +186,14 @@
 | INT-06 | Phase 10 | Complete |
 | INT-07 | Phase 10 | Complete |
 
+| POLISH-01 | Phase 11 | Pending |
+| POLISH-02 | Phase 11 | Pending |
+| POLISH-03 | Phase 11 | Pending |
+| POLISH-04 | Phase 11 | Pending |
+
 **Coverage:**
-- v1 requirements: 47 total
-- Mapped to phases: 47
+- v1 requirements: 51 total
+- Mapped to phases: 51
 - Unmapped: 0 ✓
 
 ---

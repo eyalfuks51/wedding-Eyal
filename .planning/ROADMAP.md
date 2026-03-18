@@ -19,9 +19,10 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 5: Paywalls & Upgrade Modal** - Intercept premium actions with UpgradeModal for draft events (completed 2026-03-16)
 - [x] **Phase 6: RSVP Architecture Refactor & Tech Debt Cleanup** - Inclusive RSVP flow with unmatched guest handling, legacy trigger/webhook removal (completed 2026-03-17)
 - [x] **Phase 7: Testing & QA Infrastructure** - Vitest unit tests, phone normalization coverage, mandatory test standard for all future phases (completed 2026-03-17)
-- [ ] **Phase 8: E2E Testing Foundation** - Playwright RSVP flow test with database teardown against dedicated test event
+- [x] **Phase 8: E2E Testing Foundation** - Playwright RSVP flow test with database teardown against dedicated test event (completed 2026-03-17)
 - [x] **Phase 9: Phase 6 Documentation Retrofix** - Register orphaned RSVP requirements and create Phase 6 verification artifacts (Gap Closure) (completed 2026-03-18)
 - [x] **Phase 10: Integration Fixes & Code Quality** - Fix auth refresh, onboarding race, nav gating, stale data flash, and clean up tech debt (Gap Closure) (completed 2026-03-18)
+- [ ] **Phase 11: Final Polish & Bookkeeping** - Remove residual type casts, fix super admin async flicker, correct all ROADMAP bookkeeping (Gap Closure)
 
 ## Phase Details
 
@@ -38,8 +39,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans:** 2/2 plans complete
 
 Plans:
-- [ ] 01-01-PLAN.md -- Migration (is_super_admin + super admin RLS) + query functions + AuthContext extension
-- [ ] 01-02-PLAN.md -- EventContext multi-event refactor + ProtectedRoute + dashboard consumer updates
+- [x] 01-01-PLAN.md -- Migration (is_super_admin + super admin RLS) + query functions + AuthContext extension
+- [x] 01-02-PLAN.md -- EventContext multi-event refactor + ProtectedRoute + dashboard consumer updates
 
 ### Phase 2: Onboarding Refinement
 **Goal**: New users complete a standalone wizard that creates a draft event and shows them their live public link
@@ -53,8 +54,8 @@ Plans:
 **Plans:** 2/2 plans complete
 
 Plans:
-- [ ] 02-01-PLAN.md -- Data layer fixes (createOnboardingEvent + slug generation) + auth guard on /onboarding
-- [ ] 02-02-PLAN.md -- Step 4 success screen with live link, copy button, and redirect to settings
+- [x] 02-01-PLAN.md -- Data layer fixes (createOnboardingEvent + slug generation) + auth guard on /onboarding
+- [x] 02-02-PLAN.md -- Step 4 success screen with live link, copy button, and redirect to settings
 
 ### Phase 3: Feature Gating
 **Goal**: Draft event users can only access settings, while active event users have full platform access
@@ -68,7 +69,7 @@ Plans:
 **Plans:** 1/1 plans complete
 
 Plans:
-- [ ] 03-01-PLAN.md -- Refactor useFeatureAccess to six granular flags + update all consumer files
+- [x] 03-01-PLAN.md -- Refactor useFeatureAccess to six granular flags + update all consumer files
 
 ### Phase 4: Dashboard Navigation
 **Goal**: Users with multiple events can switch between them from the dashboard header
@@ -97,9 +98,9 @@ Plans:
 **Plans:** 3/3 plans complete
 
 Plans:
-- [ ] 05-01-PLAN.md -- UpgradeModal component + DashboardNav Timeline tab visibility fix
-- [ ] 05-02-PLAN.md -- Dashboard.tsx paywall intercepts (Import, Export, Add Guest, Send Message, bulk Export)
-- [ ] 05-03-PLAN.md -- AutomationTimeline premium placeholder for draft users
+- [x] 05-01-PLAN.md -- UpgradeModal component + DashboardNav Timeline tab visibility fix
+- [x] 05-02-PLAN.md -- Dashboard.tsx paywall intercepts (Import, Export, Add Guest, Send Message, bulk Export)
+- [x] 05-03-PLAN.md -- AutomationTimeline premium placeholder for draft users
 
 ### Phase 6: RSVP Architecture Refactor & Tech Debt Cleanup
 **Goal**: Implement an inclusive RSVP flow where unmatched guests are accepted and flagged for admin review, and remove legacy Google Sheets sync infrastructure
@@ -148,7 +149,7 @@ Plans:
   2. After the test (pass or fail), a teardown step using the Supabase client deletes the dummy submission from `arrival_permits`, leaving the database perfectly clean
 
 Plans:
-- [ ] 08-01-PLAN.md -- Playwright RSVP flow test with Supabase teardown
+- [x] 08-01-PLAN.md -- Playwright RSVP flow test with Supabase teardown
 
 ### Phase 9: Phase 6 Documentation Retrofix
 **Goal**: Formally register the 5 orphaned RSVP requirements and create retroactive verification artifacts for Phase 6, which was executed outside the GSD workflow
@@ -162,7 +163,7 @@ Plans:
 **Plans:** 1/1 plans complete
 
 Plans:
-- [ ] 09-01-PLAN.md -- Register RSVP requirements + create Phase 6 verification artifacts
+- [x] 09-01-PLAN.md -- Register RSVP requirements + create Phase 6 verification artifacts
 
 ### Phase 10: Integration Fixes & Code Quality
 **Goal**: Fix cross-phase integration bugs (auth refresh, onboarding race, nav gating, stale data) and clean up tech debt (dead code, divergent imports, cosmetic casts)
@@ -180,13 +181,27 @@ Plans:
 **Plans:** 2/2 plans complete
 
 Plans:
-- [ ] 10-01-PLAN.md -- Behavioral fixes: auth refresh, onboarding race, nav gating, stale data flash
-- [ ] 10-02-PLAN.md -- Code cleanup: canonical phone import, dead code removal, type cast cleanup
+- [x] 10-01-PLAN.md -- Behavioral fixes: auth refresh, onboarding race, nav gating, stale data flash
+- [x] 10-02-PLAN.md -- Code cleanup: canonical phone import, dead code removal, type cast cleanup
+
+### Phase 11: Final Polish & Bookkeeping
+**Goal**: Eliminate all cosmetic tech debt for a pristine v1.0 — residual type casts, super admin async flicker, and documentation consistency
+**Depends on**: Phase 1, Phase 10
+**Requirements**: POLISH-01, POLISH-02, POLISH-03, POLISH-04
+**Gap Closure:** Closes all tech debt items from v1.0 audit
+**Success Criteria** (what must be TRUE):
+  1. `DashboardSettings.tsx` has zero `(currentEvent as any)` casts — uses typed `EventData` properties directly
+  2. Super admin login does not double-fetch events — `EventContext` defers initial fetch until `isSuperAdmin` has resolved
+  3. `.env.example` documents `VITE_SUPABASE_SERVICE_ROLE_KEY` with explanation of its role in E2E teardown
+  4. All ROADMAP.md plan checkboxes and phase statuses are consistent with actual completion state
+
+Plans:
+- [ ] 11-01-PLAN.md -- Type cast cleanup, super admin flicker fix, documentation polish
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -197,6 +212,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 5. Paywalls & Upgrade Modal | 3/3 | Complete   | 2026-03-16 |
 | 6. RSVP Architecture Refactor & Tech Debt Cleanup | 1/1 | Complete   | 2026-03-17 |
 | 7. Testing & QA Infrastructure | 1/1 | Complete   | 2026-03-17 |
-| 8. E2E Testing Foundation | 0/1 | Not Started | - |
+| 8. E2E Testing Foundation | 1/1 | Complete   | 2026-03-17 |
 | 9. Phase 6 Documentation Retrofix | 1/1 | Complete   | 2026-03-18 |
 | 10. Integration Fixes & Code Quality | 2/2 | Complete    | 2026-03-18 |
+| 11. Final Polish & Bookkeeping | 0/1 | Not Started | - |
