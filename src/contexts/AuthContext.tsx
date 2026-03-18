@@ -18,44 +18,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
 
   useEffect(() => {
-    supabase!.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setLoading(false);
-    });
-
-    const { data: { subscription } } = supabase!.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  // Secondary fetch: resolve isSuperAdmin whenever the authenticated user changes.
-  // Runs independently of the loading flag — does not block initial auth resolution.
-  useEffect(() => {
-    const userId = session?.user?.id;
-    if (!userId) {
-      setIsSuperAdmin(false);
-      return;
-    }
-
     let cancelled = false;
-    supabase!
-      .from('users')
-      .select('is_super_admin')
-      .eq('id', userId)
-      .single()
-      .then(({ data, error }) => {
-        if (cancelled) return;
-        if (error) {
-          setIsSuperAdmin(false);
-          return;
-        }
-        setIsSuperAdmin(data?.is_super_admin ?? false);
-      });
 
-    return () => { cancelled = true; };
-  }, [session?.user?.id]);
+    supabase!.auth.getSession().then(async ({ data: { session: s } }) => {
+      if (cancelled) return;
+      setSession(s);
+
+      // Resolve super admin status before marking auth as ready,
+      // so EventContext doesn't fire with stale isSuperAdmin=false.
+      const userId = s?.user?.id;
+      if (userId) {
+        const { data } = await supabase!
+          .from('users')
+          .select('is_super_admin')
+          .eq('id', userId)
+          .single();
+        if (!cancelled) setIsSuperAdmin(data?.is_super_admin ?? false);
+      }
+
+      if (!cancelled) setLoading(false);
+    });
+
+    const { data: { subscription } } = supabase!.auth.onAuthStateChange(
+      async (_event, newSession) => {
+        if (cancelled) return;
+        setSession(newSession);
+        const uid = newSession?.user?.id;
+        if (uid) {
+          const { data } = await supabase!
+            .from('users')
+            .select('is_super_admin')
+            .eq('id', uid)
+            .single();
+          if (!cancelled) setIsSuperAdmin(data?.is_super_admin ?? false);
+        } else {
+          if (!cancelled) setIsSuperAdmin(false);
+        }
+      }
+    );
+
+    return () => { cancelled = true; subscription.unsubscribe(); };
+  }, []);
 
   const signOut = async () => {
     await supabase!.auth.signOut();
