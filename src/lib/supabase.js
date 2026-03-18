@@ -300,21 +300,6 @@ export const fetchAllEvents = async () => {
 };
 
 /**
- * Fetch the event linked to the currently authenticated user.
- * Returns null if the user has no event yet (new user → show onboarding).
- */
-export const fetchEventForUser = async () => {
-  if (!supabase) throw new Error('Supabase is not configured');
-  const { data, error } = await supabase
-    .from('user_events')
-    .select('role, events(id, slug, template_id, content_config, event_date, automation_config, status)')
-    .limit(1)
-    .maybeSingle();
-  if (error) throw error;
-  return data?.events ?? null;
-};
-
-/**
  * Generate a URL-safe slug from two partner names.
  * Preserves Hebrew characters, Latin letters, digits, and hyphens.
  * Appends a 6-char random suffix for uniqueness.

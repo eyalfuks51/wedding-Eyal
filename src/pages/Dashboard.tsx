@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { Navigate } from 'react-router-dom';
+import { normalizePhone } from '@/lib/phone';
 import {
   Search,
   Users,
@@ -295,12 +295,6 @@ function AddGuestModal({
   const removePhone = (idx: number) =>
     setForm({ ...form, phones: form.phones.filter((_, i) => i !== idx) });
 
-  // Normalise a single raw phone string to international format
-  const normalisePhone = (raw: string): string => {
-    const digits = raw.replace(/\D/g, '');
-    return digits.startsWith('0') ? '972' + digits.slice(1) : digits;
-  };
-
   const validate = (): string | null => {
     if (!form.group_name.trim()) return 'נא להזין שם';
     // First phone is mandatory
@@ -331,7 +325,7 @@ function AddGuestModal({
     // Filter out blank additional entries, then normalise all
     const phone_numbers = form.phones
       .filter(p => p.trim().length > 0)
-      .map(normalisePhone);
+      .map(normalizePhone);
 
     const { data, error } = await supabase
       .from('invitations')
