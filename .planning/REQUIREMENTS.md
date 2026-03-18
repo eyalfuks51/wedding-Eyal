@@ -95,10 +95,10 @@
 
 ### Final Polish (Gap Closure)
 
-- [ ] **POLISH-01**: `DashboardSettings.tsx` has zero `(currentEvent as any)` casts — uses typed `EventData` properties
-- [ ] **POLISH-02**: `EventContext` defers initial fetch until `isSuperAdmin` has resolved — no double-fetch flicker for super admins
-- [ ] **POLISH-03**: All ROADMAP.md plan checkboxes and phase statuses match actual completion state
-- [ ] **POLISH-04**: `.env.example` documents `VITE_SUPABASE_SERVICE_ROLE_KEY` with E2E teardown explanation
+- [x] **POLISH-01**: `DashboardSettings.tsx` has zero `(currentEvent as any)` casts — uses typed `EventData` properties
+- [x] **POLISH-02**: `EventContext` defers initial fetch until `isSuperAdmin` has resolved — no double-fetch flicker for super admins
+- [x] **POLISH-03**: All ROADMAP.md plan checkboxes and phase statuses match actual completion state
+- [x] **POLISH-04**: `.env.example` documents `VITE_SUPABASE_SERVICE_ROLE_KEY` with E2E teardown explanation
 
 ## v2 Requirements
 
@@ -186,10 +186,10 @@
 | INT-06 | Phase 10 | Complete |
 | INT-07 | Phase 10 | Complete |
 
-| POLISH-01 | Phase 11 | Pending |
-| POLISH-02 | Phase 11 | Pending |
-| POLISH-03 | Phase 11 | Pending |
-| POLISH-04 | Phase 11 | Pending |
+| POLISH-01 | Phase 11 | Complete |
+| POLISH-02 | Phase 11 | Complete |
+| POLISH-03 | Phase 11 | Complete |
+| POLISH-04 | Phase 11 | Complete |
 
 **Coverage:**
 - v1 requirements: 51 total
