@@ -133,9 +133,9 @@ Plans:
   3. CLAUDE.md development workflow section mandates E2E (Playwright) and unit tests (Vitest) as a completion requirement for all future phases
 
 **Tasks:**
-- [ ] **7.1 Infra:** Install and configure Vitest with proper TypeScript/JSX support
-- [ ] **7.2 Tests:** Write unit tests for phone normalization logic (05x, +972, 972, dashes, spaces, edge cases)
-- [ ] **7.3 Docs:** Update CLAUDE.md to mandate testing verification (Vitest + Playwright) before any phase can be marked complete
+- [x] **7.1 Infra:** Install and configure Vitest with proper TypeScript/JSX support
+- [x] **7.2 Tests:** Write unit tests for phone normalization logic (05x, +972, 972, dashes, spaces, edge cases)
+- [x] **7.3 Docs:** Update CLAUDE.md to mandate testing verification (Vitest + Playwright) before any phase can be marked complete
 
 Plans:
 - [x] 07-01-PLAN.md -- Vitest setup, phone normalization tests, CLAUDE.md testing mandate
