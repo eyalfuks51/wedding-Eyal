@@ -754,8 +754,8 @@ export default function AutomationTimeline() {
   useEffect(() => {
     if (!currentEvent?.id) return;
     setLoading(true);
-    setTemplates(((currentEvent as any).content_config?.whatsapp_templates ?? {}) as WhatsAppTemplates);
-    setAutoPilot((currentEvent as any).automation_config?.auto_pilot ?? true);
+    setTemplates(((currentEvent.content_config as Record<string, unknown>)?.whatsapp_templates ?? {}) as WhatsAppTemplates);
+    setAutoPilot(((currentEvent.automation_config as Record<string, unknown> | null)?.auto_pilot ?? true) as boolean);
     loadData(currentEvent.id).finally(() => setLoading(false));
   }, [currentEvent?.id, loadData]);
 
@@ -768,7 +768,7 @@ export default function AutomationTimeline() {
 
   const beforeEvent = useMemo(() => sorted.filter(s => s.days_before > 0), [sorted]);
   const afterEvent  = useMemo(() => sorted.filter(s => s.days_before <= 0), [sorted]);
-  const eventDate   = (currentEvent as any)?.event_date ? new Date((currentEvent as any).event_date) : null;
+  const eventDate   = currentEvent?.event_date ? new Date(currentEvent.event_date) : null;
   const isEmpty     = !loading && !eventLoading && settings.length === 0;
 
   const dynamicNudgeCount = useMemo(

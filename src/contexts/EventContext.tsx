@@ -65,9 +65,10 @@ export function EventProvider({ children }: { children: ReactNode }) {
     const fetchFn = isSuperAdmin ? fetchAllEvents : fetchEventsForUser;
 
     fetchFn()
-      .then((data: unknown) => {
+      .then((data) => {
         if (cancelled) return;
-        const sorted = sortEvents((data as EventData[]) ?? []);
+        // supabase.js returns untyped data; cast at boundary
+        const sorted = sortEvents((data ?? []) as EventData[]);
         setEvents(sorted);
         setCurrentEvent(resolveCurrentEvent(sorted));
         setLoading(false);
