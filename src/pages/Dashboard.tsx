@@ -898,12 +898,18 @@ export default function Dashboard() {
   // ── Invitations fetch — runs once currentEvent.id is available ──────────────────
 
   useEffect(() => {
+    // Clear previous event's data immediately to prevent stale flash
+    setInvitations([]);
+    setUnmatchedCount(0);
+    setSelected(new Set());
+    setInvError(null);
+    setLatestMsgLogs(new Map());
+
     if (!currentEvent?.id || !supabase) return;
     const sb = supabase;
     const id = currentEvent.id;
 
     setInvLoading(true);
-    setInvError(null);
 
     sb.from('invitations')
       .select('*')
