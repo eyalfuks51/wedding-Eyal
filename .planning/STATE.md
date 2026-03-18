@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 09-01-PLAN.md (Phase 6 RSVP documentation retrofix)
-last_updated: "2026-03-18T09:54:31.345Z"
+stopped_at: "Completed 10-01-PLAN.md (Integration fixes: auth, routing, nav gating, event switch)"
+last_updated: "2026-03-18T10:35:08.626Z"
 last_activity: 2026-03-16 -- Completed 04-01 (Event Switcher dropdown in DashboardNav)
 progress:
   total_phases: 10
   completed_phases: 8
-  total_plans: 12
-  completed_plans: 12
+  total_plans: 14
+  completed_plans: 13
   percent: 80
 ---
 
@@ -62,6 +62,7 @@ Progress: [████████░░] 80%
 | Phase 07-testing-qa-infrastructure P01 | 5 | 2 tasks | 5 files |
 | Phase 08 P01 | 3 | 2 tasks | 4 files |
 | Phase 09-phase6-documentation-retrofix P01 | 5 | 2 tasks | 2 files |
+| Phase 10-integration-fixes-code-quality P01 | 8 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -98,6 +99,10 @@ Recent decisions affecting current work:
 - [Phase 08]: ESM-compatible __dirname via fileURLToPath instead of CommonJS __dirname
 - [Phase 09-01]: Retroactive VERIFICATION.md uses ROADMAP.md Phase 6 tasks as source plan reference (no PLAN.md files exist for Phase 6)
 - [Phase 09-01]: VERIFICATION.md status set to passed because v1.0 audit confirmed all 5 RSVP requirements functionally implemented
+- [Phase 10-01]: INT-01: onAuthStateChange callback now async, re-queries is_super_admin on every token event to persist super admin status across token refreshes
+- [Phase 10-01]: INT-02: ProtectedRoute retries refetch up to 3x with 500ms gaps before redirecting to /onboarding to fix post-onboarding race condition
+- [Phase 10-01]: INT-03: Timeline gateKey changed from null to canAccessTimeline — overrides Phase 05-01 discovery rationale in favor of v1.0 audit UX correctness
+- [Phase 10-01]: INT-04: Dashboard invitations useEffect clears all stale state before guard so previous event data is flushed immediately on event switch
 
 ### Pending Todos
 
@@ -109,6 +114,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-18T09:51:38.871Z
-Stopped at: Completed 09-01-PLAN.md (Phase 6 RSVP documentation retrofix)
+Last session: 2026-03-18T10:35:08.624Z
+Stopped at: Completed 10-01-PLAN.md (Integration fixes: auth, routing, nav gating, event switch)
 Resume file: None

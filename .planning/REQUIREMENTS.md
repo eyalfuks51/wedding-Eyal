@@ -85,10 +85,10 @@
 
 ### Integration & Code Quality (Gap Closure)
 
-- [ ] **INT-01**: `AuthContext.onAuthStateChange` re-queries `is_super_admin` on token refresh — no stale false value
-- [ ] **INT-02**: Onboarding → dashboard redirect waits for `user_events` row visibility before navigating
-- [ ] **INT-03**: `DashboardNav` hides Timeline tab for draft users via `gateKey` (not just in-page paywall)
-- [ ] **INT-04**: `Dashboard.tsx` clears invitations state before re-fetching on `currentEvent` change — no stale flash
+- [x] **INT-01**: `AuthContext.onAuthStateChange` re-queries `is_super_admin` on token refresh — no stale false value
+- [x] **INT-02**: Onboarding → dashboard redirect waits for `user_events` row visibility before navigating
+- [x] **INT-03**: `DashboardNav` hides Timeline tab for draft users via `gateKey` (not just in-page paywall)
+- [x] **INT-04**: `Dashboard.tsx` clears invitations state before re-fetching on `currentEvent` change — no stale flash
 - [ ] **INT-05**: `AddGuestModal` imports `normalisePhone` from `phone.ts` instead of inline implementation
 - [ ] **INT-06**: Dead code removed: orphaned `fetchEventForUser` in supabase.js, unused `Navigate` import in Dashboard.tsx
 - [ ] **INT-07**: Cosmetic type casts cleaned up in EventContext.tsx and AutomationTimeline.tsx
@@ -171,10 +171,10 @@
 | RSVP-04 | Phase 6 | Complete |
 | RSVP-05 | Phase 6 | Complete |
 
-| INT-01 | Phase 10 | Pending |
-| INT-02 | Phase 10 | Pending |
-| INT-03 | Phase 10 | Pending |
-| INT-04 | Phase 10 | Pending |
+| INT-01 | Phase 10 | Complete |
+| INT-02 | Phase 10 | Complete |
+| INT-03 | Phase 10 | Complete |
+| INT-04 | Phase 10 | Complete |
 | INT-05 | Phase 10 | Pending |
 | INT-06 | Phase 10 | Pending |
 | INT-07 | Phase 10 | Pending |
