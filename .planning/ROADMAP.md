@@ -21,7 +21,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 7: Testing & QA Infrastructure** - Vitest unit tests, phone normalization coverage, mandatory test standard for all future phases (completed 2026-03-17)
 - [ ] **Phase 8: E2E Testing Foundation** - Playwright RSVP flow test with database teardown against dedicated test event
 - [x] **Phase 9: Phase 6 Documentation Retrofix** - Register orphaned RSVP requirements and create Phase 6 verification artifacts (Gap Closure) (completed 2026-03-18)
-- [ ] **Phase 10: Integration Fixes & Code Quality** - Fix auth refresh, onboarding race, nav gating, stale data flash, and clean up tech debt (Gap Closure)
+- [x] **Phase 10: Integration Fixes & Code Quality** - Fix auth refresh, onboarding race, nav gating, stale data flash, and clean up tech debt (Gap Closure) (completed 2026-03-18)
 
 ## Phase Details
 
@@ -177,7 +177,7 @@ Plans:
   5. `AddGuestModal` uses the canonical `normalisePhone` from `phone.ts`
   6. `fetchEventForUser` (dead code) removed from supabase.js; unused `Navigate` import removed from Dashboard.tsx
   7. Cosmetic type casts in EventContext.tsx and AutomationTimeline.tsx are cleaned up
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 - [ ] 10-01-PLAN.md -- Behavioral fixes: auth refresh, onboarding race, nav gating, stale data flash
@@ -199,4 +199,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 7. Testing & QA Infrastructure | 1/1 | Complete   | 2026-03-17 |
 | 8. E2E Testing Foundation | 0/1 | Not Started | - |
 | 9. Phase 6 Documentation Retrofix | 1/1 | Complete   | 2026-03-18 |
-| 10. Integration Fixes & Code Quality | 1/2 | In Progress|  |
+| 10. Integration Fixes & Code Quality | 2/2 | Complete   | 2026-03-18 |

@@ -89,9 +89,9 @@
 - [x] **INT-02**: Onboarding → dashboard redirect waits for `user_events` row visibility before navigating
 - [x] **INT-03**: `DashboardNav` hides Timeline tab for draft users via `gateKey` (not just in-page paywall)
 - [x] **INT-04**: `Dashboard.tsx` clears invitations state before re-fetching on `currentEvent` change — no stale flash
-- [ ] **INT-05**: `AddGuestModal` imports `normalisePhone` from `phone.ts` instead of inline implementation
-- [ ] **INT-06**: Dead code removed: orphaned `fetchEventForUser` in supabase.js, unused `Navigate` import in Dashboard.tsx
-- [ ] **INT-07**: Cosmetic type casts cleaned up in EventContext.tsx and AutomationTimeline.tsx
+- [x] **INT-05**: `AddGuestModal` imports `normalisePhone` from `phone.ts` instead of inline implementation
+- [x] **INT-06**: Dead code removed: orphaned `fetchEventForUser` in supabase.js, unused `Navigate` import in Dashboard.tsx
+- [x] **INT-07**: Cosmetic type casts cleaned up in EventContext.tsx and AutomationTimeline.tsx
 
 ## v2 Requirements
 
@@ -175,9 +175,9 @@
 | INT-02 | Phase 10 | Complete |
 | INT-03 | Phase 10 | Complete |
 | INT-04 | Phase 10 | Complete |
-| INT-05 | Phase 10 | Pending |
-| INT-06 | Phase 10 | Pending |
-| INT-07 | Phase 10 | Pending |
+| INT-05 | Phase 10 | Complete |
+| INT-06 | Phase 10 | Complete |
+| INT-07 | Phase 10 | Complete |
 
 **Coverage:**
 - v1 requirements: 47 total
