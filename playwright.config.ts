@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-// Load .env.local so VITE_SUPABASE_URL and VITE_SUPABASE_SERVICE_ROLE_KEY
+// Load .env.local so VITE_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY
 // are available in process.env for the Supabase teardown client in afterAll.
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, '.env.local') });

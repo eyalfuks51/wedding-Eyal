@@ -25,6 +25,15 @@ dist-ssr
 .vercel
 .worktrees
 
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
+/tests/.auth-profile/
+/tests/.auth.json
+
 # Supabase generated temp / linked-project metadata (project ref, pooler url, versions)
 supabase/.temp/
 

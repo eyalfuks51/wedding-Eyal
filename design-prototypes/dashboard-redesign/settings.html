@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guesto · הגדרות אירוע</title>
+<style>
+  /* Brand fonts */
+  @font-face {
+    font-family: 'Polin';
+    src: url('../../src/styles/fonts/Polin-Regular.woff2') format('woff2');
+    font-weight: 400; font-style: normal; font-display: swap;
+  }
+  @font-face {
+    font-family: 'Polin';
+    src: url('../../src/styles/fonts/Polin-Bold.woff2') format('woff2');
+    font-weight: 700; font-style: normal; font-display: swap;
+  }
+  @font-face {
+    font-family: 'Danidin';
+    src: url('../../src/styles/fonts/Danidin-CondensedBold.woff2') format('woff2');
+    font-weight: 700; font-style: normal; font-display: swap;
+  }
+
+  :root {
+    --paper: #FAF7F2;
+    --paper-2: #F4EFE6;
+    --paper-3: #EDE6D7;
+    --ink: #2A2520;
+    --ink-soft: #6B635A;
+    --ink-mute: #A89F94;
+    --line: #E8E1D2;
+
+    --violet-700: #6D28D9;
+    --violet-600: #7C3AED;
+    --violet-50: #F5F3FF;
+
+    --champagne: #E8D5B7;
+    --champagne-soft: #F2E5CB;
+    --rose-gold: #B76E79;
+    --rose-gold-soft: #D9A6AD;
+
+    --sage: #7A8466;
+    --sage-soft: #DCE0D1;
+    --apricot: #C97B4A;
+    --apricot-soft: #F2DCC8;
+    --clay: #A85B47;
+    --clay-soft: #EBC9BF;
+
+    --glass-bg: rgba(255, 250, 245, 0.55);
+    --glass-blur: blur(32px) saturate(1.6);
+    --glass-card: rgba(255, 252, 247, 0.62);
+    --glass-card-blur: blur(24px) saturate(1.55);
+    --glass-card-border: rgba(255, 255, 255, 0.7);
+
+    --r-xs: 6px;
+    --r-sm: 10px;
+    --r-md: 16px;
+    --r-lg: 24px;
+    --r-pill: 999px;
+
+    --display: 'Danidin', 'Polin', 'Heebo', sans-serif;
+    --body: 'Polin', 'Heebo', system-ui, sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--body);
+    direction: rtl;
+    text-align: right;
+    line-height: 1.5;
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+  input, select, textarea, label { font-family: inherit; }
+  a { color: inherit; text-decoration: none; }
+
+  /* ========== TOP BAR ========== */
+  .topbar {
+    position: sticky; top: 0; z-index: 50;
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border-bottom: 1px solid var(--line);
+    padding: 0 32px;
+    height: 64px;
+    display: flex; align-items: center; gap: 32px;
+  }
+  .brand {
+    font-family: var(--display); font-weight: 700; font-size: 24px;
+    letter-spacing: 0.02em; color: var(--ink);
+    display: flex; align-items: baseline; gap: 8px;
+  }
+  .brand .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--rose-gold); display: inline-block; }
+  .tabs { display: flex; gap: 4px; }
+  .tab {
+    padding: 8px 16px; border-radius: var(--r-sm);
+    font-size: 14px; font-weight: 500; color: var(--ink-soft);
+    transition: color 200ms, background 200ms;
+  }
+  .tab:hover { color: var(--ink); background: rgba(0,0,0,0.03); }
+  .tab.active { color: var(--violet-700); background: var(--violet-50); }
+  .topbar-spacer { flex: 1; }
+  .event-picker {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 14px; border-radius: var(--r-sm);
+    background: rgba(255,255,255,0.6);
+    border: 1px solid var(--line);
+    font-size: 13px; color: var(--ink-soft);
+    transition: background 200ms;
+  }
+  .event-picker:hover { background: white; }
+  .event-picker .name { color: var(--ink); font-weight: 600; }
+  .event-picker .chev { color: var(--ink-mute); font-size: 11px; }
+  .icon-btn {
+    width: 36px; height: 36px; border-radius: var(--r-sm);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink-soft);
+    transition: background 200ms, color 200ms;
+  }
+  .icon-btn:hover { background: rgba(0,0,0,0.04); color: var(--ink); }
+
+  /* ========== PAGE LAYOUT ========== */
+  .page-shell {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px 48px 32px;
+  }
+
+  .page-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+  .page-header h1 {
+    font-family: var(--display); font-weight: 700; font-size: 36px;
+    letter-spacing: 0.01em; color: var(--ink); line-height: 1.1;
+  }
+  .page-header .sub {
+    margin-top: 6px; color: var(--ink-soft); font-size: 14px;
+  }
+  .page-header .sub b { color: var(--rose-gold); font-weight: 700; }
+
+  .header-actions { display: flex; gap: 10px; align-items: center; }
+
+  .ghost-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 9px 14px; border-radius: var(--r-sm);
+    background: white; border: 1px solid var(--line);
+    font-size: 13px; font-weight: 600; color: var(--ink-soft);
+    transition: background 200ms, color 200ms, border-color 200ms;
+  }
+  .ghost-btn:hover { background: var(--paper-2); color: var(--ink); border-color: var(--champagne); }
+
+  /* ========== SPLIT-PANE ========== */
+  .split {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 32px;
+    align-items: flex-start;
+  }
+
+  /* ========== FORM PANE ========== */
+  .form-pane {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding-bottom: 100px;
+  }
+
+  .section {
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    transition: border-color 220ms, box-shadow 220ms;
+  }
+  .section:hover { border-color: var(--champagne); }
+
+  .section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 24px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .section-head-left { display: flex; align-items: center; gap: 14px; min-width: 0; }
+  .section-icon {
+    width: 38px; height: 38px;
+    border-radius: var(--r-sm);
+    display: flex; align-items: center; justify-content: center;
+    background: var(--champagne-soft);
+    color: var(--rose-gold);
+    flex-shrink: 0;
+  }
+  .section-title-block { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .section-title {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 19px;
+    letter-spacing: 0.02em;
+    color: var(--ink);
+    line-height: 1.1;
+  }
+  .section-sub {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    line-height: 1.3;
+  }
+  .section-head-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+  .section-status {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: var(--r-pill);
+  }
+  .section-status.complete { color: var(--sage); background: var(--sage-soft); }
+  .section-status.partial { color: var(--apricot); background: var(--apricot-soft); }
+  .section-chev {
+    color: var(--ink-mute);
+    font-size: 14px;
+    transition: transform 220ms;
+  }
+  .section.open .section-chev { transform: rotate(180deg); }
+
+  .section-body {
+    padding: 0 24px 24px;
+    border-top: 1px solid var(--paper-2);
+    padding-top: 20px;
+  }
+  .section:not(.open) .section-body { display: none; }
+
+  /* Form grid */
+  .field-row {
+    display: grid;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .field-row.cols-2 { grid-template-columns: 1fr 1fr; }
+  .field-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .field-row:last-child { margin-bottom: 0; }
+
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: 0.01em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .field label .hint {
+    font-size: 11px;
+    color: var(--ink-mute);
+    font-weight: 400;
+    letter-spacing: 0;
+  }
+  .field input, .field select, .field textarea {
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+    background: white;
+    font-size: 14px;
+    color: var(--ink);
+    transition: border-color 200ms, box-shadow 200ms, background 200ms;
+    line-height: 1.4;
+  }
+  .field input::placeholder, .field textarea::placeholder { color: var(--ink-mute); }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    outline: none;
+    border-color: var(--violet-600);
+    box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.12);
+    background: white;
+  }
+  .field textarea { resize: vertical; min-height: 84px; line-height: 1.55; }
+  .field-error { font-size: 11.5px; color: var(--clay); margin-top: 2px; }
+  .field-help { font-size: 11.5px; color: var(--ink-mute); margin-top: 2px; line-height: 1.4; }
+
+  /* Inline switch row */
+  .switch-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 16px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+  }
+  .switch-row + .switch-row { margin-top: 8px; }
+  .switch-row-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .switch-row-text .name { font-size: 14px; font-weight: 700; color: var(--ink); }
+  .switch-row-text .desc { font-size: 12px; color: var(--ink-soft); }
+
+  .toggle {
+    position: relative;
+    width: 46px; height: 26px;
+    border-radius: 999px;
+    background: var(--violet-600);
+    transition: background 220ms;
+    flex-shrink: 0;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+  }
+  .toggle::after {
+    content: '';
+    position: absolute;
+    top: 3px; left: 23px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.18);
+    transition: left 220ms cubic-bezier(0.32, 0.72, 0.30, 1);
+  }
+  .toggle.off { background: var(--ink-mute); }
+  .toggle.off::after { left: 3px; }
+
+  /* Schedule rows */
+  .schedule-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+  .schedule-item {
+    display: grid;
+    grid-template-columns: 110px 1fr auto;
+    gap: 10px;
+    align-items: center;
+    padding: 8px 10px 8px 8px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+  }
+  .schedule-item input { padding: 7px 9px; font-size: 13px; }
+  .schedule-item .icon-pick {
+    width: 32px; height: 32px;
+    border-radius: var(--r-xs);
+    background: var(--champagne-soft);
+    color: var(--rose-gold);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .schedule-item .remove {
+    width: 26px; height: 26px;
+    border-radius: var(--r-xs);
+    color: var(--ink-mute);
+    transition: background 200ms, color 200ms;
+  }
+  .schedule-item .remove:hover { background: var(--clay-soft); color: var(--clay); }
+
+  .add-row-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 14px;
+    border-radius: var(--r-sm);
+    border: 1.5px dashed var(--champagne);
+    background: rgba(248, 240, 226, 0.35);
+    color: var(--rose-gold);
+    font-size: 13px;
+    font-weight: 700;
+    transition: background 200ms, border-color 200ms;
+  }
+  .add-row-btn:hover {
+    background: rgba(232, 213, 183, 0.45);
+    border-color: var(--rose-gold);
+  }
+
+  /* ========== PREVIEW PANE ========== */
+  .preview-pane {
+    position: sticky;
+    top: 96px;
+    align-self: start;
+  }
+  .preview-card {
+    background: var(--glass-card);
+    backdrop-filter: var(--glass-card-blur);
+    -webkit-backdrop-filter: var(--glass-card-blur);
+    border: 1px solid var(--glass-card-border);
+    border-radius: var(--r-lg);
+    padding: 18px;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 8px 24px -16px rgba(42, 37, 32, 0.12);
+    position: relative;
+    overflow: hidden;
+  }
+  .preview-card::before {
+    content: '';
+    position: absolute;
+    inset: -50px -10% auto -10%;
+    height: 220px;
+    background: radial-gradient(ellipse at 50% 50%, rgba(183, 110, 121, 0.20) 0%, transparent 65%),
+                radial-gradient(ellipse at 30% 60%, rgba(109, 40, 217, 0.12) 0%, transparent 60%);
+    filter: blur(40px);
+    pointer-events: none;
+    z-index: 0;
+    border-radius: 50%;
+  }
+  .preview-card > * { position: relative; z-index: 1; }
+
+  .preview-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .preview-head .label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--rose-gold);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .preview-head .url {
+    font-size: 11px;
+    color: var(--ink-mute);
+    font-family: ui-monospace, 'SF Mono', monospace;
+  }
+
+  /* Phone frame */
+  .phone {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 9 / 19;
+    background: #1a1a1a;
+    border-radius: 32px;
+    padding: 8px;
+    box-shadow: 0 0 0 1.5px rgba(109, 40, 217, 0.15), 0 12px 36px -12px rgba(42, 37, 32, 0.35);
+    margin: 0 auto;
+    max-width: 320px;
+  }
+  .phone::before {
+    content: '';
+    position: absolute;
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px; height: 22px;
+    background: #1a1a1a;
+    border-radius: 999px;
+    z-index: 5;
+  }
+  .phone-screen {
+    width: 100%;
+    height: 100%;
+    border-radius: 24px;
+    overflow: hidden;
+    background: linear-gradient(180deg, #2a1f3d 0%, #4a2c5a 50%, #6b3e6e 100%);
+    position: relative;
+    color: white;
+    text-align: center;
+  }
+  .phone-content {
+    padding: 56px 24px 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    height: 100%;
+  }
+  .phone-eyebrow {
+    font-size: 10px;
+    color: rgba(255,255,255,0.65);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .phone-names {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 30px;
+    letter-spacing: 0.04em;
+    line-height: 1.05;
+  }
+  .phone-names .amp {
+    color: var(--rose-gold-soft);
+    margin: 0 4px;
+  }
+  .phone-quote {
+    font-size: 11.5px;
+    color: rgba(255,255,255,0.78);
+    line-height: 1.5;
+    font-style: italic;
+    max-width: 220px;
+  }
+  .phone-divider {
+    width: 36px; height: 1px;
+    background: rgba(255,255,255,0.35);
+    margin: 4px 0;
+  }
+  .phone-date {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: 0.04em;
+  }
+  .phone-venue {
+    font-size: 12px;
+    color: rgba(255,255,255,0.78);
+    line-height: 1.4;
+  }
+  .phone-cta {
+    margin-top: auto;
+    width: 100%;
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.15);
+    border-radius: var(--r-sm);
+    font-size: 12px;
+    font-weight: 700;
+    border: 1px solid rgba(255,255,255,0.25);
+    backdrop-filter: blur(8px);
+  }
+
+  .preview-footer {
+    margin-top: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+  }
+  .preview-footer .updating { display: inline-flex; align-items: center; gap: 5px; }
+  .preview-footer .updating .pulse {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--sage);
+    box-shadow: 0 0 0 0 rgba(122, 132, 102, 0.4);
+    animation: pulse 1.6s infinite;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(122, 132, 102, 0.4); }
+    70% { box-shadow: 0 0 0 8px rgba(122, 132, 102, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(122, 132, 102, 0); }
+  }
+  .preview-mode-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 14px;
+    padding: 3px;
+    background: var(--paper-2);
+    border-radius: var(--r-sm);
+  }
+  .preview-mode-tab {
+    flex: 1;
+    padding: 6px 8px;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--ink-soft);
+    border-radius: var(--r-xs);
+    text-align: center;
+    transition: background 200ms, color 200ms;
+  }
+  .preview-mode-tab.active { background: white; color: var(--violet-700); box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+
+  /* ========== STICKY SAVE BAR ========== */
+  .save-bar {
+    position: fixed;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 32px);
+    max-width: 1304px;
+    z-index: 40;
+    background: var(--glass-card);
+    backdrop-filter: var(--glass-card-blur);
+    -webkit-backdrop-filter: var(--glass-card-blur);
+    border: 1px solid var(--glass-card-border);
+    border-radius: var(--r-md);
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 18px 48px -16px rgba(42, 37, 32, 0.18);
+  }
+  .save-bar-text {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .save-bar-text .changes-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: var(--r-pill);
+    background: var(--apricot-soft);
+    color: var(--apricot);
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+  .save-bar-text .changes-pill .dot {
+    width: 6px; height: 6px; border-radius: 50%; background: currentColor;
+  }
+  .save-bar-actions { display: flex; gap: 10px; }
+  .btn-discard {
+    padding: 9px 16px;
+    border-radius: var(--r-sm);
+    background: white;
+    border: 1px solid var(--line);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink-soft);
+    transition: background 200ms, color 200ms;
+  }
+  .btn-discard:hover { background: var(--paper-2); color: var(--ink); }
+  .btn-save {
+    padding: 9px 18px;
+    border-radius: var(--r-sm);
+    background: var(--violet-700);
+    color: white;
+    font-size: 13px;
+    font-weight: 700;
+    box-shadow: 0 4px 12px -4px rgba(109, 40, 217, 0.4);
+    transition: background 200ms, transform 180ms ease-out;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-save:hover { background: var(--violet-600); transform: translateY(-1px); }
+
+  /* Mobile preview FAB */
+  .preview-fab {
+    display: none;
+  }
+
+  /* ========== MOBILE ========== */
+  @media (max-width: 920px) {
+    .topbar { padding: 0 12px; gap: 8px; height: 56px; }
+    .topbar .brand { display: none; }
+    .tabs { gap: 2px; }
+    .tab { padding: 6px 9px; font-size: 12.5px; }
+    .event-picker { padding: 5px 8px; font-size: 11.5px; gap: 4px; max-width: 110px; }
+    .event-picker .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .topbar-spacer { display: none; }
+    .icon-btn { width: 34px; height: 34px; }
+
+    .page-shell { padding: 20px 16px 96px; }
+    .page-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .page-header h1 { font-size: 28px; }
+
+    .split { grid-template-columns: 1fr; gap: 0; }
+    .preview-pane { display: none; }
+
+    .section-head { padding: 16px 18px; }
+    .section-icon { width: 32px; height: 32px; }
+    .section-title { font-size: 17px; }
+    .section-body { padding: 16px 18px 18px; }
+
+    .field-row.cols-2, .field-row.cols-3 { grid-template-columns: 1fr; }
+
+    .schedule-item {
+      grid-template-columns: 90px 1fr auto;
+      gap: 8px;
+    }
+
+    /* Edge-to-edge docked save bar — full width, no rounding, sits on screen bottom */
+    .save-bar {
+      width: 100%;
+      max-width: none;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      transform: none;
+      border-radius: 0;
+      border-left: none;
+      border-right: none;
+      border-bottom: none;
+      padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+      gap: 10px;
+      box-shadow: 0 -8px 24px -12px rgba(42, 37, 32, 0.18);
+    }
+    .save-bar-text { font-size: 12px; gap: 8px; flex: 1; min-width: 0; }
+    .save-bar-text .label-full { display: none; }
+    .save-bar-text .changes-caption { display: none; }
+    .btn-discard { padding: 8px 12px; font-size: 12px; }
+    .btn-save { padding: 8px 14px; font-size: 12px; }
+
+    /* Hide preview FAB on mobile — preview now opens via topbar eye icon */
+    .preview-fab { display: none !important; }
+  }
+
+  /* Topbar eye icon: hidden on desktop, visible on mobile only */
+  .icon-btn-preview { display: none; }
+  @media (max-width: 920px) {
+    .icon-btn-preview { display: inline-flex; }
+  }
+
+  /* ========== MOBILE PREVIEW OVERLAY ========== */
+  .preview-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    background: var(--paper);
+    display: none;
+    flex-direction: column;
+    padding: 56px 16px 24px;
+    overflow-y: auto;
+  }
+  .preview-overlay.open {
+    display: flex;
+  }
+  .preview-overlay-close {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    z-index: 61;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: var(--glass-card);
+    backdrop-filter: var(--glass-card-blur);
+    -webkit-backdrop-filter: var(--glass-card-blur);
+    border: 1px solid var(--glass-card-border);
+    color: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 14px -6px rgba(42, 37, 32, 0.18);
+    transition: background 200ms;
+  }
+  .preview-overlay-close:hover { background: white; }
+  .preview-overlay-inner {
+    flex: 1;
+    display: flex; flex-direction: column;
+    align-items: center;
+  }
+  /* Inside overlay, force preview-pane visible regardless of mobile rules */
+  .preview-overlay-inner .preview-pane {
+    display: block !important;
+    position: static !important;
+    width: 100%;
+    max-width: 380px;
+  }
+  body.preview-overlay-open { overflow: hidden; }
+</style>
+</head>
+<body>
+
+<!-- ========== TOP BAR ========== -->
+<header class="topbar">
+  <a href="dashboard.html" class="brand">Guesto<span class="dot"></span></a>
+  <nav class="tabs">
+    <a href="dashboard.html" class="tab">אורחים</a>
+    <a href="timeline.html" class="tab">פייפליין</a>
+    <a href="settings.html" class="tab active">הגדרות</a>
+  </nav>
+  <div class="topbar-spacer"></div>
+  <button class="event-picker" type="button">
+    <span class="name">חגית & איתי</span>
+    <span class="chev">▾</span>
+  </button>
+  <button class="icon-btn icon-btn-preview" title="תצוגה מקדימה" type="button" id="mobilePreviewTrigger">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+  </button>
+  <button class="icon-btn" title="התראות" type="button">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+  </button>
+</header>
+
+<!-- ========== PAGE ========== -->
+<main class="page-shell">
+
+  <div class="page-header">
+    <div>
+      <h1>הגדרות אירוע</h1>
+      <div class="sub">תוכן ההזמנה הדיגיטלית · התצוגה מתעדכנת בזמן אמת בצד · <b>קישור: guesto.app/hagit-and-itai</b></div>
+    </div>
+    <div class="header-actions">
+      <button class="ghost-btn" type="button">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        תצוגה מקדימה מלאה
+      </button>
+      <button class="ghost-btn" type="button">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        ייצוא
+      </button>
+    </div>
+  </div>
+
+  <div class="split">
+    <!-- ========== FORM PANE ========== -->
+    <div class="form-pane">
+
+      <!-- 1. COUPLE DETAILS -->
+      <section class="section open">
+        <div class="section-head">
+          <div class="section-head-left">
+            <div class="section-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </div>
+            <div class="section-title-block">
+              <div class="section-title">פרטי הזוג</div>
+              <div class="section-sub">השמות, הציטוט והברכה שמופיעים בכותרת ההזמנה</div>
+            </div>
+          </div>
+          <div class="section-head-right">
+            <span class="section-status complete">מלא</span>
+            <span class="section-chev">▾</span>
+          </div>
+        </div>
+        <div class="section-body">
+          <div class="field-row cols-2">
+            <div class="field">
+              <label>שם בן/בת זוג ראשון/ה <span class="hint">· מופיע בימין</span></label>
+              <input type="text" value="חגית" placeholder="לדוגמה: רותם">
+            </div>
+            <div class="field">
+              <label>שם בן/בת זוג שני/ה <span class="hint">· מופיע בשמאל</span></label>
+              <input type="text" value="איתי" placeholder="לדוגמה: יואב">
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>ציטוט פתיחה <span class="hint">· אופציונלי, עד 120 תווים</span></label>
+              <textarea placeholder="לדוגמה: «האהבה היא אומנות החיים»">«ושוב מבטיחים זה לזו אהבה ואחווה ושלום ורעות»</textarea>
+              <div class="field-help">ניתן להשתמש בגרשיים עבריים — מתורגם אוטומטית.</div>
+            </div>
+          </div>
+          <div class="field-row cols-2">
+            <div class="field">
+              <label>תפקיד הורי בן/בת הזוג ראשון <span class="hint">· אופציונלי</span></label>
+              <input type="text" value="אורית & דוד" placeholder="שמות ההורים">
+            </div>
+            <div class="field">
+              <label>תפקיד הורי בן/בת הזוג שני <span class="hint">· אופציונלי</span></label>
+              <input type="text" value="מיכל & רן" placeholder="שמות ההורים">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. DATE & VENUE -->
+      <section class="section open">
+        <div class="section-head">
+          <div class="section-head-left">
+            <div class="section-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            </div>
+            <div class="section-title-block">
+              <div class="section-title">תאריך ומקום</div>
+              <div class="section-sub">פרטי האירוע, האולם, וכתובת לניווט</div>
+            </div>
+          </div>
+          <div class="section-head-right">
+            <span class="section-status complete">מלא</span>
+            <span class="section-chev">▾</span>
+          </div>
+        </div>
+        <div class="section-body">
+          <div class="field-row cols-3">
+            <div class="field">
+              <label>תאריך האירוע</label>
+              <input type="date" value="2026-06-12">
+            </div>
+            <div class="field">
+              <label>שעת קבלת פנים</label>
+              <input type="time" value="18:30">
+            </div>
+            <div class="field">
+              <label>שעת חופה</label>
+              <input type="time" value="19:30">
+            </div>
+          </div>
+          <div class="field-row cols-2">
+            <div class="field">
+              <label>שם האולם</label>
+              <input type="text" value="האחוזה הלבנה" placeholder="לדוגמה: גני אירועים">
+            </div>
+            <div class="field">
+              <label>קיבולת אורחים <span class="hint">· משמש בדאשבורד</span></label>
+              <input type="number" value="180" min="1" max="2000">
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>כתובת מלאה</label>
+              <input type="text" value="רחוב הזית 12, אבן יהודה 4050001" placeholder="כתובת + עיר + מיקוד">
+              <div class="field-help">הכתובת תיפתח ב-Waze ובגוגל מפות בלחיצה.</div>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>קישור Google Maps Query <span class="hint">· אופציונלי</span></label>
+              <input type="text" value="האחוזה הלבנה אבן יהודה" placeholder="ביטוי לחיפוש במפות">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. SCHEDULE -->
+      <section class="section">
+        <div class="section-head">
+          <div class="section-head-left">
+            <div class="section-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div class="section-title-block">
+              <div class="section-title">לוח זמנים של הערב</div>
+              <div class="section-sub">סדר היום מקבלת הפנים ועד הסיום</div>
+            </div>
+          </div>
+          <div class="section-head-right">
+            <span class="section-status partial">5 פריטים</span>
+            <span class="section-chev">▾</span>
+          </div>
+        </div>
+        <div class="section-body">
+          <div class="schedule-list">
+            <div class="schedule-item">
+              <input type="time" value="18:30">
+              <input type="text" value="קבלת פנים · קוקטיילים בגן">
+              <div class="icon-pick" title="כוס יין">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 22h8M12 11v11M5 2h14l-1 9a6 6 0 0 1-12 0z"/></svg>
+              </div>
+              <button class="remove" title="הסר"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            </div>
+            <div class="schedule-item">
+              <input type="time" value="19:30">
+              <input type="text" value="חופה וקידושין">
+              <div class="icon-pick" title="חופה">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+              </div>
+              <button class="remove" title="הסר"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            </div>
+            <div class="schedule-item">
+              <input type="time" value="20:00">
+              <input type="text" value="ארוחת ערב חגיגית">
+              <div class="icon-pick" title="צלחת">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11h18M3 11a9 9 0 0 1 18 0M3 11v3a9 9 0 0 0 18 0v-3M12 18v4M8 22h8"/></svg>
+              </div>
+              <button class="remove" title="הסר"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            </div>
+            <div class="schedule-item">
+              <input type="time" value="21:30">
+              <input type="text" value="ריקודים והרמת כוסית">
+              <div class="icon-pick" title="מוזיקה">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+              </div>
+              <button class="remove" title="הסר"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            </div>
+            <div class="schedule-item">
+              <input type="time" value="23:30">
+              <input type="text" value="עוגה ושיר אחרון">
+              <div class="icon-pick" title="עוגה">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-8H4v8M4 13V8a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v5M12 4V2M8 4V2M16 4V2"/></svg>
+              </div>
+              <button class="remove" title="הסר"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            </div>
+          </div>
+          <button class="add-row-btn" type="button">+ הוסף שלב לערב</button>
+        </div>
+      </section>
+
+      <!-- 4. TRANSPORT -->
+      <section class="section">
+        <div class="section-head">
+          <div class="section-head-left">
+            <div class="section-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 16H9m10 0h3v-3.15a1 1 0 0 0-.84-.99L16 11l-2.7-3.6a1 1 0 0 0-.8-.4H5.24a2 2 0 0 0-1.8 1.1l-.8 1.63A6 6 0 0 0 2 12.42V16h2"/><circle cx="6.5" cy="16.5" r="2.5"/><circle cx="16.5" cy="16.5" r="2.5"/></svg>
+            </div>
+            <div class="section-title-block">
+              <div class="section-title">הגעה והסעות</div>
+              <div class="section-sub">חניה, הסעות ופרטי תחבורה ציבורית</div>
+            </div>
+          </div>
+          <div class="section-head-right">
+            <span class="section-status partial">חלקי</span>
+            <span class="section-chev">▾</span>
+          </div>
+        </div>
+        <div class="section-body">
+          <div class="switch-row">
+            <div class="switch-row-text">
+              <div class="name">חניה זמינה במקום</div>
+              <div class="desc">יוצג כאיקון שלט מידע במסך ההגעה</div>
+            </div>
+            <button class="toggle" type="button" aria-pressed="true"></button>
+          </div>
+          <div class="switch-row">
+            <div class="switch-row-text">
+              <div class="name">הסעה מאורגנת מתל אביב</div>
+              <div class="desc">מאסף + שעת יציאה יוצגו לאחר אישור הגעה</div>
+            </div>
+            <button class="toggle off" type="button" aria-pressed="false"></button>
+          </div>
+          <div class="field-row" style="margin-top: 16px;">
+            <div class="field">
+              <label>הערה תחתונה לעמוד ההגעה <span class="hint">· אופציונלי</span></label>
+              <textarea placeholder="לדוגמה: כניסה דרך השער הצדדי, בעיות חניה? התקשרו 050-...">בעיות הגעה? איתי 052-3456789</textarea>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. FOOTER & PRIVACY -->
+      <section class="section">
+        <div class="section-head">
+          <div class="section-head-left">
+            <div class="section-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            </div>
+            <div class="section-title-block">
+              <div class="section-title">פתיח, סיום ופרטיות</div>
+              <div class="section-sub">טקסט המעטפת והכרת תודה אחרונה</div>
+            </div>
+          </div>
+          <div class="section-head-right">
+            <span class="section-status complete">מלא</span>
+            <span class="section-chev">▾</span>
+          </div>
+        </div>
+        <div class="section-body">
+          <div class="field-row">
+            <div class="field">
+              <label>כיתוב תחתון בהזמנה</label>
+              <input type="text" value="כל הברכות, חגית & איתי" placeholder="ברכת סיום">
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>הערת RSVP פרטית</label>
+              <textarea placeholder="לדוגמה: האירוע ברוח קלאסית">נשמח לראותכם איתנו לרגעי השיא ✦ אנא אשרו עד ה-7 ביוני</textarea>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ========== PREVIEW PANE ========== -->
+    <aside class="preview-pane">
+      <div class="preview-card">
+        <div class="preview-head">
+          <span class="label">תצוגה חיה</span>
+          <span class="url">/hagit-and-itai</span>
+        </div>
+        <div class="preview-mode-tabs">
+          <button class="preview-mode-tab active">סלולר</button>
+          <button class="preview-mode-tab">שולחני</button>
+        </div>
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-content">
+              <div class="phone-eyebrow">בס״ד · 12 ביוני 2026</div>
+              <div class="phone-names">חגית<span class="amp">&</span>איתי</div>
+              <div class="phone-quote">«ושוב מבטיחים זה לזו אהבה ואחווה ושלום ורעות»</div>
+              <div class="phone-divider"></div>
+              <div class="phone-date">י״ז סיון התשפ״ו</div>
+              <div class="phone-venue">האחוזה הלבנה<br>אבן יהודה · 19:30</div>
+              <div class="phone-cta">אישור הגעה ›</div>
+            </div>
+          </div>
+        </div>
+        <div class="preview-footer">
+          <span class="updating"><span class="pulse"></span>מתעדכן בזמן אמת</span>
+          <span>375 × 812</span>
+        </div>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<!-- ========== STICKY SAVE BAR ========== -->
+<div class="save-bar">
+  <div class="save-bar-text">
+    <span class="changes-pill"><span class="dot"></span>3 שינויים לא שמורים</span>
+    <span class="changes-caption">השינויים יחולו על העמוד הציבורי לאחר השמירה.</span>
+  </div>
+  <div class="save-bar-actions">
+    <button class="btn-discard" type="button">בטל שינויים</button>
+    <button class="btn-save" type="button">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      שמור הכל
+    </button>
+  </div>
+</div>
+
+<!-- Mobile preview overlay (full-screen, opened from topbar eye icon) -->
+<div class="preview-overlay" id="previewOverlay" aria-hidden="true">
+  <button class="preview-overlay-close" type="button" id="previewOverlayClose" aria-label="סגור תצוגה מקדימה">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </button>
+  <div class="preview-overlay-inner" id="previewOverlayInner"></div>
+</div>
+
+<script>
+  // Collapse / expand sections
+  document.querySelectorAll('.section-head').forEach(head => {
+    head.addEventListener('click', () => {
+      head.parentElement.classList.toggle('open');
+    });
+  });
+
+  // Toggle switches
+  document.querySelectorAll('.toggle').forEach(t => {
+    t.addEventListener('click', (e) => {
+      e.stopPropagation();
+      t.classList.toggle('off');
+    });
+  });
+
+  // Preview mode tabs
+  document.querySelectorAll('.preview-mode-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.preview-mode-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+    });
+  });
+
+  // Stop input clicks from collapsing sections
+  document.querySelectorAll('.section-body').forEach(body => {
+    body.addEventListener('click', (e) => e.stopPropagation());
+  });
+
+  // Mobile preview overlay — move .preview-pane in/out as a child of overlay so we don't duplicate state
+  const previewPane = document.querySelector('.preview-pane');
+  const overlay = document.getElementById('previewOverlay');
+  const overlayInner = document.getElementById('previewOverlayInner');
+  const trigger = document.getElementById('mobilePreviewTrigger');
+  const closeBtn = document.getElementById('previewOverlayClose');
+  const splitContainer = previewPane?.parentElement;
+
+  function openOverlay() {
+    if (!previewPane) return;
+    overlayInner.appendChild(previewPane);
+    overlay.classList.add('open');
+    overlay.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('preview-overlay-open');
+  }
+  function closeOverlay() {
+    if (!previewPane || !splitContainer) return;
+    splitContainer.appendChild(previewPane);
+    overlay.classList.remove('open');
+    overlay.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('preview-overlay-open');
+  }
+  trigger?.addEventListener('click', openOverlay);
+  closeBtn?.addEventListener('click', closeOverlay);
+  overlay?.addEventListener('click', (e) => { if (e.target === overlay) closeOverlay(); });
+</script>
+
+</body>
+</html>

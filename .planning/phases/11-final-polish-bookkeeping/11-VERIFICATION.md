@@ -25,7 +25,7 @@ human_verification: []
 | 1 | `DashboardSettings.tsx` contains zero instances of `as any` | VERIFIED | `grep -c "as any" src/pages/DashboardSettings.tsx` returns 0 |
 | 2 | Super admin login triggers exactly one event fetch in EventContext, not two | VERIFIED | `authLoading` gate at line 55; destructured at line 47; in dep array at line 87 of EventContext.tsx |
 | 3 | All ROADMAP.md phase checkboxes match actual completion state | VERIFIED | Only unchecked item is `11-01-PLAN.md` (intentionally left open per plan instructions); all Phase 7 tasks [7.1, 7.2, 7.3] are `[x]`; all other phase plan references are `[x]` |
-| 4 | `.env.example` documents `VITE_SUPABASE_SERVICE_ROLE_KEY` with E2E teardown context | VERIFIED | Line 8 present; comment on line 6: "Used only by Playwright E2E test teardown (afterAll cleanup)"; line 7 provides source hint |
+| 4 | `.env.example` documents `SUPABASE_SERVICE_ROLE_KEY` with E2E teardown context | VERIFIED | Line 8 present; comment on line 6: "Used only by Playwright E2E test teardown (afterAll cleanup)"; line 7 provides source hint |
 
 **Score:** 4/4 truths verified
 
@@ -39,7 +39,7 @@ human_verification: []
 | `src/components/dashboard/LivePreview.tsx` | LivePreviewProps accepting nullable event_date | VERIFIED | Line 8: `event_date: string | null` confirmed |
 | `src/contexts/EventContext.tsx` | Auth-loading gate preventing double fetch | VERIFIED | Lines 47, 55, 87 show destructure, early return, and dep array inclusion of `authLoading` |
 | `.planning/ROADMAP.md` | Consistent checkboxes and statuses | VERIFIED | All phases 1-11 correctly checked; Phase 7 tasks [x]; single `[ ]` is 11-01-PLAN.md (intentional) |
-| `.env.example` | Service role key documentation | VERIFIED | `VITE_SUPABASE_SERVICE_ROLE_KEY` present with E2E teardown comment |
+| `.env.example` | Service role key documentation | VERIFIED | `SUPABASE_SERVICE_ROLE_KEY` present with E2E teardown comment |
 
 ---
 
@@ -59,7 +59,7 @@ human_verification: []
 | POLISH-01 | 11-01-PLAN.md | DashboardSettings.tsx has zero `(currentEvent as any)` casts | SATISFIED | `grep -c "as any" src/pages/DashboardSettings.tsx` returns 0; 3 casts removed in commit cb15472 |
 | POLISH-02 | 11-01-PLAN.md | EventContext defers fetch until isSuperAdmin resolved — no double-fetch | SATISFIED | authLoading gate present in EventContext.tsx lines 47/55/87; commit cb15472 |
 | POLISH-03 | 11-01-PLAN.md | All ROADMAP.md plan checkboxes and phase statuses match actual state | SATISFIED | Phase 7 tasks corrected in commit 907e7ff; full audit confirmed consistent |
-| POLISH-04 | 11-01-PLAN.md | .env.example documents VITE_SUPABASE_SERVICE_ROLE_KEY with E2E teardown explanation | SATISFIED | Already present before phase; confirmed unchanged and correct |
+| POLISH-04 | 11-01-PLAN.md | .env.example documents SUPABASE_SERVICE_ROLE_KEY with E2E teardown explanation | SATISFIED | Already present before phase; confirmed unchanged and correct |
 
 **Orphaned requirements:** None. All four POLISH-01 through POLISH-04 requirements mapped to this phase are accounted for by 11-01-PLAN.md.
 
@@ -118,7 +118,7 @@ Phase 11 fully achieved its goal. All four POLISH requirements are satisfied:
 
 - **POLISH-03:** ROADMAP.md is internally consistent. Phase 7's three inline task checkboxes (`7.1 Infra`, `7.2 Tests`, `7.3 Docs`) were corrected from `[ ]` to `[x]`. All other phase plan references and status entries were audited and confirmed correct. The single remaining `[ ]` item (`11-01-PLAN.md`) is intentionally open per the plan's instructions — it is the plan for this phase itself, which will be checked when the phase is formally closed.
 
-- **POLISH-04:** `.env.example` already documented `VITE_SUPABASE_SERVICE_ROLE_KEY` with an accurate E2E teardown explanation before the phase began. No changes were needed; the requirement was satisfied by prior work and confirmed during this phase.
+- **POLISH-04:** `.env.example` already documented `SUPABASE_SERVICE_ROLE_KEY` with an accurate E2E teardown explanation before the phase began. No changes were needed; the requirement was satisfied by prior work and confirmed during this phase.
 
 ---
 

@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guesto · פייפליין הזמנות</title>
+<style>
+  /* Brand fonts — local woff2 from src/styles/fonts/ */
+  @font-face {
+    font-family: 'Polin';
+    src: url('../../src/styles/fonts/Polin-Regular.woff2') format('woff2');
+    font-weight: 400; font-style: normal; font-display: swap;
+  }
+  @font-face {
+    font-family: 'Polin';
+    src: url('../../src/styles/fonts/Polin-Bold.woff2') format('woff2');
+    font-weight: 700; font-style: normal; font-display: swap;
+  }
+  @font-face {
+    font-family: 'Danidin';
+    src: url('../../src/styles/fonts/Danidin-CondensedBold.woff2') format('woff2');
+    font-weight: 700; font-style: normal; font-display: swap;
+  }
+
+  :root {
+    --paper: #FAF7F2;
+    --paper-2: #F4EFE6;
+    --paper-3: #EDE6D7;
+    --ink: #2A2520;
+    --ink-soft: #6B635A;
+    --ink-mute: #A89F94;
+    --line: #E8E1D2;
+
+    --violet-700: #6D28D9;
+    --violet-600: #7C3AED;
+    --violet-50: #F5F3FF;
+
+    --champagne: #E8D5B7;
+    --champagne-soft: #F2E5CB;
+    --rose-gold: #B76E79;
+    --rose-gold-soft: #D9A6AD;
+
+    --sage: #7A8466;
+    --sage-soft: #DCE0D1;
+    --apricot: #C97B4A;
+    --apricot-soft: #F2DCC8;
+    --clay: #A85B47;
+    --clay-soft: #EBC9BF;
+
+    --glass-bg: rgba(255, 250, 245, 0.55);
+    --glass-blur: blur(32px) saturate(1.6);
+    --glass-card: rgba(255, 252, 247, 0.62);
+    --glass-card-blur: blur(24px) saturate(1.55);
+    --glass-card-border: rgba(255, 255, 255, 0.7);
+
+    --r-xs: 6px;
+    --r-sm: 10px;
+    --r-md: 16px;
+    --r-lg: 24px;
+    --r-pill: 999px;
+
+    --display: 'Danidin', 'Polin', 'Heebo', sans-serif;
+    --body: 'Polin', 'Heebo', system-ui, sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--body);
+    direction: rtl;
+    text-align: right;
+    line-height: 1.5;
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+  input, select, textarea { font-family: inherit; }
+  a { color: inherit; text-decoration: none; }
+
+  /* ========== TOP BAR ========== */
+  .topbar {
+    position: sticky; top: 0; z-index: 50;
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border-bottom: 1px solid var(--line);
+    padding: 0 32px;
+    height: 64px;
+    display: flex; align-items: center; gap: 32px;
+  }
+  .brand {
+    font-family: var(--display); font-weight: 700; font-size: 24px;
+    letter-spacing: 0.02em; color: var(--ink);
+    display: flex; align-items: baseline; gap: 8px;
+  }
+  .brand .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--rose-gold); display: inline-block; }
+  .tabs { display: flex; gap: 4px; }
+  .tab {
+    padding: 8px 16px; border-radius: var(--r-sm);
+    font-size: 14px; font-weight: 500; color: var(--ink-soft);
+    transition: color 200ms, background 200ms;
+  }
+  .tab:hover { color: var(--ink); background: rgba(0,0,0,0.03); }
+  .tab.active { color: var(--violet-700); background: var(--violet-50); }
+  .topbar-spacer { flex: 1; }
+  .event-picker {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 14px; border-radius: var(--r-sm);
+    background: rgba(255,255,255,0.6);
+    border: 1px solid var(--line);
+    font-size: 13px; color: var(--ink-soft);
+    transition: background 200ms;
+  }
+  .event-picker:hover { background: white; }
+  .event-picker .name { color: var(--ink); font-weight: 600; }
+  .event-picker .chev { color: var(--ink-mute); font-size: 11px; }
+  .icon-btn {
+    width: 36px; height: 36px; border-radius: var(--r-sm);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink-soft);
+    transition: background 200ms, color 200ms;
+  }
+  .icon-btn:hover { background: rgba(0,0,0,0.04); color: var(--ink); }
+
+  /* ========== PAGE ========== */
+  .page {
+    max-width: 1376px;
+    margin: 0 auto;
+    padding: 32px 48px 120px;
+  }
+
+  .page-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 28px;
+  }
+  .page-header h1 {
+    font-family: var(--display); font-weight: 700; font-size: 36px;
+    letter-spacing: 0.01em; color: var(--ink); line-height: 1.1;
+  }
+  .page-header .sub {
+    margin-top: 6px; color: var(--ink-soft); font-size: 14px;
+  }
+  .page-header .sub b { color: var(--rose-gold); font-weight: 700; }
+
+  .header-actions { display: flex; gap: 10px; align-items: center; }
+
+  .ghost-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 9px 14px; border-radius: var(--r-sm);
+    background: white; border: 1px solid var(--line);
+    font-size: 13px; font-weight: 600; color: var(--ink-soft);
+    transition: background 200ms, color 200ms, border-color 200ms;
+  }
+  .ghost-btn:hover { background: var(--paper-2); color: var(--ink); border-color: var(--champagne); }
+
+  /* ========== AUTO-PILOT BANNER (compact) ========== */
+  .auto-pilot {
+    position: relative;
+    background: var(--glass-card);
+    backdrop-filter: var(--glass-card-blur);
+    -webkit-backdrop-filter: var(--glass-card-blur);
+    border: 1px solid var(--glass-card-border);
+    border-radius: var(--r-md);
+    padding: 12px 18px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 4px 14px -10px rgba(42, 37, 32, 0.08);
+    overflow: hidden;
+  }
+  .auto-pilot::before {
+    content: '';
+    position: absolute;
+    inset: -40px auto auto -8%;
+    width: 320px; height: 160px;
+    background: radial-gradient(ellipse at 60% 50%, rgba(122, 132, 102, 0.18) 0%, transparent 65%),
+                radial-gradient(ellipse at 30% 60%, rgba(109, 40, 217, 0.08) 0%, transparent 60%);
+    filter: blur(40px);
+    pointer-events: none;
+    border-radius: 50%;
+    z-index: 0;
+  }
+  .auto-pilot > * { position: relative; z-index: 1; }
+
+  .ap-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--sage), #5d6750);
+    display: flex; align-items: center; justify-content: center;
+    color: white; flex-shrink: 0;
+    box-shadow: 0 2px 8px -3px rgba(122, 132, 102, 0.45);
+  }
+  .ap-icon svg { width: 18px; height: 18px; }
+  .ap-body {
+    flex: 1; min-width: 0;
+    display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+  }
+  .ap-status-dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--sage);
+    box-shadow: 0 0 0 3px rgba(122, 132, 102, 0.18);
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .ap-title {
+    font-family: var(--body); font-weight: 700; font-size: 14px;
+    color: var(--ink); line-height: 1.3; letter-spacing: 0;
+  }
+  .ap-caption { font-size: 12px; color: var(--ink-soft); line-height: 1.4; }
+  .ap-caption b { color: var(--ink); font-weight: 700; }
+  .ap-divider {
+    width: 1px; height: 12px;
+    background: var(--line);
+    align-self: center;
+    flex-shrink: 0;
+  }
+
+  /* iOS-style toggle */
+  .toggle {
+    position: relative;
+    width: 56px; height: 32px;
+    border-radius: 999px;
+    background: var(--sage);
+    transition: background 220ms;
+    flex-shrink: 0;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+  }
+  .toggle::after {
+    content: '';
+    position: absolute;
+    top: 3px; left: 27px;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+    transition: left 220ms cubic-bezier(0.32, 0.72, 0.30, 1);
+  }
+  .toggle.off { background: var(--ink-mute); }
+  .toggle.off::after { left: 3px; }
+
+  /* ========== PIPELINE ========== */
+  .pipeline-meta {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+  .pipeline-meta .item { display: flex; align-items: center; gap: 8px; }
+  .pipeline-meta b { color: var(--ink); font-weight: 700; }
+  .pipeline-meta .swatch {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  }
+  .pipeline-meta .swatch.sent { background: var(--sage); }
+  .pipeline-meta .swatch.active { background: var(--violet-700); }
+  .pipeline-meta .swatch.scheduled { background: var(--apricot); }
+  .pipeline-meta .swatch.disabled { background: var(--ink-mute); opacity: 0.5; }
+
+  .pipeline-frame {
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    padding: 36px 0 28px;
+    overflow: hidden;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.7) inset, 0 4px 14px -8px rgba(42, 37, 32, 0.08);
+    position: relative;
+  }
+
+  /* Horizontal scroll lane */
+  .pipeline-scroll {
+    overflow-x: auto;
+    overflow-y: visible;
+    scrollbar-width: thin;
+    scrollbar-color: var(--champagne) transparent;
+    cursor: grab;
+    padding: 0 36px 18px;
+  }
+  .pipeline-scroll::-webkit-scrollbar { height: 6px; }
+  .pipeline-scroll::-webkit-scrollbar-track { background: transparent; }
+  .pipeline-scroll::-webkit-scrollbar-thumb { background: var(--champagne); border-radius: 3px; }
+
+  .pipeline-track {
+    display: flex;
+    flex-direction: row-reverse; /* RTL flow: right→left */
+    gap: 0;
+    align-items: stretch;
+    min-width: max-content;
+    position: relative;
+    padding-top: 40px; /* room for the connecting line + circles */
+  }
+
+  /* Connecting line — soft gradient anchored to first/last circle centers via mask fade.
+     Stage column is 224px wide; circle centers sit at 112px from each end of the track,
+     so the mask fades from edge → 112px to align the line endpoints with the circles. */
+  .pipeline-track::before {
+    content: '';
+    position: absolute;
+    top: 61px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(to left, var(--violet-600) 0%, var(--rose-gold) 35%, var(--champagne) 70%, var(--ink-mute) 100%);
+    opacity: 0.7;
+    z-index: 0;
+    border-radius: 2px;
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 112px, #000 calc(100% - 112px), transparent 100%);
+            mask-image: linear-gradient(to right, transparent 0, #000 112px, #000 calc(100% - 112px), transparent 100%);
+  }
+
+  /* Stage column */
+  .stage {
+    width: 224px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 12px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Icon circle on the line */
+  .stage-circle {
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: white;
+    border: 1.5px solid var(--line);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink-mute);
+    z-index: 2;
+    transition: all 220ms cubic-bezier(0.32, 0.72, 0.30, 1);
+  }
+  .stage[data-status="sent"] .stage-circle {
+    background: var(--sage);
+    border-color: var(--sage);
+    color: white;
+  }
+  .stage[data-status="active"] .stage-circle {
+    background: var(--violet-700);
+    border-color: var(--violet-700);
+    color: white;
+    box-shadow: 0 0 0 4px rgba(109, 40, 217, 0.12), 0 4px 12px -4px rgba(109, 40, 217, 0.4);
+  }
+  .stage[data-status="scheduled"] .stage-circle {
+    background: white;
+    border-color: var(--apricot);
+    color: var(--apricot);
+  }
+  .stage[data-status="disabled"] .stage-circle {
+    background: var(--paper-2);
+    color: var(--ink-mute);
+    opacity: 0.55;
+  }
+
+  /* Stage label below circle */
+  .stage-label {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 17px;
+    color: var(--ink);
+    margin-top: 12px;
+    letter-spacing: 0.02em;
+    line-height: 1.1;
+    text-align: center;
+  }
+  .stage[data-status="disabled"] .stage-label { color: var(--ink-mute); }
+
+  .stage-when {
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-top: 3px;
+    text-align: center;
+  }
+
+  /* Stage card */
+  .stage-card {
+    margin-top: 14px;
+    width: 100%;
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    padding: 14px 14px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: transform 220ms, box-shadow 220ms, border-color 220ms;
+    cursor: pointer;
+    position: relative;
+  }
+  .stage-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px -8px rgba(42, 37, 32, 0.14);
+    border-color: var(--champagne);
+  }
+  .stage[data-status="active"] .stage-card {
+    border-color: rgba(109, 40, 217, 0.25);
+    background: linear-gradient(180deg, white 0%, rgba(245, 243, 255, 0.4) 100%);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.8) inset, 0 6px 16px -10px rgba(109, 40, 217, 0.18);
+  }
+  .stage[data-status="disabled"] .stage-card {
+    opacity: 0.55;
+    background: var(--paper-2);
+  }
+
+  .stage-pill {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: var(--r-pill);
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .stage[data-status="sent"] .stage-pill { color: var(--sage); background: var(--sage-soft); }
+  .stage[data-status="active"] .stage-pill { color: white; background: var(--violet-700); }
+  .stage[data-status="scheduled"] .stage-pill { color: var(--apricot); background: var(--apricot-soft); }
+  .stage[data-status="disabled"] .stage-pill { color: var(--ink-mute); background: var(--paper-3); }
+  .stage-pill .dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+  .stage-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .stage-stat-num {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 28px;
+    line-height: 1;
+    color: var(--ink);
+    letter-spacing: 0.01em;
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+  }
+  .stage-stat-num .of {
+    font-size: 14px;
+    color: var(--ink-mute);
+    font-weight: 700;
+  }
+  .stage-stat-label {
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    line-height: 1.3;
+  }
+
+  .stage-progress {
+    height: 4px;
+    background: var(--paper-2);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+  }
+  .stage-progress > div {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 600ms cubic-bezier(0.32, 0.72, 0.30, 1);
+  }
+  .stage[data-status="sent"] .stage-progress > div { background: var(--sage); }
+  .stage[data-status="active"] .stage-progress > div { background: var(--violet-700); }
+  .stage[data-status="scheduled"] .stage-progress > div { background: var(--apricot); }
+
+  .stage-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 8px;
+    border-top: 1px solid var(--line);
+    font-size: 11px;
+    color: var(--ink-mute);
+  }
+  .stage-bottom .target {
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+  .stage-bottom .edit {
+    color: var(--violet-700);
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+  /* Add nudge slot */
+  .stage.add-nudge .stage-circle {
+    background: white;
+    border: 1.5px dashed var(--champagne);
+    color: var(--rose-gold);
+  }
+  .stage.add-nudge .stage-card {
+    background: rgba(248, 240, 226, 0.35);
+    border: 1.5px dashed var(--champagne);
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 110px;
+    transition: background 220ms;
+  }
+  .stage.add-nudge .stage-card:hover {
+    background: rgba(232, 213, 183, 0.45);
+    border-color: var(--rose-gold);
+  }
+  .stage.add-nudge .stage-card-add-text {
+    font-size: 12px;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+  .stage.add-nudge .stage-card-add-text b {
+    color: var(--rose-gold);
+    font-weight: 700;
+  }
+  .stage.add-nudge .stage-label { color: var(--rose-gold); }
+
+  /* Soft connectors between cards (shows arrow flow) */
+  .stage:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: -8px;
+    width: 16px; height: 16px;
+    background: var(--paper);
+    transform: rotate(45deg);
+    z-index: 0;
+    display: none;
+  }
+
+  /* ========== STAGE LOGS PREVIEW STRIP ========== */
+  .logs-strip {
+    margin-top: 28px;
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    padding: 22px 24px;
+  }
+  .logs-strip-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .logs-strip-header h3 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: 0.02em;
+  }
+  .logs-strip-header .all {
+    font-size: 12.5px;
+    color: var(--violet-700);
+    font-weight: 600;
+  }
+  .logs-list { display: flex; flex-direction: column; gap: 1px; }
+  .log-row {
+    display: grid;
+    grid-template-columns: 110px 1fr auto auto;
+    gap: 16px;
+    align-items: center;
+    padding: 10px 4px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--paper-2);
+    transition: background 180ms;
+  }
+  .log-row:hover { background: var(--paper-2); }
+  .log-row:last-child { border-bottom: none; }
+  .log-time {
+    color: var(--ink-mute);
+    font-size: 11.5px;
+    font-variant-numeric: tabular-nums;
+  }
+  .log-name { color: var(--ink); font-weight: 600; }
+  .log-stage {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: var(--r-pill);
+    background: var(--paper-2);
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+  .log-status-pill {
+    font-size: 10.5px;
+    padding: 2px 9px;
+    border-radius: var(--r-pill);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .log-status-pill.sent { color: var(--sage); background: var(--sage-soft); }
+  .log-status-pill.pending { color: var(--apricot); background: var(--apricot-soft); }
+  .log-status-pill.failed { color: var(--clay); background: var(--clay-soft); }
+
+  /* ========== MOBILE ========== */
+  @media (max-width: 920px) {
+    .topbar { padding: 0 16px; gap: 16px; height: 56px; }
+    .tabs { gap: 2px; }
+    .tab { padding: 7px 11px; font-size: 13px; }
+    .event-picker { padding: 6px 10px; font-size: 12px; gap: 6px; }
+    .topbar-spacer { display: none; }
+
+    .page { padding: 20px 16px 96px; }
+    .page-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .page-header h1 { font-size: 28px; }
+
+    .auto-pilot {
+      padding: 10px 14px;
+      gap: 12px;
+    }
+    .ap-icon { width: 32px; height: 32px; border-radius: 8px; }
+    .ap-icon svg { width: 16px; height: 16px; }
+    .ap-body { gap: 8px; }
+    .ap-divider { display: none; }
+    .ap-title { font-size: 13px; }
+    .ap-caption { font-size: 11px; }
+    .toggle { width: 44px; height: 26px; }
+    .toggle::after { width: 20px; height: 20px; top: 3px; left: 21px; }
+    .toggle.off::after { left: 3px; }
+
+    .pipeline-frame { padding: 0; border-radius: var(--r-md); }
+    .pipeline-scroll { display: none; }
+
+    .pipeline-stack { display: flex; flex-direction: column; padding: 6px; gap: 0; }
+    .stage-mobile {
+      position: relative;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      padding: 14px 14px 14px 14px;
+      border-bottom: 1px solid var(--paper-2);
+    }
+    .stage-mobile:last-child { border-bottom: none; }
+    .stage-mobile::before {
+      content: '';
+      position: absolute;
+      top: 28px;
+      bottom: -16px;
+      right: 31px;
+      width: 2px;
+      background: var(--champagne);
+      z-index: 0;
+    }
+    .stage-mobile:last-child::before { display: none; }
+
+    .stage-mobile-circle {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      background: white;
+      border: 1.5px solid var(--line);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--ink-mute);
+      position: relative;
+      z-index: 1;
+    }
+    .stage-mobile[data-status="sent"] .stage-mobile-circle {
+      background: var(--sage); border-color: var(--sage); color: white;
+    }
+    .stage-mobile[data-status="active"] .stage-mobile-circle {
+      background: var(--violet-700); border-color: var(--violet-700); color: white;
+      box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.15);
+    }
+    .stage-mobile[data-status="scheduled"] .stage-mobile-circle {
+      border-color: var(--apricot); color: var(--apricot);
+    }
+    .stage-mobile[data-status="disabled"] .stage-mobile-circle { opacity: 0.5; }
+
+    .stage-mobile-body { flex: 1; min-width: 0; }
+    .stage-mobile-row {
+      display: flex; justify-content: space-between; align-items: baseline; gap: 8px;
+    }
+    .stage-mobile-name {
+      font-family: var(--display); font-weight: 700; font-size: 17px;
+      letter-spacing: 0.02em; color: var(--ink);
+    }
+    .stage-mobile[data-status="disabled"] .stage-mobile-name { color: var(--ink-mute); }
+    .stage-mobile-pill {
+      font-size: 9.5px;
+      padding: 2px 7px;
+      border-radius: var(--r-pill);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .stage-mobile[data-status="sent"] .stage-mobile-pill { color: var(--sage); background: var(--sage-soft); }
+    .stage-mobile[data-status="active"] .stage-mobile-pill { color: white; background: var(--violet-700); }
+    .stage-mobile[data-status="scheduled"] .stage-mobile-pill { color: var(--apricot); background: var(--apricot-soft); }
+    .stage-mobile[data-status="disabled"] .stage-mobile-pill { color: var(--ink-mute); background: var(--paper-3); }
+
+    .stage-mobile-when {
+      font-size: 11px; color: var(--ink-mute); margin-top: 1px;
+    }
+    .stage-mobile-stats {
+      display: flex; gap: 14px; align-items: baseline;
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--ink-soft);
+    }
+    .stage-mobile-stats b {
+      font-family: var(--display);
+      font-size: 18px;
+      color: var(--ink);
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .stage-mobile.add-nudge {
+      justify-content: center;
+      background: rgba(248, 240, 226, 0.35);
+      border: 1.5px dashed var(--champagne);
+      border-radius: var(--r-md);
+      margin: 8px;
+    }
+    .stage-mobile.add-nudge::before { display: none; }
+
+    .logs-strip { padding: 18px 16px; margin-top: 18px; }
+    .logs-strip-header h3 { font-size: 17px; }
+    .log-row {
+      grid-template-columns: 1fr auto;
+      grid-template-rows: auto auto;
+      gap: 4px 12px;
+      font-size: 12.5px;
+    }
+    .log-time { grid-row: 1; grid-column: 1; }
+    .log-name { grid-row: 2; grid-column: 1; }
+    .log-stage { grid-row: 1; grid-column: 2; }
+    .log-status-pill { grid-row: 2; grid-column: 2; }
+  }
+
+  @media (min-width: 921px) {
+    .pipeline-stack { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ========== TOP BAR ========== -->
+<header class="topbar">
+  <a href="dashboard.html" class="brand">Guesto<span class="dot"></span></a>
+  <nav class="tabs">
+    <a href="dashboard.html" class="tab">אורחים</a>
+    <a href="timeline.html" class="tab active">פייפליין</a>
+    <a href="settings.html" class="tab">הגדרות</a>
+  </nav>
+  <div class="topbar-spacer"></div>
+  <button class="event-picker" type="button">
+    <span class="name">חגית & איתי</span>
+    <span class="chev">▾</span>
+  </button>
+  <button class="icon-btn" title="התראות" type="button">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+  </button>
+</header>
+
+<!-- ========== PAGE ========== -->
+<main class="page">
+
+  <div class="page-header">
+    <div>
+      <h1>פייפליין הזמנות</h1>
+      <div class="sub">מסע ההודעה האוטומטי מתחילת הקמפיין ועד יום אחרי החתונה · <b>אירוע ב-12 ביוני 2026</b></div>
+    </div>
+    <div class="header-actions">
+      <button class="ghost-btn" type="button">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        רענן נתונים
+      </button>
+      <button class="ghost-btn" type="button">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        הגדרות אוטומציה
+      </button>
+    </div>
+  </div>
+
+  <!-- AUTO-PILOT BANNER (compact) -->
+  <section class="auto-pilot">
+    <div class="ap-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16.5c0 .38-.21.71-.53.88l-7.9 4.44c-.16.12-.36.18-.57.18-.21 0-.41-.06-.57-.18l-7.9-4.44A.991.991 0 0 1 3 16.5v-9c0-.38.21-.71.53-.88l7.9-4.44c.16-.12.36-.18.57-.18.21 0 .41.06.57.18l7.9 4.44c.32.17.53.5.53.88v9z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+    </div>
+    <div class="ap-body">
+      <div class="ap-title"><span class="ap-status-dot"></span>טייס אוטומטי פעיל</div>
+      <div class="ap-divider"></div>
+      <div class="ap-caption"><b>87</b> נשלחו השבוע · <b>4</b> בתור</div>
+    </div>
+    <button class="toggle" type="button" aria-label="כבה טייס אוטומטי"></button>
+  </section>
+
+  <!-- PIPELINE -->
+  <div class="pipeline-meta">
+    <div class="item"><span class="swatch sent"></span><b>נשלח</b> · 3 שלבים</div>
+    <div class="item"><span class="swatch active"></span><b>פעיל עכשיו</b> · 1 שלב</div>
+    <div class="item"><span class="swatch scheduled"></span><b>מתוזמן</b> · 4 שלבים</div>
+    <div class="item"><span class="swatch disabled"></span><b>מושבת</b> · 1 שלב</div>
+  </div>
+
+  <div class="pipeline-frame">
+    <!-- Desktop: horizontal scroll -->
+    <div class="pipeline-scroll">
+      <div class="pipeline-track">
+
+        <!-- 1. ICEBREAKER (sent) -->
+        <div class="stage" data-status="sent">
+          <div class="stage-circle" title="פתיחה — נשלח">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+          </div>
+          <div class="stage-label">פתיחה</div>
+          <div class="stage-when">14 ימים לפני · 29 במאי</div>
+          <div class="stage-card">
+            <span class="stage-pill"><span class="dot"></span>נשלח</span>
+            <div class="stage-stats">
+              <div class="stage-stat-num">180<span class="of">/180</span></div>
+              <div class="stage-stat-label">הודעות פתיחה הגיעו ליעד</div>
+            </div>
+            <div class="stage-progress"><div style="width:100%"></div></div>
+            <div class="stage-bottom">
+              <span class="target">לכל ההזמנות</span>
+              <span class="edit">ערוך ›</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. NUDGE (sent) -->
+        <div class="stage" data-status="sent">
+          <div class="stage-circle">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+          </div>
+          <div class="stage-label">תזכורת ראשונה</div>
+          <div class="stage-when">10 ימים לפני · 2 ביוני</div>
+          <div class="stage-card">
+            <span class="stage-pill"><span class="dot"></span>נשלח</span>
+            <div class="stage-stats">
+              <div class="stage-stat-num">42<span class="of">/42</span></div>
+              <div class="stage-stat-label">תזכורות עדינות לממתינים</div>
+            </div>
+            <div class="stage-progress"><div style="width:100%"></div></div>
+            <div class="stage-bottom">
+              <span class="target">לממתינים</span>
+              <span class="edit">ערוך ›</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. NUDGE_1 dynamic (active) -->
+        <div class="stage" data-status="active">
+          <div class="stage-circle">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+          <div class="stage-label">תזכורת שנייה</div>
+          <div class="stage-when">5 ימים לפני · 7 ביוני · עכשיו</div>
+          <div class="stage-card">
+            <span class="stage-pill"><span class="dot"></span>פעיל עכשיו</span>
+            <div class="stage-stats">
+              <div class="stage-stat-num">18<span class="of">/24</span></div>
+              <div class="stage-stat-label">תזכורות נשלחות עכשיו · 4 בתור</div>
+            </div>
+            <div class="stage-progress"><div style="width:75%"></div></div>
+            <div class="stage-bottom">
+              <span class="target">לממתינים</span>
+              <span class="edit">ערוך ›</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ADD NUDGE SLOT -->
+        <div class="stage add-nudge">
+          <div class="stage-circle">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </div>
+          <div class="stage-label">תזכורת נוספת</div>
+          <div class="stage-when">בין שלבים</div>
+          <div class="stage-card">
+            <div class="stage-card-add-text">+ <b>הוסף תזכורת דינמית</b></div>
+            <div class="stage-card-add-text" style="font-size:11px; color:var(--ink-mute); font-weight:400;">עד 3 תזכורות מותאמות</div>
+          </div>
+        </div>
+
+        <!-- 4. ULTIMATUM (scheduled) -->
+        <div class="stage" data-status="scheduled">
+          <div class="stage-circle">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <div class="stage-label">קריאה אחרונה</div>
+          <div class="stage-when">2 ימים לפני · 10 ביוני</div>
+          <div class="stage-card">
+            <span class="stage-pill"><span class="dot"></span>מתוזמן</span>
+            <div class="stage-stats">
+              <div class="stage-stat-num">~14</div>
+              <div class="stage-stat-label">צפויות להישלח לממתינים שנותרו</div>
+            </div>
+            <div class="stage-progress"><div style="width:0%"></div></div>
+            <div class="stage-bottom">
+              <span class="target">לממתינים שנותרו</span>
+              <span class="edit">ערוך ›</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. LOGISTICS (scheduled) -->
+        <div class="stage" data-status="scheduled">
+          <div class="stage-circle">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <div class="stage-label">לוגיסטיקה</div>
+          <div class="stage-when">בוקר האירוע · 12 ביוני</div>
+          <div class="stage-card">
+            <span class="stage-pill"><span class="dot"></span>מתוזמן</span>
+            <div class="stage-stats">
+              <div class="stage-stat-num">~166</div>
+              <div class="stage-stat-label">ניווט ופרטי הגעה למאשרים</div>
+            </div>
+            <div class="stage-progress"><div style="width:0%"></div></div>
+            <div class="stage-bottom">
+              <span class="target">למאשרים בלבד</span>
+              <span class="edit">ערוך ›</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. HANGOVER (disabled) -->
+        <div class="stage" data-status="disabled">
+          <div class="stage-circle">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+          </div>
+          <div class="stage-label">תודה אחרי</div>
+          <div class="stage-when">יום אחרי · 13 ביוני</div>
+          <div class="stage-card">
+            <span class="stage-pill"><span class="dot"></span>מושבת</span>
+            <div class="stage-stats">
+              <div class="stage-stat-num">—</div>
+              <div class="stage-stat-label">השלב כבוי · להפעיל מההגדרות</div>
+            </div>
+            <div class="stage-bottom">
+              <span class="target">למאשרים בלבד</span>
+              <span class="edit">הפעל ›</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Mobile vertical stack -->
+    <div class="pipeline-stack">
+
+      <div class="stage-mobile" data-status="sent">
+        <div class="stage-mobile-circle">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+        </div>
+        <div class="stage-mobile-body">
+          <div class="stage-mobile-row">
+            <span class="stage-mobile-name">פתיחה</span>
+            <span class="stage-mobile-pill">נשלח</span>
+          </div>
+          <div class="stage-mobile-when">14 ימים לפני · 29 במאי</div>
+          <div class="stage-mobile-stats"><span><b>180</b>/180 נשלחו</span><span>לכל ההזמנות</span></div>
+        </div>
+      </div>
+
+      <div class="stage-mobile" data-status="sent">
+        <div class="stage-mobile-circle">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+        </div>
+        <div class="stage-mobile-body">
+          <div class="stage-mobile-row">
+            <span class="stage-mobile-name">תזכורת ראשונה</span>
+            <span class="stage-mobile-pill">נשלח</span>
+          </div>
+          <div class="stage-mobile-when">10 ימים לפני · 2 ביוני</div>
+          <div class="stage-mobile-stats"><span><b>42</b>/42 נשלחו</span><span>לממתינים</span></div>
+        </div>
+      </div>
+
+      <div class="stage-mobile" data-status="active">
+        <div class="stage-mobile-circle">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <div class="stage-mobile-body">
+          <div class="stage-mobile-row">
+            <span class="stage-mobile-name">תזכורת שנייה</span>
+            <span class="stage-mobile-pill">פעיל עכשיו</span>
+          </div>
+          <div class="stage-mobile-when">5 ימים לפני · 7 ביוני</div>
+          <div class="stage-mobile-stats"><span><b>18</b>/24 נשלחו</span><span>4 בתור</span></div>
+        </div>
+      </div>
+
+      <div class="stage-mobile add-nudge">
+        <div class="stage-mobile-body" style="text-align:center;">
+          <span class="stage-mobile-name" style="color:var(--rose-gold)">+ הוסף תזכורת דינמית</span>
+          <div class="stage-mobile-when">עד 3 תזכורות מותאמות</div>
+        </div>
+      </div>
+
+      <div class="stage-mobile" data-status="scheduled">
+        <div class="stage-mobile-circle">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <div class="stage-mobile-body">
+          <div class="stage-mobile-row">
+            <span class="stage-mobile-name">קריאה אחרונה</span>
+            <span class="stage-mobile-pill">מתוזמן</span>
+          </div>
+          <div class="stage-mobile-when">2 ימים לפני · 10 ביוני</div>
+          <div class="stage-mobile-stats"><span><b>~14</b> צפויות</span><span>לממתינים שנותרו</span></div>
+        </div>
+      </div>
+
+      <div class="stage-mobile" data-status="scheduled">
+        <div class="stage-mobile-circle">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <div class="stage-mobile-body">
+          <div class="stage-mobile-row">
+            <span class="stage-mobile-name">לוגיסטיקה</span>
+            <span class="stage-mobile-pill">מתוזמן</span>
+          </div>
+          <div class="stage-mobile-when">בוקר האירוע · 12 ביוני</div>
+          <div class="stage-mobile-stats"><span><b>~166</b> צפויות</span><span>למאשרים בלבד</span></div>
+        </div>
+      </div>
+
+      <div class="stage-mobile" data-status="disabled">
+        <div class="stage-mobile-circle">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/></svg>
+        </div>
+        <div class="stage-mobile-body">
+          <div class="stage-mobile-row">
+            <span class="stage-mobile-name">תודה אחרי</span>
+            <span class="stage-mobile-pill">מושבת</span>
+          </div>
+          <div class="stage-mobile-when">יום אחרי · 13 ביוני</div>
+          <div class="stage-mobile-stats"><span>השלב כבוי</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- LOGS PREVIEW -->
+  <section class="logs-strip">
+    <div class="logs-strip-header">
+      <h3>פעילות אחרונה בפייפליין</h3>
+      <a href="#" class="all">לכל ההיסטוריה ›</a>
+    </div>
+    <div class="logs-list">
+      <div class="log-row">
+        <span class="log-time">לפני 4 דק׳</span>
+        <span class="log-name">משפחת לוי · רותם ויואב</span>
+        <span class="log-stage">תזכורת שנייה</span>
+        <span class="log-status-pill sent">נשלח</span>
+      </div>
+      <div class="log-row">
+        <span class="log-time">לפני 12 דק׳</span>
+        <span class="log-name">משפחת כהן · נטע</span>
+        <span class="log-stage">תזכורת שנייה</span>
+        <span class="log-status-pill sent">נשלח</span>
+      </div>
+      <div class="log-row">
+        <span class="log-time">לפני 18 דק׳</span>
+        <span class="log-name">משפחת אבני · גלית ואסף</span>
+        <span class="log-stage">תזכורת שנייה</span>
+        <span class="log-status-pill pending">בתור</span>
+      </div>
+      <div class="log-row">
+        <span class="log-time">לפני 23 דק׳</span>
+        <span class="log-name">משפחת מזרחי · שירה</span>
+        <span class="log-stage">תזכורת שנייה</span>
+        <span class="log-status-pill failed">נכשל</span>
+      </div>
+      <div class="log-row">
+        <span class="log-time">לפני 41 דק׳</span>
+        <span class="log-name">משפחת ברק · יעל ועמית</span>
+        <span class="log-stage">תזכורת שנייה</span>
+        <span class="log-status-pill sent">נשלח</span>
+      </div>
+      <div class="log-row">
+        <span class="log-time">לפני שעה</span>
+        <span class="log-name">משפחת שטיין · דנה</span>
+        <span class="log-stage">תזכורת שנייה</span>
+        <span class="log-status-pill sent">נשלח</span>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  // Drag-to-scroll on horizontal pipeline (desktop)
+  (function () {
+    const lane = document.querySelector('.pipeline-scroll');
+    if (!lane) return;
+    let isDown = false, startX = 0, scrollLeft = 0;
+    lane.addEventListener('mousedown', (e) => {
+      isDown = true;
+      lane.style.cursor = 'grabbing';
+      startX = e.pageX - lane.offsetLeft;
+      scrollLeft = lane.scrollLeft;
+    });
+    lane.addEventListener('mouseleave', () => { isDown = false; lane.style.cursor = 'grab'; });
+    lane.addEventListener('mouseup', () => { isDown = false; lane.style.cursor = 'grab'; });
+    lane.addEventListener('mousemove', (e) => {
+      if (!isDown) return;
+      e.preventDefault();
+      const x = e.pageX - lane.offsetLeft;
+      lane.scrollLeft = scrollLeft - (x - startX);
+    });
+
+    // Smart-focus snap on load: bring active stage to ~35% from right edge (RTL)
+    requestAnimationFrame(() => {
+      const active = lane.querySelector('.stage[data-status="active"]');
+      if (!active) return;
+      const targetRightOffset = lane.clientWidth * 0.35;
+      const activeRight = active.offsetLeft + active.offsetWidth;
+      const trackRight = lane.scrollWidth;
+      lane.scrollLeft = trackRight - activeRight - targetRightOffset;
+    });
+  })();
+
+  // Toggle the auto-pilot switch
+  document.querySelectorAll('.toggle').forEach(t => {
+    t.addEventListener('click', () => t.classList.toggle('off'));
+  });
+</script>
+
+</body>
+</html>

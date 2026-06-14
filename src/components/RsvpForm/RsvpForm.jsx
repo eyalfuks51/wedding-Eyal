@@ -30,7 +30,7 @@ function RsvpForm({ eventId }) {
         defaults: { ease: 'power2.out' },
         scrollTrigger: {
           trigger: sectionRef.current,
-          start: 'top top',
+          start: 'top bottom',
           once: true,
         },
       });

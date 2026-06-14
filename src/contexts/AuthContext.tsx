@@ -39,21 +39,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!cancelled) setLoading(false);
     });
 
+    // Supabase deadlock guard: callback fires from inside the auth lock.
+    // Any supabase query inside it would re-enter `getSession()` → `await initializePromise`,
+    // which is the very promise we're inside. Defer with setTimeout so the query
+    // runs after the lock is released.
     const { data: { subscription } } = supabase!.auth.onAuthStateChange(
-      async (_event, newSession) => {
+      (_event, newSession) => {
         if (cancelled) return;
         setSession(newSession);
         const uid = newSession?.user?.id;
-        if (uid) {
+        setTimeout(async () => {
+          if (cancelled) return;
+          if (!uid) {
+            setIsSuperAdmin(false);
+            return;
+          }
           const { data } = await supabase!
             .from('users')
             .select('is_super_admin')
             .eq('id', uid)
             .single();
           if (!cancelled) setIsSuperAdmin(data?.is_super_admin ?? false);
-        } else {
-          if (!cancelled) setIsSuperAdmin(false);
-        }
+        }, 0);
       }
     );
 
