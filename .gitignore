@@ -33,3 +33,9 @@ dist-ssr
 /playwright/.auth/
 /tests/.auth-profile/
 /tests/.auth.json
+
+# Supabase generated temp / linked-project metadata (project ref, pooler url, versions)
+supabase/.temp/
+
+# Codex executor scratch output (slice-orchestrator transport)
+.codex-last.txt
