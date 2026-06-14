@@ -11,9 +11,11 @@
 --   3. Set the two Supabase secrets below (Project Settings → Functions → Secrets):
 --        GREEN_API_INSTANCE_ID
 --        GREEN_API_TOKEN
---   4. Replace <PROJECT_REF> with your Supabase project ref (e.g. abcdefghijklmnop)
---   5. Replace <SERVICE_ROLE_KEY> with your service_role JWT key
---      (Project Settings → API → service_role — keep it secret, it bypasses RLS)
+--   4. Store your service_role JWT in Supabase Vault as a secret named
+--      'service_role_key'  (Dashboard → Database → Vault → New secret).
+--      The cron commands below read it at runtime via vault.decrypted_secrets,
+--      so the key is NEVER written into this file or into cron.job command text.
+--      (service_role bypasses RLS — never hardcode it in a tracked file.)
 --
 -- To verify cron jobs after applying:
 --   SELECT * FROM cron.job;
@@ -42,7 +44,7 @@ SELECT cron.schedule(
     url     := 'https://wpxaalcjcsmhdwvwmtan.supabase.co/functions/v1/automation-engine',
     headers := jsonb_build_object(
       'Content-Type',  'application/json',
-      'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndweGFhbGNqY3NtaGR3dndtdGFuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MTY0Mzg4NSwiZXhwIjoyMDg3MjE5ODg1fQ.pwgFYCooIQbSsM9yL0juP3rG3x6kRqRJxrDshSCqjjk'
+      'Authorization', 'Bearer ' || (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'service_role_key')
     ),
     body    := '{}'::jsonb
   ) AS request_id;
@@ -66,7 +68,7 @@ SELECT cron.schedule(
     url     := 'https://wpxaalcjcsmhdwvwmtan.supabase.co/functions/v1/whatsapp-scheduler',
     headers := jsonb_build_object(
       'Content-Type',  'application/json',
-      'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndweGFhbGNqY3NtaGR3dndtdGFuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MTY0Mzg4NSwiZXhwIjoyMDg3MjE5ODg1fQ.pwgFYCooIQbSsM9yL0juP3rG3x6kRqRJxrDshSCqjjk'
+      'Authorization', 'Bearer ' || (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'service_role_key')
     ),
     body    := '{}'::jsonb
   ) AS request_id;
