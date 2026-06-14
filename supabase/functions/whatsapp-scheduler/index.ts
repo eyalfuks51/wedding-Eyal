@@ -124,26 +124,29 @@ serve(async (req) => {
   );
 
   // ---------------------------------------------------------------------------
-  // Step 1: Fetch up to 15 pending rows that are due
+  // Step 1: Atomically CLAIM up to 15 due rows.
+  //
+  // claim_pending_messages() runs a single UPDATE that flips due 'pending' rows
+  // to 'processing' using FOR UPDATE SKIP LOCKED and RETURNs only the rows THIS
+  // call won. Two overlapping invocations therefore receive disjoint row sets,
+  // so a message can be claimed — and sent — exactly once. (Plain SELECT had no
+  // claim step: concurrent runs read the same pending rows → duplicate sends.)
   //
   // Rows where scheduled_for IS NULL are treated as "send immediately" and are
-  // ordered before any timestamp-scheduled rows.
+  // ordered before any timestamp-scheduled rows. The claim is at-most-once:
+  // rows stuck in 'processing' (e.g. a worker that crashed between sending and
+  // writing 'sent') are NOT auto-reclaimed, because Green API sends are not
+  // idempotent and a reclaim would re-message a guest. Stuck rows require manual
+  // requeue — see claim_pending_messages() header for the rationale.
   // ---------------------------------------------------------------------------
 
-  const now = new Date().toISOString();
-
   const { data: logsData, error: fetchError } = await supabase
-    .from("message_logs")
-    .select("id, event_id, invitation_id, phone, message_type, content, scheduled_for")
-    .eq("status", "pending")
-    .or(`scheduled_for.is.null,scheduled_for.lte.${now}`)
-    .order("scheduled_for", { ascending: true, nullsFirst: true })
-    .limit(15);
+    .rpc("claim_pending_messages", { p_limit: 15 });
 
   if (fetchError) {
-    console.error("[whatsapp-scheduler] Failed to fetch message_logs:", fetchError.message);
+    console.error("[whatsapp-scheduler] Failed to claim message_logs:", fetchError.message);
     return new Response(
-      JSON.stringify({ error: "Failed to fetch queue", message: fetchError.message }),
+      JSON.stringify({ error: "Failed to claim queue", message: fetchError.message }),
       { status: 500, headers: { "Content-Type": "application/json" } },
     );
   }
