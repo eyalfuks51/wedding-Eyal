@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
+import { withTimeout } from './auth-utils';
 
 interface AuthContextValue {
   user:         User | null;
@@ -11,6 +12,7 @@ interface AuthContextValue {
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
+const AUTH_READY_TIMEOUT_MS = 8000;
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession]           = useState<Session | null>(null);
@@ -19,41 +21,69 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancelled = false;
+    let initialAuthResolved = false;
+    const client = supabase;
 
-    supabase!.auth.getSession().then(async ({ data: { session: s } }) => {
-      if (cancelled) return;
-      setSession(s);
+    if (!client) {
+      console.warn('Supabase credentials not found. Auth will be treated as signed out.');
+      setLoading(false);
+      return;
+    }
 
-      // Resolve super admin status before marking auth as ready,
-      // so EventContext doesn't fire with stale isSuperAdmin=false.
-      const userId = s?.user?.id;
-      if (userId) {
-        const { data } = await supabase!
-          .from('users')
-          .select('is_super_admin')
-          .eq('id', userId)
-          .single();
-        if (!cancelled) setIsSuperAdmin(data?.is_super_admin ?? false);
+    const resolveSuperAdmin = async (userId: string | undefined) => {
+      if (!userId) {
+        if (!cancelled) setIsSuperAdmin(false);
+        return;
       }
 
-      if (!cancelled) setLoading(false);
-    });
+      try {
+        const { data } = await withTimeout(
+          client
+            .from('users')
+            .select('is_super_admin')
+            .eq('id', userId)
+            .single(),
+          AUTH_READY_TIMEOUT_MS,
+          'Super-admin lookup timed out',
+        );
+        if (!cancelled) setIsSuperAdmin(data?.is_super_admin ?? false);
+      } catch (err) {
+        console.warn('Super-admin lookup failed:', err);
+        if (!cancelled) setIsSuperAdmin(false);
+      }
+    };
 
-    const { data: { subscription } } = supabase!.auth.onAuthStateChange(
+    const markAuthReady = (nextSession: Session | null) => {
+      if (cancelled) return;
+      initialAuthResolved = true;
+      setSession(nextSession);
+      setLoading(false);
+      void resolveSuperAdmin(nextSession?.user?.id);
+    };
+
+    withTimeout(
+      client.auth.getSession(),
+      AUTH_READY_TIMEOUT_MS,
+      'Auth session lookup timed out',
+    )
+      .then(async ({ data: { session: s } }) => {
+        markAuthReady(s);
+      })
+      .catch(err => {
+        if (cancelled || initialAuthResolved) return;
+        console.warn('Auth initialization failed:', err);
+        markAuthReady(null);
+      });
+
+    const { data: { subscription } } = client.auth.onAuthStateChange(
       async (_event, newSession) => {
         if (cancelled) return;
         setSession(newSession);
-        const uid = newSession?.user?.id;
-        if (uid) {
-          const { data } = await supabase!
-            .from('users')
-            .select('is_super_admin')
-            .eq('id', uid)
-            .single();
-          if (!cancelled) setIsSuperAdmin(data?.is_super_admin ?? false);
-        } else {
-          if (!cancelled) setIsSuperAdmin(false);
+        if (!initialAuthResolved) {
+          initialAuthResolved = true;
+          setLoading(false);
         }
+        void resolveSuperAdmin(newSession?.user?.id);
       }
     );
 
@@ -61,7 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signOut = async () => {
-    await supabase!.auth.signOut();
+    await supabase?.auth.signOut();
   };
 
   return (
