@@ -7,8 +7,21 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('Supabase credentials not found. RSVP functionality will be disabled.');
 }
 
+// LivePreview renders the public template inside an iframe at /preview/:slug.
+// That iframe shares localStorage with the parent, so a default createClient
+// would spawn a second GoTrueClient that races the parent for the
+// `sb-<ref>-auth-token` lock via navigator.locks — symptoms: console
+// "AbortError: signal is aborted without reason" from auth-js locks.ts and a
+// blank dashboard. The iframe doesn't need a session: RLS allows anon to read
+// events where status='active', which is the only thing the preview reads.
+// So in iframes we deliberately opt out of session persistence.
+const isIframe = typeof window !== 'undefined' && window.self !== window.top;
+const clientOptions = isIframe
+  ? { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } }
+  : undefined;
+
 export const supabase = supabaseUrl && supabaseAnonKey
-  ? createClient(supabaseUrl, supabaseAnonKey)
+  ? createClient(supabaseUrl, supabaseAnonKey, clientOptions)
   : null;
 
 export const fetchEventBySlug = async (slug) => {

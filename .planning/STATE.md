@@ -97,7 +97,7 @@ Recent decisions affecting current work:
 - [Phase 05-paywalls-upgrade-modal]: [Phase 05-02]: isAtGuestLimit uses >= so reaching the limit triggers paywall before insert attempt
 - [Phase 05-paywalls-upgrade-modal]: [Phase 05-02]: Buttons remain clickable visually — modal explains upgrade path rather than disabling UI
 - [Phase 07-01]: Vitest inline config in vite.config.js; tests/ excluded to prevent Playwright collision; phone.ts extracted verbatim from guest-excel.ts
-- [Phase 08]: Graceful teardown skip when VITE_SUPABASE_SERVICE_ROLE_KEY is not configured
+- [Phase 08]: RSVP E2E skips before writing data when SUPABASE_SERVICE_ROLE_KEY is not configured
 - [Phase 08]: ESM-compatible __dirname via fileURLToPath instead of CommonJS __dirname
 - [Phase 09-01]: Retroactive VERIFICATION.md uses ROADMAP.md Phase 6 tasks as source plan reference (no PLAN.md files exist for Phase 6)
 - [Phase 09-01]: VERIFICATION.md status set to passed because v1.0 audit confirmed all 5 RSVP requirements functionally implemented

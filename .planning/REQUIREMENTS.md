@@ -98,7 +98,7 @@
 - [x] **POLISH-01**: `DashboardSettings.tsx` has zero `(currentEvent as any)` casts — uses typed `EventData` properties
 - [x] **POLISH-02**: `EventContext` defers initial fetch until `isSuperAdmin` has resolved — no double-fetch flicker for super admins
 - [x] **POLISH-03**: All ROADMAP.md plan checkboxes and phase statuses match actual completion state
-- [x] **POLISH-04**: `.env.example` documents `VITE_SUPABASE_SERVICE_ROLE_KEY` with E2E teardown explanation
+- [x] **POLISH-04**: `.env.example` documents `SUPABASE_SERVICE_ROLE_KEY` with E2E teardown explanation
 
 ## v2 Requirements
 

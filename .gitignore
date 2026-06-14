@@ -24,3 +24,12 @@ dist-ssr
 *.sw?
 .vercel
 .worktrees
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
+/tests/.auth-profile/
+/tests/.auth.json

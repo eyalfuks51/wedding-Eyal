@@ -1,13 +1,8 @@
-import { useState, useEffect, useCallback, useRef, Fragment, useMemo } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
-  Sparkles,
-  Bell,
-  AlertTriangle,
-  MapPin,
-  Heart,
-  Calendar,
-  RefreshCw,
-  Plus,
+  Sparkles, Bell, AlertTriangle, MapPin, Heart,
+  Calendar, RefreshCw, Plus, Settings, Box,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEventContext } from '@/contexts/EventContext';
@@ -16,7 +11,6 @@ import {
   fetchAutomationSettings,
   fetchMessageStatsPerStage,
   fetchAutomatedAudienceCounts,
-  updateAutomationSetting,
   updateWhatsAppTemplate,
   toggleAutoPilot,
   addDynamicNudge,
@@ -52,72 +46,48 @@ interface StageStats {
 }
 
 type WhatsAppTemplates = Record<string, { singular: string; plural: string }>;
-
 type StageStatus = 'sent' | 'active' | 'scheduled' | 'disabled';
-
 type PipelineNode =
   | { type: 'stage'; setting: AutomationSettingRow }
-  | { type: 'event' }
   | { type: 'add-nudge' };
 
-// ─── Icon map ─────────────────────────────────────────────────────────────────
+// ─── Stage Icon ───────────────────────────────────────────────────────────────
 
-const ICON_MAP: Record<string, React.ReactElement> = {
-  Sparkles:      <Sparkles className="w-4 h-4" />,
-  Bell:          <Bell className="w-4 h-4" />,
-  AlertTriangle: <AlertTriangle className="w-4 h-4" />,
-  MapPin:        <MapPin className="w-4 h-4" />,
-  Heart:         <Heart className="w-4 h-4" />,
-};
-
-const ICON_MAP_LG: Record<string, React.ReactElement> = {
-  Sparkles:      <Sparkles className="w-5 h-5" />,
-  Bell:          <Bell className="w-5 h-5" />,
-  AlertTriangle: <AlertTriangle className="w-5 h-5" />,
-  MapPin:        <MapPin className="w-5 h-5" />,
-  Heart:         <Heart className="w-5 h-5" />,
-};
-
-function getStageIcon(stageName: StageName, size: 'sm' | 'lg' = 'sm'): React.ReactElement {
-  const meta = STAGE_META[stageName];
-  const map = size === 'lg' ? ICON_MAP_LG : ICON_MAP;
-  return map[meta.icon] ?? <Bell className={size === 'lg' ? 'w-5 h-5' : 'w-4 h-4'} />;
+function StageIcon({ stage, size = 20 }: { stage: StageName; size?: number }) {
+  const meta = STAGE_META[stage];
+  const Icon = (() => {
+    switch (meta.icon) {
+      case 'Sparkles':      return Sparkles;
+      case 'Bell':          return Bell;
+      case 'AlertTriangle': return AlertTriangle;
+      case 'MapPin':        return MapPin;
+      case 'Heart':         return Heart;
+      default:              return Bell;
+    }
+  })();
+  return <Icon size={size} strokeWidth={1.8} />;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function computeStageDate(
-  eventDate: Date | null,
-  daysBefore: number,
-): { dateStr: string; weekday: string; shortDate: string; shortDay: string; isFridayOrShabbat: boolean; raw: Date } | null {
+function computeStageDate(eventDate: Date | null, daysBefore: number) {
   if (!eventDate) return null;
   const d = new Date(eventDate);
   d.setDate(d.getDate() - daysBefore);
-  const day = d.getDay(); // 0=Sun … 5=Fri, 6=Sat
   return {
-    dateStr: d.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+    short: d.toLocaleDateString('he-IL', { day: '2-digit', month: 'short' }),
     weekday: d.toLocaleDateString('he-IL', { weekday: 'short' }),
-    shortDate: d.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit' }),
-    shortDay: d.toLocaleDateString('he-IL', { weekday: 'short' }),
-    isFridayOrShabbat: day === 5 || day === 6,
+    isFridayOrShabbat: d.getDay() === 5 || d.getDay() === 6,
     raw: d,
   };
 }
 
-function computeRelativeTime(eventDate: Date | null, daysBefore: number): string | null {
-  if (!eventDate) return null;
-  const stageDate = new Date(eventDate);
-  stageDate.setDate(stageDate.getDate() - daysBefore);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  stageDate.setHours(0, 0, 0, 0);
-  const diffMs = stageDate.getTime() - today.getTime();
-  const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) return 'היום';
-  if (diffDays === 1) return 'מחר';
-  if (diffDays === -1) return 'אתמול';
-  if (diffDays > 0) return `עוד ${diffDays} ימים`;
-  return `לפני ${Math.abs(diffDays)} ימים`;
+function relativeWhen(daysBefore: number): string {
+  if (daysBefore === 0)  return 'יום האירוע';
+  if (daysBefore === -1) return 'יום אחרי';
+  if (daysBefore < 0)    return `${Math.abs(daysBefore)} ימים אחרי`;
+  if (daysBefore === 1)  return 'יום לפני';
+  return `${daysBefore} ימים לפני`;
 }
 
 function getStageStatus(setting: AutomationSettingRow, stats?: StageStats): StageStatus {
@@ -129,23 +99,9 @@ function getStageStatus(setting: AutomationSettingRow, stats?: StageStats): Stag
 
 const STATUS_LABELS: Record<StageStatus, string> = {
   sent:      'נשלח',
-  active:    'בתהליך',
+  active:    'פעיל עכשיו',
   scheduled: 'מתוזמן',
-  disabled:  'כבוי',
-};
-
-const STATUS_PILL_CLASSES: Record<StageStatus, string> = {
-  sent:      'bg-emerald-100 text-emerald-700 border-emerald-200',
-  active:    'bg-violet-100 text-violet-700 border-violet-200',
-  scheduled: 'bg-amber-100 text-amber-700 border-amber-200',
-  disabled:  'bg-slate-100 text-slate-500 border-slate-200',
-};
-
-const STATUS_CARD_CLASSES: Record<StageStatus, string> = {
-  sent:      'bg-white border-emerald-200',
-  active:    'bg-white border-violet-300 shadow-sm',
-  scheduled: 'bg-white border-slate-200',
-  disabled:  'bg-slate-50 border-slate-100 opacity-60',
+  disabled:  'מושבת',
 };
 
 function findFocusStage(
@@ -155,12 +111,60 @@ function findFocusStage(
   return sorted.find(s => {
     if (!s.is_active) return false;
     const st = stats[s.stage_name];
-    if (!st) return true; // no messages yet → upcoming
-    return st.pending > 0; // still has pending messages
+    if (!st) return true;
+    return st.pending > 0;
   }) ?? null;
 }
 
-// ─── Drag-to-Scroll Hook ─────────────────────────────────────────────────────
+interface StatDisplay {
+  num: string;
+  of: string | null;
+  label: string;
+  progress: number;
+}
+
+function buildStat(
+  setting: AutomationSettingRow,
+  status: StageStatus,
+  stats: StageStats | undefined,
+  audience: { pending: number; attending: number },
+): StatDisplay {
+  const target = setting.target_status === 'attending' ? audience.attending : audience.pending;
+  const sent = stats?.sent ?? 0;
+  const pending = stats?.pending ?? 0;
+  const total = sent + pending;
+
+  if (status === 'disabled') {
+    return { num: '—', of: null, label: 'השלב כבוי · להפעיל מההגדרות', progress: 0 };
+  }
+  if (status === 'sent') {
+    return {
+      num: String(sent),
+      of: total > 0 ? `/${total}` : null,
+      label: 'הודעות נשלחו ליעד',
+      progress: 100,
+    };
+  }
+  if (status === 'active') {
+    return {
+      num: String(sent),
+      of: total > 0 ? `/${total}` : null,
+      label: `נשלחות עכשיו · ${pending} בתור`,
+      progress: total > 0 ? Math.round((sent / total) * 100) : 0,
+    };
+  }
+  // scheduled
+  return {
+    num: target > 0 ? `~${target}` : '—',
+    of: null,
+    label: target > 0
+      ? `צפויות להישלח ל${setting.target_status === 'attending' ? 'מאשרים' : 'ממתינים'}`
+      : 'אין נמענים זמינים',
+    progress: 0,
+  };
+}
+
+// ─── Drag-to-Scroll Hook ──────────────────────────────────────────────────────
 
 function useDragScroll(ref: React.RefObject<HTMLElement | null>) {
   const [isDragging, setIsDragging] = useState(false);
@@ -169,7 +173,6 @@ function useDragScroll(ref: React.RefObject<HTMLElement | null>) {
   const pointerIdRef = useRef<number | null>(null);
   const isDownRef = useRef(false);
 
-  // Snap: find the cell whose center is closest to the container center, scroll it there
   const snapToNearest = useCallback(() => {
     const el = ref.current;
     if (!el) return;
@@ -207,7 +210,6 @@ function useDragScroll(ref: React.RefObject<HTMLElement | null>) {
   const onPointerMove = useCallback((e: React.PointerEvent) => {
     if (!isDownRef.current || !ref.current) return;
     const dx = e.clientX - startState.current.x;
-
     if (!hasDraggedRef.current) {
       if (Math.abs(dx) < 5) return;
       hasDraggedRef.current = true;
@@ -216,7 +218,6 @@ function useDragScroll(ref: React.RefObject<HTMLElement | null>) {
         try { ref.current.setPointerCapture(pointerIdRef.current); } catch { /* ignore */ }
       }
     }
-
     ref.current.scrollLeft = startState.current.scrollLeft - dx;
   }, [ref]);
 
@@ -228,462 +229,220 @@ function useDragScroll(ref: React.RefObject<HTMLElement | null>) {
     if (wasDrag) snapToNearest();
   }, [snapToNearest]);
 
-  return { onPointerDown, onPointerMove, onPointerUp, isDragging, hasDragged: hasDraggedRef, snapToNearest };
+  return { onPointerDown, onPointerMove, onPointerUp, isDragging, hasDragged: hasDraggedRef };
 }
 
-// ─── Toggle switch ────────────────────────────────────────────────────────────
+// ─── Sub-components ───────────────────────────────────────────────────────────
 
-function Toggle({ checked, onChange, size = 'sm' }: { checked: boolean; onChange: () => void; size?: 'sm' | 'lg' }) {
+function AutoPilotBanner({
+  active, onToggle, sentCount, pendingCount,
+}: {
+  active: boolean;
+  onToggle: () => void;
+  sentCount: number;
+  pendingCount: number;
+}) {
   return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      dir="ltr"
-      onClick={e => { e.stopPropagation(); onChange(); }}
-      className={cn(
-        'relative inline-flex shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200',
-        checked ? 'bg-violet-600' : 'bg-slate-200',
-        size === 'lg' ? 'h-6 w-11' : 'h-5 w-9',
-      )}
-    >
-      <span className={cn(
-        'pointer-events-none inline-block rounded-full bg-white shadow ring-0 transition-transform duration-200',
-        size === 'lg' ? 'h-5 w-5' : 'h-4 w-4',
-        checked
-          ? (size === 'lg' ? 'translate-x-5' : 'translate-x-4')
-          : 'translate-x-0',
-      )} />
-    </button>
+    <section className="auto-pilot">
+      <div className="ap-icon">
+        <Box size={18} strokeWidth={1.8} />
+      </div>
+      <div className="ap-body">
+        <div className="ap-title">
+          <span className={cn('ap-status-dot', !active && 'ap-status-dot-off')} />
+          {active ? 'טייס אוטומטי פעיל' : 'טייס אוטומטי כבוי'}
+        </div>
+        <div className="ap-divider" />
+        <div className="ap-caption">
+          <b>{sentCount}</b> נשלחו · <b>{pendingCount}</b> בתור
+        </div>
+      </div>
+      <button
+        className={cn('toggle-large', !active && 'off')}
+        type="button"
+        aria-label={active ? 'כבה טייס אוטומטי' : 'הפעל טייס אוטומטי'}
+        onClick={onToggle}
+      />
+    </section>
   );
 }
 
-// ─── Status Pill ──────────────────────────────────────────────────────────────
-
-function StatusPill({ status }: { status: StageStatus }) {
+function PipelineMeta({ counts }: { counts: { sent: number; active: number; scheduled: number; disabled: number } }) {
   return (
-    <span className={cn(
-      'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium font-brand border',
-      STATUS_PILL_CLASSES[status],
-    )}>
-      {STATUS_LABELS[status]}
-    </span>
+    <div className="pipeline-meta">
+      <div className="item"><span className="swatch sent" /><b>נשלח</b> · {counts.sent} שלבים</div>
+      <div className="item"><span className="swatch active" /><b>פעיל עכשיו</b> · {counts.active} שלב</div>
+      <div className="item"><span className="swatch scheduled" /><b>מתוזמן</b> · {counts.scheduled} שלבים</div>
+      <div className="item"><span className="swatch disabled" /><b>מושבת</b> · {counts.disabled} שלב</div>
+    </div>
   );
 }
-
-// ─── Desktop: Stage Column ───────────────────────────────────────────────────
 
 function StageColumn({
-  setting,
-  stats,
-  isFocus,
-  eventDate,
-  audienceCounts,
-  onToggle,
-  onEdit,
-  onDrilldown,
-  hasDragged,
-  isFirst,
-  isLast,
+  setting, stats, eventDate, audience, onEdit, onLogs, hasDragged,
 }: {
   setting: AutomationSettingRow;
   stats?: StageStats;
-  isFocus: boolean;
   eventDate: Date | null;
-  audienceCounts: { pending: number; attending: number };
-  onToggle: (id: string, current: boolean) => void;
-  onEdit: (setting: AutomationSettingRow) => void;
-  onDrilldown: (stage: StageName, filter: DrilldownFilter) => void;
+  audience: { pending: number; attending: number };
+  onEdit: (s: AutomationSettingRow) => void;
+  onLogs: (stage: StageName) => void;
   hasDragged: React.RefObject<boolean>;
-  isFirst: boolean;
-  isLast: boolean;
 }) {
   const meta = STAGE_META[setting.stage_name];
   const status = getStageStatus(setting, stats);
   const dateInfo = computeStageDate(eventDate, setting.days_before);
-  const relativeTime = computeRelativeTime(eventDate, setting.days_before);
+  const stat = buildStat(setting, status, stats, audience);
 
-  const msgStatLine = (() => {
-    if (!stats || (stats.sent === 0 && stats.pending === 0 && stats.failed === 0)) {
-      if (status === 'scheduled') {
-        const targetCount = setting.target_status === 'attending'
-          ? audienceCounts.attending
-          : audienceCounts.pending;
-        return targetCount > 0 ? `~${targetCount} מטורגטים` : null;
-      }
-      return null;
-    }
-    if (status === 'sent') return `${stats.sent} נשלחו`;
-    if (status === 'active') return `${stats.sent}/${stats.sent + stats.pending} נשלחו`;
-    if (status === 'scheduled') {
-      const targetCount = setting.target_status === 'attending'
-        ? audienceCounts.attending
-        : audienceCounts.pending;
-      return targetCount > 0 ? `~${targetCount} מטורגטים` : null;
-    }
-    return null;
+  const whenText = (() => {
+    const rel = relativeWhen(setting.days_before);
+    if (!dateInfo) return rel;
+    return `${rel} · ${dateInfo.short}`;
   })();
 
+  const targetText = setting.target_status === 'attending'
+    ? 'למאשרים בלבד'
+    : (setting.stage_name === 'icebreaker' ? 'לכל ההזמנות' : 'לממתינים');
+
   return (
-    <div className="flex flex-col items-center w-full">
-      {/* Fixed-height card wrapper — keeps connector at same Y across all columns */}
-      <div className="h-[10rem] flex items-start justify-center">
-        <div
-          className={cn(
-            'rounded-2xl border p-4 transition-all cursor-pointer',
-            'hover:shadow-md hover:border-violet-200',
-            isFocus
-              ? 'w-52 border-2 border-violet-500 shadow-xl shadow-violet-200/40 ring-4 ring-violet-200 bg-violet-50/50'
-              : 'w-44',
-            !isFocus && STATUS_CARD_CLASSES[status],
-            !isFocus && status === 'disabled' && 'bg-slate-50 opacity-60',
-          )}
-          onClick={() => { if (!hasDragged.current) onEdit(setting); }}
-        >
-          {/* Status pill + toggle */}
-          <div className="flex items-center justify-between mb-2">
-            <StatusPill status={status} />
-            <Toggle checked={setting.is_active} onChange={() => onToggle(setting.id, setting.is_active)} />
+    <div
+      className="stage"
+      data-status={status}
+      data-pipeline-cell
+      id={`stage-${setting.stage_name}`}
+    >
+      <div className="stage-circle">
+        <StageIcon stage={setting.stage_name} size={20} />
+      </div>
+      <div className="stage-label">{meta.label}</div>
+      <div className="stage-when">{whenText}</div>
+      <div
+        className="stage-card"
+        onClick={() => { if (!hasDragged.current) onEdit(setting); }}
+      >
+        <span className="stage-pill"><span className="dot" />{STATUS_LABELS[status]}</span>
+        <div className="stage-stats">
+          <div className="stage-stat-num">
+            {stat.num}
+            {stat.of && <span className="of">{stat.of}</span>}
           </div>
-          {/* Target audience */}
-          <p className="text-[11px] text-slate-500 font-brand leading-snug">
-            {setting.target_status === 'attending' ? 'למגיעים בלבד' : 'למי שטרם אישרו הגעה'}
-          </p>
-          {/* Message stat line — clickable → opens stage logs */}
-          {msgStatLine && (
+          <div className="stage-stat-label">{stat.label}</div>
+        </div>
+        {status !== 'disabled' && (
+          <div className="stage-progress">
+            <div style={{ width: `${stat.progress}%` }} />
+          </div>
+        )}
+        <div className="stage-bottom">
+          <span className="target">{targetText}</span>
+          <div className="stage-actions">
             <button
               type="button"
-              onClick={(e) => { e.stopPropagation(); onDrilldown(setting.stage_name, 'all'); }}
-              className={cn(
-                'text-xs font-brand font-medium mt-1.5 hover:underline cursor-pointer',
-                status === 'sent' ? 'text-emerald-600' :
-                status === 'active' ? 'text-violet-600' :
-                'text-slate-500',
-              )}
+              className="logs"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (!hasDragged.current) onLogs(setting.stage_name);
+              }}
             >
-              {msgStatLine}
+              לוגים
             </button>
-          )}
-          {/* Time indicators */}
-          <div className="mt-2 pt-2 border-t border-slate-100">
-            {relativeTime && (
-              <p className="text-[11px] text-slate-600 font-brand font-medium leading-snug">
-                {relativeTime}
-              </p>
-            )}
-            {dateInfo && (
-              <p className="text-[10px] text-slate-400 font-brand mt-0.5">
-                {dateInfo.shortDay} {dateInfo.shortDate}
-              </p>
-            )}
-            {dateInfo?.isFridayOrShabbat && status === 'scheduled' && (
-              <p className="text-[10px] text-amber-500 font-brand mt-0.5">
-                ישלח לאחר שבת
-              </p>
-            )}
+            <span className="edit">{status === 'disabled' ? 'הפעל ›' : 'ערוך ›'}</span>
           </div>
         </div>
-      </div>
-
-      {/* Vertical line → full-width icon row → vertical line */}
-      <div className="w-px h-4 bg-slate-200" />
-      <div className="w-full flex items-center">
-        <div className={cn('flex-1 h-px', !isFirst ? 'bg-slate-200' : '')} />
-        <div className={cn(
-          'w-10 h-10 rounded-full flex items-center justify-center border-2 transition-colors shrink-0',
-          setting.is_active
-            ? 'bg-violet-600 border-violet-600 text-white'
-            : 'bg-white border-slate-300 text-slate-400',
-        )}>
-          {getStageIcon(setting.stage_name, 'lg')}
-        </div>
-        <div className={cn('flex-1 h-px', !isLast ? 'bg-slate-200' : '')} />
-      </div>
-      <div className="w-px h-3 bg-slate-200" />
-
-      {/* Label */}
-      <p className="text-xs font-medium text-slate-700 font-brand text-center mt-1 leading-tight">
-        {meta.label}
-      </p>
-    </div>
-  );
-}
-
-// ─── Desktop: Event Day Column ───────────────────────────────────────────────
-
-function EventDayColumn({ date, isFirst, isLast }: { date: Date | null; isFirst: boolean; isLast: boolean }) {
-  const dateLabel = date
-    ? date.toLocaleDateString('he-IL', { day: 'numeric', month: 'long', year: 'numeric' })
-    : null;
-  const shortLabel = date
-    ? `${date.toLocaleDateString('he-IL', { weekday: 'short' })} ${date.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit' })}`
-    : null;
-
-  return (
-    <div className="flex flex-col items-center w-full">
-      {/* Fixed-height card wrapper — matches StageColumn height */}
-      <div className="h-[10rem] flex items-start justify-center">
-        <div className="w-44 rounded-2xl bg-violet-600 text-white p-4 shadow-md flex flex-col justify-center">
-          <div className="flex items-center gap-2 mb-1">
-            <Calendar className="w-4 h-4 opacity-80" />
-            <span className="font-danidin text-base leading-none">יום האירוע</span>
-          </div>
-          <p className="text-xs opacity-80 font-brand">{dateLabel ?? '—'}</p>
-          {shortLabel && (
-            <p className="text-[11px] opacity-60 font-brand mt-1">{shortLabel}</p>
-          )}
-        </div>
-      </div>
-
-      {/* Diamond icon row with horizontal connectors */}
-      <div className="w-px h-4 bg-slate-200" />
-      <div className="w-full flex items-center">
-        <div className={cn('flex-1 h-px', !isFirst ? 'bg-slate-200' : '')} />
-        <div className="w-10 h-10 flex items-center justify-center shrink-0">
-          <div className="w-6 h-6 bg-violet-600 rotate-45 rounded-[4px] shadow-sm shadow-violet-300/60" />
-        </div>
-        <div className={cn('flex-1 h-px', !isLast ? 'bg-slate-200' : '')} />
       </div>
     </div>
   );
 }
 
-// ─── Desktop: Add Nudge Overlay Button ──────────────────────────────────────
-// Rendered between two 20%-cells; absolutely positioned on the connector line.
-// The parent cell uses `relative` + zero width so it doesn't consume pipeline space.
-
-function AddNudgeOverlay({ onClick, disabled }: { onClick: () => void; disabled: boolean }) {
+function AddNudgeColumn({ onClick, disabled }: { onClick: () => void; disabled: boolean }) {
   return (
-    <div className="relative w-0 shrink-0 flex items-start" style={{ zIndex: 10 }}>
-      {/* Position the button centered on the icon-row:
-          card wrapper h-[10rem] (160px) + vertical line h-4 (16px) + half icon (20px) = 196px.
-          Subtract half button height (16px) = 180px from top. */}
+    <div className="stage add-nudge" data-pipeline-cell>
+      <div className="stage-circle">
+        <Plus size={18} strokeWidth={2} />
+      </div>
+      <div className="stage-label">תזכורת נוספת</div>
+      <div className="stage-when">בין שלבים</div>
       <button
-        onClick={e => { e.stopPropagation(); onClick(); }}
+        type="button"
+        className="stage-card add-nudge-btn"
+        onClick={onClick}
         disabled={disabled}
-        className={cn(
-          'absolute -translate-x-1/2 left-0',
-          'w-8 h-8 rounded-full flex items-center justify-center',
-          'bg-violet-600 text-white shadow-md',
-          'hover:bg-violet-700 hover:scale-110 transition-all',
-          'disabled:opacity-30 disabled:cursor-not-allowed',
-        )}
-        style={{ top: '180px' }}
-        title="הוסף תזכורת"
       >
-        <Plus className="w-4 h-4" />
+        <div className="stage-card-add-text">+ <b>הוסף תזכורת דינמית</b></div>
+        <div className="stage-card-add-text-sub">עד 3 תזכורות מותאמות</div>
       </button>
     </div>
   );
 }
 
-// ─── Mobile: Stage Card ──────────────────────────────────────────────────────
-
-function MobileStageCard({
-  setting,
-  stats,
-  eventDate,
-  audienceCounts,
-  onToggle,
-  onEdit,
-  onDrilldown,
+function MobileStageItem({
+  setting, stats, eventDate, audience, onEdit, onLogs,
 }: {
   setting: AutomationSettingRow;
   stats?: StageStats;
   eventDate: Date | null;
-  audienceCounts: { pending: number; attending: number };
-  onToggle: (id: string, current: boolean) => void;
-  onEdit: (setting: AutomationSettingRow) => void;
-  onDrilldown: (stage: StageName, filter: DrilldownFilter) => void;
+  audience: { pending: number; attending: number };
+  onEdit: (s: AutomationSettingRow) => void;
+  onLogs: (stage: StageName) => void;
 }) {
   const meta = STAGE_META[setting.stage_name];
   const status = getStageStatus(setting, stats);
   const dateInfo = computeStageDate(eventDate, setting.days_before);
-  const relativeTime = computeRelativeTime(eventDate, setting.days_before);
-
-  const msgStatLine = (() => {
-    if (!stats || (stats.sent === 0 && stats.pending === 0 && stats.failed === 0)) {
-      if (status === 'scheduled') {
-        const targetCount = setting.target_status === 'attending'
-          ? audienceCounts.attending
-          : audienceCounts.pending;
-        return targetCount > 0 ? `~${targetCount} מטורגטים` : null;
-      }
-      return null;
-    }
-    if (status === 'sent') return `${stats.sent} נשלחו`;
-    if (status === 'active') return `${stats.sent}/${stats.sent + stats.pending} נשלחו`;
-    if (status === 'scheduled') {
-      const targetCount = setting.target_status === 'attending'
-        ? audienceCounts.attending
-        : audienceCounts.pending;
-      return targetCount > 0 ? `~${targetCount} מטורגטים` : null;
-    }
-    return null;
-  })();
+  const stat = buildStat(setting, status, stats, audience);
+  const whenText = dateInfo
+    ? `${relativeWhen(setting.days_before)} · ${dateInfo.short}`
+    : relativeWhen(setting.days_before);
+  const targetText = setting.target_status === 'attending'
+    ? 'למאשרים'
+    : (setting.stage_name === 'icebreaker' ? 'לכל ההזמנות' : 'לממתינים');
 
   return (
     <div
-      className={cn(
-        'rounded-2xl border p-4 transition-all cursor-pointer',
-        'border-r-4',
-        setting.is_active ? 'border-r-violet-500' : 'border-r-slate-200',
-        STATUS_CARD_CLASSES[status],
-      )}
+      className="stage-mobile"
+      data-status={status}
       onClick={() => onEdit(setting)}
     >
-      {/* Row 1: icon + label + status pill + toggle */}
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2 min-w-0">
-          <span className={cn(
-            'flex items-center justify-center w-7 h-7 rounded-full shrink-0',
-            setting.is_active ? 'bg-violet-100 text-violet-600' : 'bg-slate-100 text-slate-400',
-          )}>
-            {getStageIcon(setting.stage_name)}
-          </span>
-          <span className="font-semibold text-sm text-slate-800 font-brand truncate">{meta.label}</span>
-          <StatusPill status={status} />
+      <div className="stage-mobile-circle">
+        <StageIcon stage={setting.stage_name} size={16} />
+      </div>
+      <div className="stage-mobile-body">
+        <div className="stage-mobile-row">
+          <span className="stage-mobile-name">{meta.label}</span>
+          <span className="stage-mobile-pill">{STATUS_LABELS[status]}</span>
         </div>
-        <Toggle checked={setting.is_active} onChange={() => onToggle(setting.id, setting.is_active)} />
-      </div>
-
-      {/* Row 2: date + target */}
-      <div className="flex items-center gap-2 mt-2.5 flex-wrap">
-        {relativeTime && (
-          <span className="inline-flex items-center text-xs text-slate-600 font-brand font-medium">
-            {relativeTime}
-          </span>
-        )}
-        {dateInfo && (
-          <span className="inline-flex items-center text-[11px] text-slate-400 font-brand">
-            {dateInfo.shortDay} {dateInfo.shortDate}
-          </span>
-        )}
-        {dateInfo?.isFridayOrShabbat && status === 'scheduled' && (
-          <span className="inline-flex items-center text-[10px] text-amber-500 font-brand">
-            ישלח לאחר שבת
-          </span>
-        )}
-        <span className={cn(
-          'inline-flex items-center text-[11px] rounded-full px-2 py-0.5 border font-brand',
-          setting.target_status === 'attending'
-            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-            : 'bg-amber-50 text-amber-700 border-amber-200',
-        )}>
-          {setting.target_status === 'attending' ? 'מגיעים' : 'ממתינים'}
-        </span>
-      </div>
-
-      {/* Row 3: message stat line */}
-      {msgStatLine && (
-        <p className={cn(
-          'text-xs font-brand font-medium mt-1.5',
-          status === 'sent' ? 'text-emerald-600' :
-          status === 'active' ? 'text-violet-600' :
-          'text-slate-500',
-        )}>
-          {msgStatLine}
-        </p>
-      )}
-    </div>
-  );
-}
-
-// ─── Mobile: Event Day ───────────────────────────────────────────────────────
-
-function MobileEventDay({ date }: { date: Date | null }) {
-  const label = date
-    ? date.toLocaleDateString('he-IL', { day: 'numeric', month: 'long', year: 'numeric' })
-    : 'יום האירוע';
-  return (
-    <div className="bg-violet-600 text-white rounded-2xl px-5 py-4 flex items-center gap-3 shadow-md">
-      <Calendar className="w-5 h-5 opacity-80" />
-      <div>
-        <div className="font-danidin text-lg leading-none">יום האירוע</div>
-        <div className="text-sm opacity-80 mt-0.5 font-brand">{label}</div>
+        <div className="stage-mobile-when">{whenText}</div>
+        <div className="stage-mobile-stats">
+          <span><b>{stat.num}</b>{stat.of ?? ''} {status === 'scheduled' ? 'צפויות' : 'נשלחו'}</span>
+          <span>{targetText}</span>
+        </div>
+        <button
+          type="button"
+          className="stage-mobile-logs"
+          onClick={(e) => {
+            e.stopPropagation();
+            onLogs(setting.stage_name);
+          }}
+        >
+          לוגים
+        </button>
       </div>
     </div>
   );
 }
 
-// ─── Mobile: Add Nudge Button ────────────────────────────────────────────────
-
-function MobileAddNudge({ onClick, disabled }: { onClick: () => void; disabled: boolean }) {
+function MobileAddNudgeItem({ onClick, disabled }: { onClick: () => void; disabled: boolean }) {
   return (
     <button
+      type="button"
+      className="stage-mobile add-nudge"
       onClick={onClick}
       disabled={disabled}
-      className={cn(
-        'w-full rounded-2xl border-2 border-dashed border-slate-300 py-3',
-        'flex items-center justify-center gap-2',
-        'text-sm text-slate-400 font-brand',
-        'hover:border-violet-400 hover:text-violet-500 transition-colors',
-        'disabled:opacity-30 disabled:cursor-not-allowed',
-      )}
     >
-      <Plus className="w-4 h-4" />
-      הוסף תזכורת
+      <div className="stage-mobile-body" style={{ textAlign: 'center' }}>
+        <span className="stage-mobile-name" style={{ color: 'var(--rose-gold)' }}>+ הוסף תזכורת דינמית</span>
+        <div className="stage-mobile-when">עד 3 תזכורות מותאמות</div>
+      </div>
     </button>
-  );
-}
-
-// ─── Mobile: Vertical connector ──────────────────────────────────────────────
-
-function VerticalConnector() {
-  return <div className="w-0.5 h-5 bg-slate-200 mx-auto" />;
-}
-
-// ─── Loading Skeletons ───────────────────────────────────────────────────────
-
-function DesktopSkeleton() {
-  return (
-    <div className="hidden lg:flex items-start py-6 animate-pulse" dir="rtl">
-      {[1, 2, 3, 4, 5].map(i => (
-        <div key={i} className="w-[20%] shrink-0 flex flex-col items-center">
-          <div className="h-[10rem] flex items-start justify-center">
-            <div className="w-44 rounded-2xl border border-slate-100 p-4">
-              <div className="flex justify-between mb-2">
-                <div className="h-5 w-14 bg-slate-200 rounded-full" />
-                <div className="h-5 w-9 bg-slate-200 rounded-full" />
-              </div>
-              <div className="h-3 w-28 bg-slate-100 rounded mt-2" />
-              <div className="h-3 w-20 bg-slate-100 rounded mt-3" />
-              <div className="h-2 w-16 bg-slate-50 rounded mt-1" />
-            </div>
-          </div>
-          <div className="w-px h-4 bg-slate-100" />
-          <div className="w-full flex items-center">
-            <div className={cn('flex-1 h-px', i > 1 ? 'bg-slate-100' : '')} />
-            <div className="w-10 h-10 bg-slate-200 rounded-full shrink-0" />
-            <div className={cn('flex-1 h-px', i < 5 ? 'bg-slate-100' : '')} />
-          </div>
-          <div className="w-px h-3 bg-slate-100" />
-          <div className="h-3 w-16 bg-slate-100 rounded mt-1" />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function MobileSkeleton() {
-  return (
-    <div className="lg:hidden space-y-3 animate-pulse">
-      {[1, 2, 3].map(i => (
-        <div key={i} className="rounded-2xl border border-slate-100 p-4 bg-white">
-          <div className="flex justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 bg-slate-200 rounded-full" />
-              <div className="w-28 h-4 bg-slate-200 rounded" />
-            </div>
-            <div className="w-9 h-5 bg-slate-200 rounded-full" />
-          </div>
-          <div className="flex gap-2 mt-3">
-            <div className="w-24 h-5 bg-slate-100 rounded-full" />
-            <div className="w-16 h-5 bg-slate-100 rounded-full" />
-          </div>
-        </div>
-      ))}
-    </div>
   );
 }
 
@@ -701,7 +460,7 @@ function ToastContainer({ toasts }: { toasts: Toast[] }) {
           key={t.id}
           className={cn(
             'px-4 py-2.5 rounded-xl shadow-lg text-sm font-brand text-white',
-            t.kind === 'success' ? 'bg-emerald-600' : 'bg-rose-600',
+            t.kind === 'success' ? 'bg-sage' : 'bg-clay',
           )}
         >
           {t.message}
@@ -711,9 +470,192 @@ function ToastContainer({ toasts }: { toasts: Toast[] }) {
   );
 }
 
+// ─── Page CSS ─────────────────────────────────────────────────────────────────
+
+const TIMELINE_STYLES = `
+.gtl-page {
+  min-height: 100vh;
+  direction: rtl;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 84% 10%, var(--glow-rose) 0, transparent 30%),
+    radial-gradient(circle at 18% 20%, var(--glow-violet) 0, transparent 28%),
+    linear-gradient(180deg, var(--paper) 0%, oklch(96.5% 0.018 78) 55%, var(--paper-2) 100%);
+}
+.gtl-page .page { max-width: 1376px; margin: 0 auto; padding: 32px 48px 120px; }
+
+.gtl-page .page-header { position: relative; display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 24px; padding: 24px 28px; border-radius: var(--r-lg); border: 1px solid var(--glass-line); background: linear-gradient(135deg, oklch(100% 0.004 75 / 0.96), oklch(99.5% 0.008 76 / 0.88)); backdrop-filter: var(--glass-card-blur); -webkit-backdrop-filter: var(--glass-card-blur); box-shadow: var(--shadow-soft), 0 1px 0 oklch(100% 0.005 75 / 0.78) inset; overflow: hidden; }
+.gtl-page .page-header::before { content: ''; position: absolute; inset: -80px auto auto -30px; width: 250px; height: 190px; background: radial-gradient(circle, var(--glow-rose), transparent 68%); filter: blur(18px); pointer-events: none; }
+.gtl-page .page-header > * { position: relative; z-index: 1; }
+.gtl-page .page-header h1 { font-family: 'Danidin','Polin',sans-serif; font-weight: 700; font-size: 40px; letter-spacing: 0.01em; color: var(--ink); line-height: 1.05; }
+.gtl-page .page-header .sub { margin-top: 8px; color: var(--ink-soft); font-size: 14px; }
+.gtl-page .page-header .sub b { color: var(--rose-gold); font-weight: 700; }
+.gtl-page .header-actions { display: flex; gap: 10px; align-items: center; }
+.gtl-page .ghost-btn { display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px; border-radius: var(--r-sm); background: oklch(100% 0.006 75 / 0.48); border: 1px solid var(--glass-line); font-size: 13px; font-weight: 600; color: var(--ink-soft); transition: background 200ms, color 200ms, border-color 200ms, transform 200ms; cursor: pointer; box-shadow: 0 1px 0 oklch(100% 0.005 75 / 0.58) inset; }
+.gtl-page .ghost-btn:hover:not(:disabled) { background: oklch(100% 0.006 75 / 0.72); color: var(--ink); border-color: var(--champagne); transform: translateY(-1px); }
+.gtl-page .ghost-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.gtl-page .auto-pilot { position: relative; background: linear-gradient(90deg, oklch(100% 0.004 75 / 0.97), oklch(99.5% 0.008 76 / 0.9)); backdrop-filter: var(--glass-card-blur); -webkit-backdrop-filter: var(--glass-card-blur); border: 1px solid var(--glass-line); border-radius: 20px; padding: 14px 18px; margin-bottom: 18px; display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow-soft), 0 1px 0 oklch(100% 0.005 75 / 0.78) inset; overflow: hidden; }
+.gtl-page .auto-pilot::before { content: ''; position: absolute; inset: -48px auto auto -8%; width: 340px; height: 170px; background: radial-gradient(ellipse at 60% 50%, oklch(58% 0.08 120 / 0.2) 0%, transparent 65%), radial-gradient(ellipse at 30% 60%, var(--glow-violet) 0%, transparent 60%); filter: blur(42px); pointer-events: none; border-radius: 50%; z-index: 0; }
+.gtl-page .auto-pilot > * { position: relative; z-index: 1; }
+.gtl-page .ap-icon { width: 38px; height: 38px; border-radius: 12px; background: linear-gradient(135deg, var(--sage), oklch(45% 0.058 122)); display: flex; align-items: center; justify-content: center; color: oklch(99% 0.006 75); flex-shrink: 0; box-shadow: 0 16px 28px -22px var(--sage); }
+.gtl-page .ap-body { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.gtl-page .ap-status-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--sage); box-shadow: 0 0 0 3px rgba(122, 132, 102, 0.18); margin-left: 6px; vertical-align: middle; }
+.gtl-page .ap-status-dot-off { background: var(--ink-mute); box-shadow: 0 0 0 3px rgba(168, 159, 148, 0.18); }
+.gtl-page .ap-title { font-weight: 700; font-size: 14px; color: var(--ink); line-height: 1.3; }
+.gtl-page .ap-caption { font-size: 12px; color: var(--ink-soft); line-height: 1.4; }
+.gtl-page .ap-caption b { color: var(--ink); font-weight: 700; }
+.gtl-page .ap-divider { width: 1px; height: 14px; background: var(--glass-line); align-self: center; flex-shrink: 0; }
+
+.gtl-page .toggle-large { position: relative; width: 58px; height: 32px; border-radius: 999px; background: var(--sage); transition: background 220ms; flex-shrink: 0; box-shadow: inset 0 1px 2px oklch(24% 0.02 52 / 0.16), 0 12px 26px -22px var(--sage); cursor: pointer; border: 1px solid oklch(100% 0.005 75 / 0.34); padding: 0; }
+.gtl-page .toggle-large::after { content: ''; position: absolute; top: 3px; left: 28px; width: 26px; height: 26px; border-radius: 50%; background: oklch(99% 0.006 75); box-shadow: 0 2px 8px oklch(24% 0.02 52 / 0.2); transition: left 220ms cubic-bezier(0.32, 0.72, 0.30, 1); }
+.gtl-page .toggle-large.off { background: var(--ink-mute); }
+.gtl-page .toggle-large.off::after { left: 3px; }
+
+.gtl-page .pipeline-meta { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink-soft); }
+.gtl-page .pipeline-meta .item { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: var(--r-pill); background: oklch(100% 0.006 75 / 0.82); border: 1px solid var(--glass-line); }
+.gtl-page .pipeline-meta b { color: var(--ink); font-weight: 700; }
+.gtl-page .pipeline-meta .swatch { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.gtl-page .pipeline-meta .swatch.sent { background: var(--sage); }
+.gtl-page .pipeline-meta .swatch.active { background: var(--violet-700); }
+.gtl-page .pipeline-meta .swatch.scheduled { background: var(--apricot); }
+.gtl-page .pipeline-meta .swatch.disabled { background: var(--ink-mute); opacity: 0.5; }
+
+.gtl-page .pipeline-frame { background: linear-gradient(135deg, oklch(100% 0.004 75 / 0.98), oklch(99.5% 0.008 76 / 0.9)); backdrop-filter: var(--glass-card-blur); -webkit-backdrop-filter: var(--glass-card-blur); border: 1px solid var(--glass-line); border-radius: 28px; padding: 42px 0 30px; overflow: hidden; box-shadow: var(--shadow-float), 0 1px 0 oklch(100% 0.005 75 / 0.82) inset; position: relative; }
+.gtl-page .pipeline-frame::before { content: ''; position: absolute; inset: -100px 8% auto 8%; height: 220px; background: radial-gradient(ellipse at 50% 50%, var(--glow-rose), transparent 68%); filter: blur(38px); pointer-events: none; opacity: 0.8; }
+.gtl-page .pipeline-frame::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, var(--paper) 0%, transparent 9%, transparent 91%, var(--paper) 100%); opacity: 0.42; z-index: 3; }
+
+.gtl-page .pipeline-scroll { position: relative; z-index: 2; overflow-x: auto; overflow-y: visible; scrollbar-width: thin; scrollbar-color: var(--champagne) transparent; padding: 0 38px 18px; cursor: grab; user-select: none; }
+.gtl-page .pipeline-scroll.dragging { cursor: grabbing; }
+.gtl-page .pipeline-scroll::-webkit-scrollbar { height: 6px; }
+.gtl-page .pipeline-scroll::-webkit-scrollbar-track { background: transparent; }
+.gtl-page .pipeline-scroll::-webkit-scrollbar-thumb { background: var(--champagne); border-radius: 3px; }
+
+.gtl-page .pipeline-track { display: flex; flex-direction: row-reverse; gap: 0; align-items: stretch; min-width: max-content; position: relative; padding-top: 44px; }
+.gtl-page .pipeline-track::before { content: ''; position: absolute; top: 38px; left: 0; right: 0; height: 3px; background: linear-gradient(to left, var(--violet-600) 0%, var(--rose-gold) 34%, var(--champagne) 70%, var(--ink-mute) 100%); opacity: 0.76; z-index: 0; border-radius: 999px; box-shadow: 0 0 18px var(--glow-rose); -webkit-mask-image: linear-gradient(to right, transparent 0, rgb(0 0 0) 112px, rgb(0 0 0) calc(100% - 112px), transparent 100%); mask-image: linear-gradient(to right, transparent 0, rgb(0 0 0) 112px, rgb(0 0 0) calc(100% - 112px), transparent 100%); }
+
+.gtl-page .stage { width: 268px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; padding: 0 18px; position: relative; z-index: 1; overflow: visible; }
+.gtl-page .stage-circle { position: absolute; top: -30px; left: 50%; transform: translateX(-50%); width: 48px; height: 48px; border-radius: 50%; background: oklch(99.5% 0.006 75); border: 1.5px solid var(--glass-line); display: flex; align-items: center; justify-content: center; color: var(--ink-mute); z-index: 2; transition: all 220ms cubic-bezier(0.32, 0.72, 0.30, 1); box-shadow: 0 14px 30px -24px oklch(36% 0.045 52 / 0.45), 0 0 0 6px oklch(100% 0.005 75 / 0.42); }
+.gtl-page .stage[data-status="sent"] .stage-circle { background: var(--sage); border-color: var(--sage); color: oklch(99% 0.006 75); }
+.gtl-page .stage[data-status="active"] .stage-circle { background: var(--violet-700); border-color: var(--violet-700); color: oklch(99% 0.006 75); box-shadow: 0 0 0 6px oklch(60% 0.17 296 / 0.14), 0 16px 30px -22px var(--violet-700); }
+.gtl-page .stage[data-status="scheduled"] .stage-circle { background: oklch(99.5% 0.006 75); border-color: var(--apricot); color: var(--apricot); }
+.gtl-page .stage[data-status="disabled"] .stage-circle { background: var(--paper-2); color: var(--ink-mute); opacity: 0.55; }
+
+.gtl-page .stage-label { width: 100%; min-height: 38px; display: flex; align-items: center; justify-content: center; font-family: 'Danidin','Polin',sans-serif; font-weight: 700; font-size: 17px; color: var(--ink); margin-top: 12px; letter-spacing: 0.02em; line-height: 1.12; text-align: center; white-space: normal; overflow: visible; text-wrap: balance; }
+.gtl-page .stage[data-status="disabled"] .stage-label { color: var(--ink-mute); }
+.gtl-page .stage-when { width: 100%; min-height: 16px; font-size: 11px; color: var(--ink-soft); margin-top: 2px; text-align: center; white-space: normal; overflow: visible; text-wrap: balance; }
+
+.gtl-page .stage-card { margin-top: 15px; width: 100%; background: oklch(100% 0.004 75 / 0.98); backdrop-filter: blur(16px) saturate(1.25); -webkit-backdrop-filter: blur(16px) saturate(1.25); border: 1px solid var(--glass-line); border-radius: 18px; padding: 15px 15px 13px; display: flex; flex-direction: column; gap: 10px; transition: transform 220ms, box-shadow 220ms, border-color 220ms, background 220ms; cursor: pointer; position: relative; text-align: right; font: inherit; color: inherit; box-shadow: 0 1px 0 oklch(100% 0.005 75 / 0.82) inset; }
+.gtl-page .stage-card:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 18px 40px -30px oklch(36% 0.045 52 / 0.5), 0 1px 0 oklch(100% 0.005 75 / 0.86) inset; border-color: var(--champagne); background: oklch(100% 0.006 75 / 0.98); }
+.gtl-page .stage[data-status="active"] .stage-card { border-color: oklch(72% 0.12 296 / 0.42); background: linear-gradient(180deg, oklch(100% 0.004 75 / 0.98) 0%, oklch(99% 0.012 302 / 0.9) 100%); box-shadow: 0 1px 0 oklch(100% 0.005 75 / 0.86) inset, 0 18px 36px -28px var(--violet-700); }
+.gtl-page .stage[data-status="disabled"] .stage-card { opacity: 0.68; background: oklch(98.2% 0.008 76 / 0.92); }
+
+.gtl-page .stage-pill { align-self: flex-start; display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+.gtl-page .stage[data-status="sent"] .stage-pill { color: var(--sage); background: var(--sage-soft); }
+.gtl-page .stage[data-status="active"] .stage-pill { color: oklch(99% 0.006 75); background: var(--violet-700); }
+.gtl-page .stage[data-status="scheduled"] .stage-pill { color: var(--apricot); background: var(--apricot-soft); }
+.gtl-page .stage[data-status="disabled"] .stage-pill { color: var(--ink-mute); background: var(--paper-3); }
+.gtl-page .stage-pill .dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+.gtl-page .stage-stats { display: flex; flex-direction: column; gap: 3px; }
+.gtl-page .stage-stat-num { font-family: 'Danidin','Polin',sans-serif; font-weight: 700; font-size: 28px; line-height: 1; color: var(--ink); letter-spacing: 0.01em; display: flex; align-items: baseline; gap: 4px; }
+.gtl-page .stage-stat-num .of { font-size: 14px; color: var(--ink-mute); font-weight: 700; }
+.gtl-page .stage-stat-label { font-size: 11.5px; color: var(--ink-soft); line-height: 1.3; }
+
+.gtl-page .stage-progress { height: 4px; background: var(--paper-2); border-radius: 2px; overflow: hidden; position: relative; }
+.gtl-page .stage-progress > div { height: 100%; border-radius: 2px; transition: width 600ms cubic-bezier(0.32, 0.72, 0.30, 1); }
+.gtl-page .stage[data-status="sent"] .stage-progress > div { background: var(--sage); }
+.gtl-page .stage[data-status="active"] .stage-progress > div { background: var(--violet-700); }
+.gtl-page .stage[data-status="scheduled"] .stage-progress > div { background: var(--apricot); }
+
+.gtl-page .stage-bottom { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding-top: 8px; border-top: 1px solid var(--line); font-size: 11px; color: var(--ink-mute); }
+.gtl-page .stage-bottom .target { font-weight: 600; color: var(--ink-soft); }
+.gtl-page .stage-actions { display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.gtl-page .stage-bottom .logs { border: none; background: transparent; padding: 0; font: inherit; color: var(--rose-gold); font-weight: 700; cursor: pointer; }
+.gtl-page .stage-bottom .logs:hover { color: var(--violet-700); text-decoration: underline; }
+.gtl-page .stage-bottom .edit { color: var(--violet-700); font-weight: 600; }
+
+.gtl-page .stage.add-nudge .stage-circle { background: oklch(99.5% 0.006 75); border: 1.5px dashed var(--champagne); color: var(--rose-gold); }
+.gtl-page .stage.add-nudge .stage-card { background: oklch(99% 0.01 78 / 0.92); border: 1.5px dashed var(--champagne); align-items: center; justify-content: center; text-align: center; min-height: 118px; transition: background 220ms, border-color 220ms; }
+.gtl-page .stage.add-nudge .stage-card:hover:not(:disabled) { background: oklch(98% 0.018 78 / 0.96); border-color: var(--rose-gold); transform: translateY(-2px); box-shadow: 0 14px 34px -28px var(--rose-gold); }
+.gtl-page .stage.add-nudge .stage-card:disabled { opacity: 0.5; cursor: not-allowed; }
+.gtl-page .stage.add-nudge .stage-card-add-text { font-size: 12px; color: var(--ink-soft); font-weight: 600; }
+.gtl-page .stage.add-nudge .stage-card-add-text b { color: var(--rose-gold); font-weight: 700; }
+.gtl-page .stage.add-nudge .stage-card-add-text-sub { font-size: 11px; color: var(--ink-mute); font-weight: 400; margin-top: 4px; }
+.gtl-page .stage.add-nudge .stage-label { color: var(--rose-gold); }
+
+.gtl-page .pipeline-stack { display: none; }
+.gtl-page .pipeline-empty { margin: 0 auto; max-width: 520px; padding: 46px 28px; text-align: center; color: var(--ink-mute); border-radius: var(--r-lg); background: oklch(100% 0.004 75 / 0.94); border: 1px solid var(--glass-line); box-shadow: 0 1px 0 oklch(100% 0.005 75 / 0.78) inset; }
+.gtl-page .pipeline-empty svg { opacity: 0.42; margin: 0 auto 14px; color: var(--rose-gold); }
+
+.gtl-page .pipeline-skeleton { display: flex; gap: 0; padding: 36px 36px 28px; opacity: 0.6; }
+.gtl-page .pipeline-skeleton .sk-stage { width: 268px; flex-shrink: 0; padding: 0 18px; }
+.gtl-page .pipeline-skeleton .sk-circle { width: 44px; height: 44px; border-radius: 50%; background: var(--paper-2); margin: 0 auto; }
+.gtl-page .pipeline-skeleton .sk-label { height: 14px; width: 80px; background: var(--paper-2); border-radius: 4px; margin: 12px auto; }
+.gtl-page .pipeline-skeleton .sk-card { background: var(--paper-2); height: 140px; border-radius: 16px; margin-top: 14px; }
+
+@media (max-width: 920px) {
+  .gtl-page { overflow-x: clip; }
+  .gtl-page .page { width: 100%; max-width: 100%; padding: 20px 14px 96px; overflow-x: clip; }
+  .gtl-page .page-header { flex-direction: column; align-items: stretch; gap: 14px; padding: 20px 18px; border-radius: 22px; }
+  .gtl-page .page-header h1 { font-size: 28px; }
+  .gtl-page .page-header .sub { font-size: 13px; line-height: 1.55; }
+  .gtl-page .header-actions { width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .gtl-page .ghost-btn { min-width: 0; justify-content: center; padding: 9px 10px; white-space: nowrap; }
+  .gtl-page .auto-pilot { padding: 12px 14px; gap: 12px; align-items: center; }
+  .gtl-page .ap-icon { width: 32px; height: 32px; border-radius: 8px; }
+  .gtl-page .ap-divider { display: none; }
+  .gtl-page .ap-title { font-size: 13px; }
+  .gtl-page .ap-caption { font-size: 11px; }
+  .gtl-page .ap-body { gap: 4px 10px; }
+  .gtl-page .toggle-large { width: 44px; height: 26px; }
+  .gtl-page .toggle-large::after { width: 20px; height: 20px; top: 3px; left: 21px; }
+  .gtl-page .toggle-large.off::after { left: 3px; }
+  .gtl-page .pipeline-meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; font-size: 11.5px; }
+  .gtl-page .pipeline-meta .item { min-width: 0; justify-content: center; padding-inline: 8px; }
+  .gtl-page .pipeline-frame { padding: 0; border-radius: 20px; }
+  .gtl-page .pipeline-scroll { display: none; }
+  .gtl-page .pipeline-stack { display: flex; flex-direction: column; padding: 6px; gap: 0; }
+  .gtl-page .stage-mobile { position: relative; display: flex; gap: 14px; align-items: flex-start; padding: 14px; border-bottom: 1px solid var(--glass-line); cursor: pointer; background: transparent; border-left: none; border-right: none; border-top: none; width: 100%; text-align: right; font: inherit; color: inherit; }
+  .gtl-page .stage-mobile:last-child { border-bottom: none; }
+  .gtl-page .stage-mobile::before { content: ''; position: absolute; top: 28px; bottom: -16px; right: 31px; width: 2px; background: var(--champagne); z-index: 0; }
+  .gtl-page .stage-mobile:last-child::before { display: none; }
+  .gtl-page .stage-mobile-circle { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; background: oklch(99.5% 0.006 75); border: 1.5px solid var(--glass-line); display: flex; align-items: center; justify-content: center; color: var(--ink-mute); position: relative; z-index: 1; box-shadow: 0 12px 26px -22px oklch(36% 0.045 52 / 0.45); }
+  .gtl-page .stage-mobile[data-status="sent"] .stage-mobile-circle { background: var(--sage); border-color: var(--sage); color: oklch(99% 0.006 75); }
+  .gtl-page .stage-mobile[data-status="active"] .stage-mobile-circle { background: var(--violet-700); border-color: var(--violet-700); color: oklch(99% 0.006 75); box-shadow: 0 0 0 3px oklch(60% 0.17 296 / 0.15); }
+  .gtl-page .stage-mobile[data-status="scheduled"] .stage-mobile-circle { border-color: var(--apricot); color: var(--apricot); }
+  .gtl-page .stage-mobile[data-status="disabled"] .stage-mobile-circle { opacity: 0.5; }
+  .gtl-page .stage-mobile-body { flex: 1; min-width: 0; }
+  .gtl-page .stage-mobile-row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .gtl-page .stage-mobile-name { font-family: 'Danidin','Polin',sans-serif; font-weight: 700; font-size: 17px; letter-spacing: 0.02em; color: var(--ink); }
+  .gtl-page .stage-mobile[data-status="disabled"] .stage-mobile-name { color: var(--ink-mute); }
+  .gtl-page .stage-mobile-pill { font-size: 9.5px; padding: 2px 7px; border-radius: 999px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+  .gtl-page .stage-mobile[data-status="sent"] .stage-mobile-pill { color: var(--sage); background: var(--sage-soft); }
+  .gtl-page .stage-mobile[data-status="active"] .stage-mobile-pill { color: oklch(99% 0.006 75); background: var(--violet-700); }
+  .gtl-page .stage-mobile[data-status="scheduled"] .stage-mobile-pill { color: var(--apricot); background: var(--apricot-soft); }
+  .gtl-page .stage-mobile[data-status="disabled"] .stage-mobile-pill { color: var(--ink-mute); background: var(--paper-3); }
+  .gtl-page .stage-mobile-when { font-size: 11px; color: var(--ink-mute); margin-top: 1px; }
+  .gtl-page .stage-mobile-stats { display: flex; gap: 14px; align-items: baseline; margin-top: 8px; font-size: 12px; color: var(--ink-soft); }
+  .gtl-page .stage-mobile-stats b { font-family: 'Danidin','Polin',sans-serif; font-size: 18px; color: var(--ink); font-weight: 700; letter-spacing: 0.02em; }
+  .gtl-page .stage-mobile-logs { margin-top: 8px; border: none; background: transparent; padding: 0; font: inherit; font-size: 12px; font-weight: 700; color: var(--rose-gold); cursor: pointer; }
+  .gtl-page .stage-mobile-logs:hover { color: var(--violet-700); text-decoration: underline; }
+  .gtl-page .stage-mobile.add-nudge { justify-content: center; background: oklch(99% 0.01 78 / 0.92); border: 1.5px dashed var(--champagne); border-radius: 16px; margin: 8px; cursor: pointer; }
+  .gtl-page .stage-mobile.add-nudge::before { display: none; }
+  .gtl-page .stage-mobile.add-nudge:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+@media (max-width: 380px) {
+  .gtl-page .page { padding-inline: 10px; }
+  .gtl-page .header-actions { grid-template-columns: 1fr; }
+  .gtl-page .pipeline-meta { grid-template-columns: 1fr; }
+  .gtl-page .stage-mobile { gap: 10px; padding: 13px 12px; }
+}
+`;
+
 // ─── Main page ───────────────────────────────────────────────────────────────
 
 export default function AutomationTimeline() {
+  const navigate = useNavigate();
   const { currentEvent, isLoading: eventLoading } = useEventContext();
   const { canAccessTimeline } = useFeatureAccess();
 
@@ -727,7 +669,7 @@ export default function AutomationTimeline() {
   const [editSetting, setEditSetting] = useState<AutomationSettingRow | null>(null);
   const [drilldown, setDrilldown]     = useState<StageLogsDrilldown | null>(null);
   const [toasts, setToasts]           = useState<Toast[]>([]);
-  const [draftNudge, setDraftNudge] = useState<{ stage_name: string; days_before: number } | null>(null);
+  const [draftNudge, setDraftNudge]   = useState<{ stage_name: string; days_before: number } | null>(null);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -750,7 +692,6 @@ export default function AutomationTimeline() {
     setAudienceCounts(audienceData as { pending: number; attending: number });
   }, []);
 
-  // Initial load
   useEffect(() => {
     if (!currentEvent?.id) return;
     setLoading(true);
@@ -759,13 +700,12 @@ export default function AutomationTimeline() {
     loadData(currentEvent.id).finally(() => setLoading(false));
   }, [currentEvent?.id, loadData]);
 
-  // ── Derived data ──
+  // ── Derived ──
 
   const sorted = useMemo(
     () => [...settings].sort((a, b) => b.days_before - a.days_before),
     [settings],
   );
-
   const beforeEvent = useMemo(() => sorted.filter(s => s.days_before > 0), [sorted]);
   const afterEvent  = useMemo(() => sorted.filter(s => s.days_before <= 0), [sorted]);
   const eventDate   = currentEvent?.event_date ? new Date(currentEvent.event_date) : null;
@@ -778,46 +718,58 @@ export default function AutomationTimeline() {
   const canAddNudge = dynamicNudgeCount < 3;
 
   const focusStage = useMemo(() => findFocusStage(sorted, stats), [sorted, stats]);
-  const focusId = focusStage ? `stage-${focusStage.stage_name}` : 'event-day';
+  const focusId = focusStage ? `stage-${focusStage.stage_name}` : '';
 
-  // Build the pipeline node array (RTL: rightmost = first chronologically)
   const pipelineNodes = useMemo<PipelineNode[]>(() => {
     const nodes: PipelineNode[] = [];
-
-    // Before-event stages (highest days_before first = rightmost in RTL)
     for (let i = 0; i < beforeEvent.length; i++) {
       nodes.push({ type: 'stage', setting: beforeEvent[i] });
-
-      // Insert "add nudge" button after the last nudge-type and before ultimatum
       const isNudgeType = beforeEvent[i].stage_name === 'nudge' || beforeEvent[i].stage_name.startsWith('nudge_');
       const nextIsUltimatum = i + 1 < beforeEvent.length && beforeEvent[i + 1].stage_name === 'ultimatum';
       if (isNudgeType && nextIsUltimatum) {
         nodes.push({ type: 'add-nudge' });
       }
     }
-
-    // Event day
-    nodes.push({ type: 'event' });
-
-    // After-event stages
     for (const s of afterEvent) {
       nodes.push({ type: 'stage', setting: s });
     }
-
     return nodes;
   }, [beforeEvent, afterEvent]);
+
+  const metaCounts = useMemo(() => {
+    let sent = 0, active = 0, scheduled = 0, disabled = 0;
+    for (const s of sorted) {
+      const status = getStageStatus(s, stats[s.stage_name]);
+      if      (status === 'sent')      sent++;
+      else if (status === 'active')    active++;
+      else if (status === 'scheduled') scheduled++;
+      else                             disabled++;
+    }
+    return { sent, active, scheduled, disabled };
+  }, [sorted, stats]);
+
+  const totalSent = useMemo(
+    () => Object.values(stats).reduce((acc, s) => acc + (s?.sent ?? 0), 0),
+    [stats],
+  );
+  const totalPending = useMemo(
+    () => Object.values(stats).reduce((acc, s) => acc + (s?.pending ?? 0), 0),
+    [stats],
+  );
+
+  const eventDateLabel = eventDate
+    ? eventDate.toLocaleDateString('he-IL', { day: 'numeric', month: 'long', year: 'numeric' })
+    : null;
 
   // ── Smart Focus Snapping ──
 
   useEffect(() => {
-    if (loading || !scrollRef.current || settings.length === 0) return;
-
+    if (loading || !scrollRef.current || settings.length === 0 || !focusId) return;
     requestAnimationFrame(() => {
       const container = scrollRef.current;
       const focusEl = document.getElementById(focusId);
       if (!container || !focusEl) return;
-      if (container.scrollWidth <= container.clientWidth) return; // fits, no scroll
-
+      if (container.scrollWidth <= container.clientWidth) return;
       const cRect = container.getBoundingClientRect();
       const fRect = focusEl.getBoundingClientRect();
       const focusCenterFromRight = cRect.right - (fRect.left + fRect.width / 2);
@@ -845,48 +797,33 @@ export default function AutomationTimeline() {
   const handleAutoPilotToggle = async () => {
     if (!currentEvent?.id) return;
     const newValue = !autoPilot;
-    setAutoPilot(newValue); // optimistic
+    setAutoPilot(newValue);
     try {
       await toggleAutoPilot(currentEvent.id, newValue);
       showToast(newValue ? 'טייס אוטומטי פעיל' : 'טייס אוטומטי מושבת');
     } catch {
-      setAutoPilot(!newValue); // revert
+      setAutoPilot(!newValue);
       showToast('שגיאה בעדכון הטייס האוטומטי', 'error');
-    }
-  };
-
-  const handleToggle = async (settingId: string, currentValue: boolean) => {
-    setSettings(prev => prev.map(s =>
-      s.id === settingId ? { ...s, is_active: !currentValue } : s
-    ));
-    try {
-      await updateAutomationSetting(settingId, { is_active: !currentValue });
-      showToast('ההגדרה עודכנה');
-    } catch {
-      setSettings(prev => prev.map(s =>
-        s.id === settingId ? { ...s, is_active: currentValue } : s
-      ));
-      showToast('שגיאה בשמירה', 'error');
     }
   };
 
   const handleEditSaved = (updates: { is_active?: boolean; days_before?: number; singular?: string; plural?: string }) => {
     if (!editSetting) return;
-    // Update settings state
     if (updates.is_active !== undefined || updates.days_before !== undefined) {
       setSettings(prev => prev.map(s =>
         s.id === editSetting.id
-          ? { ...s, ...(updates.is_active !== undefined && { is_active: updates.is_active }), ...(updates.days_before !== undefined && { days_before: updates.days_before }) }
-          : s
+          ? { ...s,
+              ...(updates.is_active !== undefined && { is_active: updates.is_active }),
+              ...(updates.days_before !== undefined && { days_before: updates.days_before }) }
+          : s,
       ));
     }
-    // Update templates state
     if (updates.singular !== undefined || updates.plural !== undefined) {
       setTemplates(prev => ({
         ...prev,
         [editSetting.stage_name]: {
           singular: updates.singular ?? prev[editSetting.stage_name]?.singular ?? '',
-          plural: updates.plural ?? prev[editSetting.stage_name]?.plural ?? '',
+          plural:   updates.plural   ?? prev[editSetting.stage_name]?.plural   ?? '',
         },
       }));
     }
@@ -923,19 +860,16 @@ export default function AutomationTimeline() {
 
   const handleAddNudge = () => {
     if (!currentEvent?.id || !canAddNudge) return;
-    // Find next available dynamic nudge name
     const existing = settings.map(s => s.stage_name);
     const nextName = (['nudge_1', 'nudge_2', 'nudge_3'] as const).find(n => !existing.includes(n));
     if (!nextName) return;
 
-    // Compute default days_before: midpoint between last nudge and ultimatum
     const nudges = sorted.filter(s => s.stage_name === 'nudge' || s.stage_name.startsWith('nudge_'));
     const ultimatum = sorted.find(s => s.stage_name === 'ultimatum');
     const lastNudgeDays = nudges.length > 0 ? Math.min(...nudges.map(n => n.days_before)) : 7;
     const ultimatumDays = ultimatum?.days_before ?? 3;
     const defaultDays = Math.round((lastNudgeDays + ultimatumDays) / 2);
 
-    // Create a local draft (not in DB yet) and open the modal
     const draft: AutomationSettingRow = {
       id: `draft-${nextName}`,
       event_id: currentEvent.id,
@@ -953,43 +887,28 @@ export default function AutomationTimeline() {
     setDrilldown({ stageName, filter });
   };
 
-  // Check if editing setting has message_logs (for delete permission)
   const editSettingHasLogs = editSetting
     ? (stats[editSetting.stage_name]?.sent ?? 0) + (stats[editSetting.stage_name]?.pending ?? 0) + (stats[editSetting.stage_name]?.failed ?? 0) > 0
     : false;
-
   const editIsDynamicNudge = editSetting
     ? (DYNAMIC_NUDGE_NAMES as readonly string[]).includes(editSetting.stage_name)
     : false;
 
+  // ── Gate ──
+
   if (!canAccessTimeline) {
     return (
-      <div className="min-h-screen bg-slate-50 text-slate-900 font-brand" dir="rtl">
-        {/* ── Header ── */}
-        <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-sm border-b border-slate-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center gap-3 min-w-0">
-            <div className="w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center shrink-0">
-              <Calendar className="w-4 h-4 text-white" />
-            </div>
-            <div className="min-w-0">
-              <h1 className="text-base font-bold text-slate-800 font-danidin leading-none">
-                ציר זמן אוטומציה
-              </h1>
-            </div>
-          </div>
-        </header>
-
-        {/* ── Main content ── */}
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <DashboardNav />
-
+      <div className="gtl-page">
+        <style>{TIMELINE_STYLES}</style>
+        <DashboardNav />
+        <main className="page">
           <div className="flex items-center justify-center py-20">
             <GlassCard className="max-w-md w-full rounded-3xl text-center p-8">
               <div className="mx-auto w-16 h-16 bg-violet-100 rounded-full flex items-center justify-center mb-4">
                 <Calendar className="w-8 h-8 text-violet-600" />
               </div>
-              <h2 className="font-danidin text-2xl text-slate-900 mb-2">ציר הזמן</h2>
-              <p className="text-slate-600 mb-6 leading-relaxed">
+              <h2 className="font-danidin text-2xl mb-2" style={{ color: 'var(--ink)' }}>ציר הזמן</h2>
+              <p className="mb-6 leading-relaxed font-brand" style={{ color: 'var(--ink-soft)' }}>
                 נהלו את כל תהליך האוטומציה של ההודעות — תזכורות, ניגנובים, והודעות לוגיסטיקה — הכל ממקום אחד.
               </p>
               <button
@@ -1001,218 +920,159 @@ export default function AutomationTimeline() {
             </GlassCard>
           </div>
         </main>
-
         <UpgradeModal
           isOpen={upgradeOpen}
           onClose={() => setUpgradeOpen(false)}
-          onUpgradeClick={() => {
-            setUpgradeOpen(false);
-            showToast('בקרוב! נציג עם הפרטים.');
-          }}
+          onUpgradeClick={() => { setUpgradeOpen(false); showToast('בקרוב! נציג עם הפרטים.'); }}
         />
-
         <ToastContainer toasts={toasts} />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-brand" dir="rtl">
-      {/* ── Header ── */}
-      <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-sm border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center shrink-0">
-              <Calendar className="w-4 h-4 text-white" />
-            </div>
-            <div className="min-w-0">
-              <h1 className="text-base font-bold text-slate-800 font-danidin leading-none">
-                ציר זמן אוטומציה
-              </h1>
-              <p className="text-xs text-slate-400 font-brand mt-0.5">{currentEvent?.slug}</p>
-            </div>
-          </div>
+    <div className="gtl-page font-brand">
+      <style>{TIMELINE_STYLES}</style>
+      <DashboardNav />
 
-          <button
-            onClick={handleRefresh}
-            disabled={refreshing || loading}
-            className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-brand text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors disabled:opacity-50"
-          >
-            <RefreshCw className={cn('w-3.5 h-3.5', refreshing && 'animate-spin')} />
-            רענן
-          </button>
-        </div>
-      </header>
-
-      {/* ── Main content ── */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <DashboardNav />
-
-        {/* ── Auto-Pilot Header ── */}
-        <div className="flex items-center justify-between gap-4 mb-5">
+      <main className="page">
+        {/* Page header */}
+        <div className="page-header">
           <div>
-            <h2 className="font-danidin text-xl text-slate-800">טייס אוטומטי</h2>
-            <p className="text-sm text-slate-500 font-brand">
-              מסע ההודעות האוטומטי לאורחים שלך עד יום החתונה
-            </p>
+            <h1>פייפליין הזמנות</h1>
+            <div className="sub">
+              מסע ההודעה האוטומטי מתחילת הקמפיין ועד יום אחרי החתונה
+              {eventDateLabel && <> · <b>אירוע ב-{eventDateLabel}</b></>}
+            </div>
           </div>
-          <div className="flex items-center gap-3 shrink-0">
-            <span className={cn(
-              'text-xs font-brand font-medium px-2.5 py-1 rounded-full transition-colors',
-              autoPilot ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500',
-            )}>
-              {autoPilot ? 'פעיל' : 'מושבת'}
-            </span>
-            <Toggle checked={autoPilot} onChange={handleAutoPilotToggle} size="lg" />
+          <div className="header-actions">
+            <button
+              type="button"
+              className="ghost-btn"
+              onClick={handleRefresh}
+              disabled={refreshing || loading}
+            >
+              <RefreshCw size={14} className={cn(refreshing && 'animate-spin')} />
+              רענן נתונים
+            </button>
+            <button
+              type="button"
+              className="ghost-btn"
+              onClick={() => navigate('/dashboard/settings')}
+            >
+              <Settings size={14} />
+              הגדרות אוטומציה
+            </button>
           </div>
         </div>
+
+        {/* Auto-pilot banner */}
+        <AutoPilotBanner
+          active={autoPilot}
+          onToggle={handleAutoPilotToggle}
+          sentCount={totalSent}
+          pendingCount={totalPending}
+        />
 
         {/* Loading */}
         {(eventLoading || loading) && (
-          <>
-            <DesktopSkeleton />
-            <MobileSkeleton />
-          </>
+          <div className="pipeline-frame">
+            <div className="pipeline-skeleton">
+              {[1,2,3,4,5].map(i => (
+                <div key={i} className="sk-stage">
+                  <div className="sk-circle" />
+                  <div className="sk-label" />
+                  <div className="sk-card" />
+                </div>
+              ))}
+            </div>
+          </div>
         )}
 
         {/* Empty state */}
         {isEmpty && (
-          <div className="text-center py-16 text-slate-400 font-brand">
-            <Calendar className="w-10 h-10 mx-auto mb-3 opacity-30" />
-            <p className="text-sm">לא נמצאו שלבי אוטומציה</p>
-            <p className="text-xs mt-1 opacity-70">יש להריץ את מיגרציית ה-seed במסד הנתונים</p>
+          <div className="pipeline-frame">
+            <div className="pipeline-empty">
+              <Calendar size={40} />
+              <p className="font-danidin font-bold" style={{ fontSize: '24px', color: 'var(--ink)' }}>מסע ההודעות עדיין לא נבנה</p>
+              <p style={{ fontSize: '13px', marginTop: '6px', color: 'var(--ink-soft)', lineHeight: 1.55 }}>
+                כאן יופיע רצף התזכורות, האישורים והודעות הלוגיסטיקה של האירוע.
+              </p>
+            </div>
           </div>
         )}
 
-        {/* ── Desktop: Horizontal Pipeline ── */}
+        {/* Pipeline */}
         {!loading && !eventLoading && settings.length > 0 && (
-          <div className="hidden lg:block">
-            <div
-              ref={scrollRef}
-              className={cn(
-                'flex items-start overflow-x-auto overflow-y-hidden scrollbar-hide py-6',
-                drag.isDragging ? 'cursor-grabbing' : 'cursor-grab',
-              )}
-              style={{ scrollBehavior: 'auto' }}
-              dir="rtl"
-              onPointerDown={drag.onPointerDown}
-              onPointerMove={drag.onPointerMove}
-              onPointerUp={drag.onPointerUp}
-            >
-              {/* Leading spacer (right edge in RTL) */}
-              <div className="w-4 shrink-0" aria-hidden="true" />
+          <>
+            <PipelineMeta counts={metaCounts} />
+            <div className="pipeline-frame">
+              {/* Desktop horizontal scroll */}
+              <div
+                ref={scrollRef}
+                className={cn('pipeline-scroll', drag.isDragging && 'dragging')}
+                onPointerDown={drag.onPointerDown}
+                onPointerMove={drag.onPointerMove}
+                onPointerUp={drag.onPointerUp}
+              >
+                <div className="pipeline-track">
+                  {pipelineNodes.map((node) => {
+                    if (node.type === 'add-nudge') {
+                      return (
+                        <AddNudgeColumn
+                          key="add-nudge"
+                          onClick={handleAddNudge}
+                          disabled={!canAddNudge}
+                        />
+                      );
+                    }
+                    return (
+                      <StageColumn
+                        key={node.setting.id}
+                        setting={node.setting}
+                        stats={stats[node.setting.stage_name]}
+                        eventDate={eventDate}
+                        audience={audienceCounts}
+                        onEdit={setEditSetting}
+                        onLogs={(stageName) => handleDrilldown(stageName, 'all')}
+                        hasDragged={drag.hasDragged}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
 
-              {(() => {
-                const realNodes = pipelineNodes.filter(n => n.type !== 'add-nudge');
-
-                return pipelineNodes.map((node) => {
+              {/* Mobile vertical stack */}
+              <div className="pipeline-stack">
+                {pipelineNodes.map((node) => {
                   if (node.type === 'add-nudge') {
                     return (
-                      <AddNudgeOverlay
-                        key="add-nudge"
+                      <MobileAddNudgeItem
+                        key="add-nudge-m"
                         onClick={handleAddNudge}
                         disabled={!canAddNudge}
                       />
                     );
                   }
-
-                  const realIdx = realNodes.indexOf(node);
-                  const isFirst = realIdx === 0;
-                  const isLast = realIdx === realNodes.length - 1;
-                  const key = node.type === 'stage' ? node.setting.id : 'event';
-                  const cellId = node.type === 'stage'
-                    ? `stage-${node.setting.stage_name}`
-                    : 'event-day';
-
                   return (
-                    <div
-                      key={key}
-                      id={cellId}
-                      data-pipeline-cell
-                      className="w-[20%] shrink-0 flex flex-col items-center"
-                    >
-                      {node.type === 'event' && (
-                        <EventDayColumn date={eventDate} isFirst={isFirst} isLast={isLast} />
-                      )}
-                      {node.type === 'stage' && (
-                        <StageColumn
-                          setting={node.setting}
-                          stats={stats[node.setting.stage_name]}
-                          isFocus={focusId === `stage-${node.setting.stage_name}`}
-                          eventDate={eventDate}
-                          audienceCounts={audienceCounts}
-                          onToggle={handleToggle}
-                          onEdit={setEditSetting}
-                          onDrilldown={handleDrilldown}
-                          hasDragged={drag.hasDragged}
-                          isFirst={isFirst}
-                          isLast={isLast}
-                        />
-                      )}
-                    </div>
+                    <MobileStageItem
+                      key={node.setting.id}
+                      setting={node.setting}
+                      stats={stats[node.setting.stage_name]}
+                      eventDate={eventDate}
+                      audience={audienceCounts}
+                      onEdit={setEditSetting}
+                      onLogs={(stageName) => handleDrilldown(stageName, 'all')}
+                    />
                   );
-                });
-              })()}
-
-              {/* Trailing spacer (left edge in RTL) */}
-              <div className="w-4 shrink-0" aria-hidden="true" />
+                })}
+              </div>
             </div>
-          </div>
-        )}
-
-        {/* ── Mobile: Vertical Layout ── */}
-        {!loading && !eventLoading && settings.length > 0 && (
-          <div className="lg:hidden flex flex-col gap-3">
-            {beforeEvent.map((setting, idx) => {
-              const isNudgeType = setting.stage_name === 'nudge' || setting.stage_name.startsWith('nudge_');
-              const nextIsUltimatum = idx + 1 < beforeEvent.length && beforeEvent[idx + 1].stage_name === 'ultimatum';
-
-              return (
-                <Fragment key={setting.id}>
-                  <MobileStageCard
-                    setting={setting}
-                    stats={stats[setting.stage_name]}
-                    eventDate={eventDate}
-                    audienceCounts={audienceCounts}
-                    onToggle={handleToggle}
-                    onEdit={setEditSetting}
-                    onDrilldown={handleDrilldown}
-                  />
-                  {/* Add nudge button after last nudge, before ultimatum */}
-                  {isNudgeType && nextIsUltimatum && (
-                    <>
-                      <VerticalConnector />
-                      <MobileAddNudge onClick={handleAddNudge} disabled={!canAddNudge} />
-                    </>
-                  )}
-                  {idx < beforeEvent.length - 1 && <VerticalConnector />}
-                </Fragment>
-              );
-            })}
-
-            {beforeEvent.length > 0 && <VerticalConnector />}
-            <MobileEventDay date={eventDate} />
-            {afterEvent.length > 0 && <VerticalConnector />}
-
-            {afterEvent.map((setting, idx) => (
-              <Fragment key={setting.id}>
-                <MobileStageCard
-                  setting={setting}
-                  stats={stats[setting.stage_name]}
-                  eventDate={eventDate}
-                  audienceCounts={audienceCounts}
-                  onToggle={handleToggle}
-                  onEdit={setEditSetting}
-                  onDrilldown={handleDrilldown}
-                />
-                {idx < afterEvent.length - 1 && <VerticalConnector />}
-              </Fragment>
-            ))}
-          </div>
+          </>
         )}
       </main>
 
-      {/* ── Stage Edit Modal ── */}
+      {/* Stage Edit Modal */}
       {currentEvent?.id && editSetting && (
         <StageEditModal
           setting={editSetting}
@@ -1227,7 +1087,7 @@ export default function AutomationTimeline() {
         />
       )}
 
-      {/* ── Stage Logs Drilldown ── */}
+      {/* Stage Logs Drilldown */}
       {currentEvent?.id && (
         <StageLogsSheet
           drilldown={drilldown}
