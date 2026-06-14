@@ -1119,7 +1119,10 @@ export default function Dashboard() {
       return;
     }
 
-    const eventLink = `https://yourdomain.com/${currentEvent.slug}`;
+    // Real public invite link: configured public base URL if set, else the
+    // current deployment origin (never a placeholder domain).
+    const baseUrl = import.meta.env.VITE_PUBLIC_BASE_URL || window.location.origin;
+    const eventLink = `${baseUrl}/${currentEvent.slug}`;
 
     // message_type value: the template key (e.g. 'icebreaker') for template sends, 'custom' otherwise
     const messageTypeValue = messageType === 'template' ? content : 'custom';

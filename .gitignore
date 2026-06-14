@@ -24,3 +24,9 @@ dist-ssr
 *.sw?
 .vercel
 .worktrees
+
+# Supabase generated temp / linked-project metadata (project ref, pooler url, versions)
+supabase/.temp/
+
+# Codex executor scratch output (slice-orchestrator transport)
+.codex-last.txt
