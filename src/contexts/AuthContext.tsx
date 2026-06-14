@@ -25,6 +25,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Auth generation counter. Bumped on every session change so a slow super-admin
     // lookup from an older session can't apply its result to a newer/signed-out one.
     let authEpoch = 0;
+    // User id currently reflected in state. Lets applySession distinguish a real
+    // identity change (different user / sign-out) from a same-user TOKEN_REFRESHED.
+    let appliedUserId: string | undefined;
     const client = supabase;
 
     if (!client) {
@@ -54,14 +57,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       // Stale-guard: only the latest auth generation may apply its result and release
-      // the initial loading gate. Without this, an old in-flight lookup could set
+      // the loading gate. Without this, an old in-flight lookup could set
       // isSuperAdmin for a session that has since changed or signed out.
       if (cancelled || epoch !== authEpoch) return;
       setIsSuperAdmin(result);
-      if (!initialAuthResolved) {
-        initialAuthResolved = true;
-        setLoading(false);
-      }
+      // Release the gate on every matching-epoch resolve, not just the first: an
+      // identity change re-raises `loading` (see applySession), and only the matching
+      // epoch's lookup may lower it again.
+      initialAuthResolved = true;
+      setLoading(false);
     };
 
     // Single entry point for every session change (initial getSession + later events).
@@ -71,12 +75,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const applySession = (nextSession: Session | null) => {
       if (cancelled) return;
       const epoch = ++authEpoch;
+      const nextUserId = nextSession?.user?.id;
+      const identityChanged = nextUserId !== appliedUserId;
       setSession(nextSession);
+      // On a real identity change AFTER the initial resolve (a different user signs in,
+      // or sign-out), the previously resolved super-admin flag no longer applies:
+      //   - clear it eagerly — useFeatureAccess (useFeatureAccess.ts:9) and EventSwitcher
+      //     read isSuperAdmin WITHOUT gating on loading, so a stale `true` would briefly
+      //     unlock super-admin UI for the new/normal user;
+      //   - re-gate loading — EventContext bails while authLoading, so it won't branch
+      //     fetchAllEvents/fetchEventsForUser on the stale flag.
+      // The matching epoch's lookup lowers loading again. A same-user TOKEN_REFRESHED
+      // leaves identity unchanged, so neither fires — no flicker on token refresh.
+      if (initialAuthResolved && identityChanged) {
+        setIsSuperAdmin(false);
+        setLoading(true);
+      }
+      appliedUserId = nextUserId;
       // Defer the lookup to a macrotask: onAuthStateChange fires from inside Supabase's
       // auth lock, and any query there re-enters getSession() -> await initializePromise
       // (the promise we're already inside) and deadlocks. setTimeout(0) runs it after the
       // lock releases. Harmless for the getSession path (already outside the lock).
-      setTimeout(() => { void resolveSuperAdmin(nextSession?.user?.id, epoch); }, 0);
+      setTimeout(() => { void resolveSuperAdmin(nextUserId, epoch); }, 0);
     };
 
     withTimeout(
