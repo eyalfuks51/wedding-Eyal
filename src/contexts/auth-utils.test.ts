@@ -20,4 +20,15 @@ describe('withTimeout', () => {
 
     await expectation;
   });
+
+  it('passes through the wrapped promise rejection rather than the timeout error', async () => {
+    const failure = new Error('wrapped rejected');
+    await expect(withTimeout(Promise.reject(failure), 1000, 'timed out')).rejects.toThrow('wrapped rejected');
+  });
+
+  it('clears the pending timeout after the wrapped promise resolves', async () => {
+    vi.useFakeTimers();
+    await withTimeout(Promise.resolve('ready'), 1000, 'timed out');
+    expect(vi.getTimerCount()).toBe(0);
+  });
 });

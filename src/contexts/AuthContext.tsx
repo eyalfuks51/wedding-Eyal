@@ -22,6 +22,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let cancelled = false;
     let initialAuthResolved = false;
+    // Auth generation counter. Bumped on every session change so a slow super-admin
+    // lookup from an older session can't apply its result to a newer/signed-out one.
+    let authEpoch = 0;
     const client = supabase;
 
     if (!client) {
@@ -30,35 +33,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const resolveSuperAdmin = async (userId: string | undefined) => {
-      if (!userId) {
-        if (!cancelled) setIsSuperAdmin(false);
-        return;
-      }
-
+    const resolveSuperAdmin = async (userId: string | undefined, epoch: number) => {
+      let result = false;
       try {
-        const { data } = await withTimeout(
-          client
-            .from('users')
-            .select('is_super_admin')
-            .eq('id', userId)
-            .single(),
-          AUTH_READY_TIMEOUT_MS,
-          'Super-admin lookup timed out',
-        );
-        if (!cancelled) setIsSuperAdmin(data?.is_super_admin ?? false);
+        if (userId) {
+          const { data } = await withTimeout(
+            client
+              .from('users')
+              .select('is_super_admin')
+              .eq('id', userId)
+              .single(),
+            AUTH_READY_TIMEOUT_MS,
+            'Super-admin lookup timed out',
+          );
+          result = data?.is_super_admin ?? false;
+        }
       } catch (err) {
         console.warn('Super-admin lookup failed:', err);
-        if (!cancelled) setIsSuperAdmin(false);
+        result = false;
+      }
+
+      // Stale-guard: only the latest auth generation may apply its result and release
+      // the initial loading gate. Without this, an old in-flight lookup could set
+      // isSuperAdmin for a session that has since changed or signed out.
+      if (cancelled || epoch !== authEpoch) return;
+      setIsSuperAdmin(result);
+      if (!initialAuthResolved) {
+        initialAuthResolved = true;
+        setLoading(false);
       }
     };
 
-    const markAuthReady = (nextSession: Session | null) => {
+    // Single entry point for every session change (initial getSession + later events).
+    // Holds `loading` true until the super-admin lookup resolves, so EventContext never
+    // branches on a stale isSuperAdmin=false — it picks fetchAllEvents vs fetchEventsForUser
+    // off that flag the instant authLoading flips false.
+    const applySession = (nextSession: Session | null) => {
       if (cancelled) return;
-      initialAuthResolved = true;
+      const epoch = ++authEpoch;
       setSession(nextSession);
-      setLoading(false);
-      void resolveSuperAdmin(nextSession?.user?.id);
+      // Defer the lookup to a macrotask: onAuthStateChange fires from inside Supabase's
+      // auth lock, and any query there re-enters getSession() -> await initializePromise
+      // (the promise we're already inside) and deadlocks. setTimeout(0) runs it after the
+      // lock releases. Harmless for the getSession path (already outside the lock).
+      setTimeout(() => { void resolveSuperAdmin(nextSession?.user?.id, epoch); }, 0);
     };
 
     withTimeout(
@@ -66,30 +84,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       AUTH_READY_TIMEOUT_MS,
       'Auth session lookup timed out',
     )
-      .then(async ({ data: { session: s } }) => {
-        markAuthReady(s);
+      .then(({ data: { session: s } }) => {
+        applySession(s);
       })
       .catch(err => {
         if (cancelled || initialAuthResolved) return;
         console.warn('Auth initialization failed:', err);
-        markAuthReady(null);
+        applySession(null);
       });
 
-    // Supabase deadlock guard: onAuthStateChange fires from inside the auth lock.
-    // Any supabase query inside it re-enters getSession() -> await initializePromise
-    // (the promise we're already inside) and deadlocks. Defer the super-admin lookup
-    // with setTimeout so it runs after the lock is released. (withTimeout still bounds it.)
     const { data: { subscription } } = client.auth.onAuthStateChange(
       (_event, newSession) => {
-        if (cancelled) return;
-        setSession(newSession);
-        if (!initialAuthResolved) {
-          initialAuthResolved = true;
-          setLoading(false);
-        }
-        setTimeout(() => {
-          if (!cancelled) void resolveSuperAdmin(newSession?.user?.id);
-        }, 0);
+        applySession(newSession);
       }
     );
 
