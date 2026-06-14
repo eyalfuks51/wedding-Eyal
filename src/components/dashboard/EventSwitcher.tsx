@@ -41,11 +41,19 @@ export default function EventSwitcher() {
   if (!showSwitcher) return null;
 
   return (
-    <div ref={ref} className="relative inline-block">
+    <div ref={ref} className="dashboard-event-switcher relative inline-block">
       {/* Trigger button */}
       <button
         onClick={() => setOpen(o => !o)}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-slate-700 hover:bg-white/80 transition-colors font-brand"
+        className="dashboard-event-switcher-trigger flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm transition-colors font-brand"
+        style={{
+          color: 'var(--ink-soft)',
+          border: '1px solid var(--glass-line)',
+          background: open ? 'oklch(100% 0.006 75 / 0.78)' : 'oklch(100% 0.006 75 / 0.46)',
+          boxShadow: open
+            ? '0 12px 28px -22px oklch(36% 0.045 52 / 0.42), 0 1px 0 oklch(100% 0.005 75 / 0.7) inset'
+            : '0 1px 0 oklch(100% 0.005 75 / 0.55) inset',
+        }}
       >
         <span>{currentEvent ? eventLabel(currentEvent) : 'בחר אירוע'}</span>
         <ChevronDown
@@ -56,7 +64,16 @@ export default function EventSwitcher() {
 
       {/* Dropdown panel */}
       {open && (
-        <div className="absolute right-0 z-50 mt-1 min-w-[220px] max-h-64 overflow-y-auto bg-white rounded-xl shadow-lg border border-slate-200">
+        <div
+          className="dashboard-event-switcher-menu absolute right-0 z-50 mt-2 min-w-[240px] max-h-64 overflow-y-auto rounded-2xl"
+          style={{
+            background: 'var(--glass-card)',
+            backdropFilter: 'var(--glass-card-blur)',
+            WebkitBackdropFilter: 'var(--glass-card-blur)',
+            border: '1px solid var(--glass-line)',
+            boxShadow: 'var(--shadow-float)',
+          }}
+        >
           {/* Event list */}
           <div className="py-1">
             {events.map(event => {
@@ -71,9 +88,10 @@ export default function EventSwitcher() {
                   className={[
                     'w-full flex items-center justify-between gap-2 px-3 py-2 text-sm transition-colors text-right',
                     isCurrent
-                      ? 'bg-violet-50 text-violet-700 font-medium'
-                      : 'text-slate-700 hover:bg-slate-50',
+                      ? 'text-violet-700 font-medium'
+                      : 'text-slate-700',
                   ].join(' ')}
+                  style={isCurrent ? { background: 'var(--violet-50)' } : undefined}
                 >
                   <span>{eventLabel(event)}</span>
                   <span
@@ -92,13 +110,13 @@ export default function EventSwitcher() {
           </div>
 
           {/* Create New Event footer */}
-          <div className="border-t border-slate-100">
+          <div style={{ borderTop: '1px solid var(--glass-line)' }}>
             <button
               onClick={() => {
                 navigate('/onboarding');
                 setOpen(false);
               }}
-              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-violet-600 hover:bg-violet-50 transition-colors"
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-violet-600 transition-colors"
             >
               <Plus size={16} />
               <span>אירוע חדש</span>

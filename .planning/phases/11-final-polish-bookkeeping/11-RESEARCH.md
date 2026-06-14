@@ -20,7 +20,7 @@ The most nuanced item is POLISH-02 (super admin double-fetch), which requires un
 | POLISH-01 | `DashboardSettings.tsx` has zero `(currentEvent as any)` casts -- uses typed `EventData` properties | 4 cast sites identified at lines 285, 329, 653, 672. `EventData` interface already has `id` and `content_config`. `LivePreview` prop type needs alignment. |
 | POLISH-02 | `EventContext` defers initial fetch until `isSuperAdmin` has resolved -- no double-fetch for super admins | Root cause traced: `setSession` in AuthContext triggers render before `setIsSuperAdmin`. Fix: add `loading` from `useAuth()` as gate in EventContext effect. |
 | POLISH-03 | All ROADMAP.md plan checkboxes and phase statuses match actual completion state | Phase 7 task checkboxes show `[ ]` despite completion. All phases 1-10 are complete per STATE.md. Full audit needed. |
-| POLISH-04 | `.env.example` documents `VITE_SUPABASE_SERVICE_ROLE_KEY` with E2E teardown explanation | File already exists with this variable documented. Verify description clarity meets requirement. |
+| POLISH-04 | `.env.example` documents `SUPABASE_SERVICE_ROLE_KEY` with E2E teardown explanation | File already exists with this variable documented. Verify description clarity meets requirement. |
 </phase_requirements>
 
 ## Standard Stack
@@ -112,7 +112,7 @@ This ensures the effect only fires once `authLoading` is false, at which point b
 
 ### Pitfall 4: .env.example May Already Be Correct
 **What goes wrong:** Wasting time "fixing" something that is already done.
-**Current state:** `.env.example` already contains `VITE_SUPABASE_SERVICE_ROLE_KEY` with a comment: "Used only by Playwright E2E test teardown (afterAll cleanup)". This appears to already satisfy POLISH-04. Verify the description is sufficient and matches the requirement exactly.
+**Current state:** `.env.example` already contains `SUPABASE_SERVICE_ROLE_KEY` with a comment: "Used only by Playwright E2E test teardown (afterAll cleanup)". This appears to already satisfy POLISH-04. Verify the description is sufficient and matches the requirement exactly.
 
 ## Code Examples
 
@@ -196,7 +196,7 @@ No technology changes relevant to this phase. All fixes use existing TypeScript 
 ## Open Questions
 
 1. **POLISH-04: Is .env.example already sufficient?**
-   - What we know: The file already documents `VITE_SUPABASE_SERVICE_ROLE_KEY` with "Used only by Playwright E2E test teardown (afterAll cleanup)" comment and a hint to find it in Supabase Dashboard.
+   - What we know: The file already documents `SUPABASE_SERVICE_ROLE_KEY` with "Used only by Playwright E2E test teardown (afterAll cleanup)" comment and a hint to find it in Supabase Dashboard.
    - What's unclear: Whether the current description fully satisfies the requirement or needs more detail.
    - Recommendation: Compare current text against requirement wording. If it already explains the key's role in E2E teardown, mark as already complete and verify only.
 

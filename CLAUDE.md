@@ -330,6 +330,16 @@ src/
 - **TypeScript LSP:** You have the `typescript-lsp` plugin enabled. Actively monitor real-time diagnostic errors. Fix any type or linting issues immediately as you code before proceeding.
 - **Superpowers:** Use the Superpowers plugin for structured development. Run `/superpowers:brainstorm` before complex component creation, and generate execution plans with `/superpowers:write-plan` for larger features.
 - **UI & Assets:** The application is RTL strictly (Hebrew). Local fonts are stored at `src/styles/fonts`. Ensure all CSS/Tailwind configurations properly route to this local directory.
+
+## Testing Standards (Mandatory)
+
+> **🚨 CRITICAL RULE: NO PHASE IS COMPLETE WITHOUT TESTS**
+> Every development phase MUST include verification via both unit tests (Vitest) and E2E tests (Playwright) before being marked as done. This is non-negotiable.
+
+- **Unit Tests (Vitest):** Run with `npm run test`. All business logic, data transformations, and utility functions must have unit test coverage. Phone normalization, data mapping, and validation logic are especially critical.
+- **E2E Tests (Playwright):** Run with `npm run test:e2e`. User-facing flows (RSVP submission, dashboard interactions, navigation) must have E2E coverage for happy paths and key error states.
+- **Verification before completion:** Before marking any phase as complete, run `npm run test` and `npm run test:e2e` and confirm all tests pass. Include test results in the phase verification summary.
+- **Test file locations:** Unit tests live alongside source files as `*.test.ts` or in `src/__tests__/`. E2E tests live in `tests/*.spec.ts`.
 ## 🎯 Product-Led Agent Team Workflow
 
 ### Phase 1: Brainstorming

@@ -3,6 +3,51 @@
 // Import Google Fonts
 @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&family=Heebo:wght@300;400;500;600;700&family=Gravitas+One&family=Rubik:wght@300;400;500;600;700&display=swap');
 
+// ── Dashboard Design Tokens ─────────────────────────────────────────────────
+:root {
+  --paper:            oklch(97.8% 0.014 75);
+  --paper-2:          oklch(95.2% 0.022 76);
+  --paper-3:          oklch(91.8% 0.03 76);
+  --ink:              oklch(25.5% 0.018 55);
+  --ink-soft:         oklch(45.5% 0.025 58);
+  --ink-mute:         oklch(66.8% 0.025 65);
+  --line:             oklch(89.6% 0.028 76);
+
+  --violet-700:       oklch(49% 0.22 296);
+  --violet-600:       oklch(56% 0.205 296);
+  --violet-50:        oklch(96.4% 0.024 301);
+
+  --champagne:        oklch(86.6% 0.055 78);
+  --champagne-soft:   oklch(93% 0.045 78);
+  --rose-gold:        oklch(58% 0.105 18);
+  --rose-gold-soft:   oklch(78% 0.07 20);
+
+  --sage:             oklch(54% 0.055 120);
+  --sage-soft:        oklch(88.5% 0.04 118);
+  --apricot:          oklch(62% 0.12 55);
+  --apricot-soft:     oklch(88.8% 0.062 61);
+  --clay:             oklch(54.5% 0.12 37);
+  --clay-soft:        oklch(84.8% 0.065 34);
+
+  --surface-solid:    oklch(99.7% 0.006 75);
+  --glass-bg:         oklch(99.9% 0.005 75 / 0.94);
+  --glass-blur:       blur(34px) saturate(1.45);
+  --glass-card:       oklch(99.9% 0.004 75 / 0.97);
+  --glass-card-blur:  blur(28px) saturate(1.5);
+  --glass-card-border:oklch(96% 0.014 75 / 0.9);
+  --glass-line:       oklch(84.8% 0.036 76 / 0.82);
+  --shadow-soft:      0 22px 60px -34px oklch(36% 0.045 52 / 0.48);
+  --shadow-float:     0 30px 80px -40px oklch(36% 0.05 52 / 0.52);
+  --glow-violet:      oklch(68% 0.16 302 / 0.2);
+  --glow-rose:        oklch(72% 0.115 20 / 0.24);
+
+  --r-xs:  6px;
+  --r-sm:  10px;
+  --r-md:  16px;
+  --r-lg:  24px;
+  --r-pill:999px;
+}
+
 @font-face {
   font-family: 'Danidin';
   src: url('./fonts/Danidin-CondensedBold.woff2') format('woff2');
@@ -117,5 +162,97 @@ input, select, textarea {
   scrollbar-width: none;
   &::-webkit-scrollbar {
     display: none;
+  }
+}
+
+@media (max-width: 920px) {
+  .dashboard-nav {
+    width: 100%;
+    max-width: 100%;
+    height: auto !important;
+    min-height: 68px;
+    flex-wrap: wrap;
+    align-content: center;
+    gap: 8px 10px !important;
+    padding: 8px 12px 10px !important;
+    overflow-x: clip;
+    overflow-y: visible;
+    scrollbar-width: none;
+  }
+
+  .dashboard-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .dashboard-nav-brand {
+    order: 1;
+    font-size: 22px !important;
+    line-height: 1;
+  }
+
+  .dashboard-nav-spacer {
+    display: none !important;
+  }
+
+  .dashboard-event-switcher {
+    order: 2;
+    min-width: 0;
+    max-width: calc(100vw - 132px);
+    margin-inline-start: auto;
+  }
+
+  .dashboard-event-switcher-trigger {
+    max-width: 100%;
+    min-width: 0;
+    padding-inline: 10px !important;
+  }
+
+  .dashboard-event-switcher-trigger > span:first-child {
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .dashboard-event-switcher-menu {
+    max-width: calc(100vw - 24px);
+    min-width: min(240px, calc(100vw - 24px)) !important;
+  }
+
+  .dashboard-nav-bell {
+    order: 3;
+    flex: 0 0 38px;
+  }
+
+  .dashboard-nav-tabs {
+    order: 4;
+    width: 100%;
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px !important;
+    padding: 4px !important;
+  }
+
+  .dashboard-nav-tab {
+    min-width: 0;
+    padding: 8px 6px !important;
+    text-align: center;
+    white-space: nowrap;
+    font-size: 13px !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .dashboard-nav {
+    padding-inline: 10px !important;
+  }
+
+  .dashboard-nav-brand {
+    font-size: 20px !important;
+  }
+
+  .dashboard-event-switcher {
+    max-width: calc(100vw - 122px);
   }
 }

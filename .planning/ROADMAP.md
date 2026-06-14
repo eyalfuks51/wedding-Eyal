@@ -192,7 +192,7 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. `DashboardSettings.tsx` has zero `(currentEvent as any)` casts — uses typed `EventData` properties directly
   2. Super admin login does not double-fetch events — `EventContext` defers initial fetch until `isSuperAdmin` has resolved
-  3. `.env.example` documents `VITE_SUPABASE_SERVICE_ROLE_KEY` with explanation of its role in E2E teardown
+  3. `.env.example` documents `SUPABASE_SERVICE_ROLE_KEY` with explanation of its role in E2E teardown
   4. All ROADMAP.md plan checkboxes and phase statuses are consistent with actual completion state
 
 Plans:

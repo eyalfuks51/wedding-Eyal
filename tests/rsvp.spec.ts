@@ -6,29 +6,26 @@ const DUMMY_PHONE = '0509999999';
 const DUMMY_NAME = 'בדיקה אוטומטית';
 const TEST_EVENT_ID = 'f95c0196-1fa7-441c-bc36-c0f9e833f2e8';
 const TEST_EVENT_SLUG = 'hagit-and-itai';
+const supabaseUrl = process.env.VITE_SUPABASE_URL;
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 test.describe('RSVP Form — E2E', () => {
+  test.skip(
+    !supabaseUrl || !serviceRoleKey,
+    'Requires VITE_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY so RSVP test data can be cleaned up',
+  );
+
   test.afterAll(async () => {
     // Use service role key to bypass RLS for DELETE (anon DELETE policy not configured).
     // process.env is populated from .env.local via dotenv in playwright.config.ts.
-    const url = process.env.VITE_SUPABASE_URL;
-    const serviceKey = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
-    if (!url || !serviceKey) {
-      console.warn(
-        'Teardown skipped: VITE_SUPABASE_URL or VITE_SUPABASE_SERVICE_ROLE_KEY not set in .env.local'
-      );
-      return;
-    }
-    const supabase = createClient(url, serviceKey);
+    const supabase = createClient(supabaseUrl!, serviceRoleKey!);
     const { error } = await supabase
       .from('arrival_permits')
       .delete()
       .eq('event_id', TEST_EVENT_ID)
       .eq('phone', DUMMY_PHONE);
     if (error) {
-      console.error('Teardown failed:', error.message);
-    } else {
-      console.log('Teardown: dummy arrival_permit deleted');
+      throw new Error(`RSVP teardown failed: ${error.message}`);
     }
   });
 

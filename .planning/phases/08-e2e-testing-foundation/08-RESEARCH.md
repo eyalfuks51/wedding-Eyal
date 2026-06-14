@@ -274,7 +274,7 @@ export default defineConfig({
 2. **Does the `arrival_permits` RLS allow anon DELETE?**
    - What we know: CLAUDE.md documents `Allow anon INSERT`, `Allow anon UPDATE`, `Allow anon SELECT` for `arrival_permits`. DELETE is not listed.
    - What's unclear: Whether a DELETE policy exists or is needed.
-   - Recommendation: The planner must include a task to add `Allow anon DELETE` RLS policy to `arrival_permits` (scoped to `event_id = 'f95c0196...'` for safety), OR use the Supabase service role key in the test teardown. Using service role is cleaner for teardown since it bypasses RLS entirely. Add `VITE_SUPABASE_SERVICE_ROLE_KEY` to `.env.local` and `.env.example` for the teardown client only.
+   - Recommendation: The planner must include a task to add `Allow anon DELETE` RLS policy to `arrival_permits` (scoped to `event_id = 'f95c0196...'` for safety), OR use the Supabase service role key in the test teardown. Using service role is cleaner for teardown since it bypasses RLS entirely. Add `SUPABASE_SERVICE_ROLE_KEY` to `.env.local` and `.env.example` for the teardown client only.
 
 3. **`dotenv` package availability**
    - What we know: Not listed in `package.json` devDependencies.

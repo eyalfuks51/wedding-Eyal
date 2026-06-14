@@ -64,7 +64,7 @@ Confirmed existing contents already satisfy the requirement:
 ```
 # Used only by Playwright E2E test teardown (afterAll cleanup)
 # Get from: Supabase Dashboard -> Project Settings -> API -> service_role key
-VITE_SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```
 No changes needed.
 
@@ -86,7 +86,7 @@ None — plan executed exactly as written. The plan correctly identified 3 `as a
 3. `grep "event_date: string | null" src/components/dashboard/LivePreview.tsx` → match (PASS)
 4. `npm run test` → 15/15 tests pass (PASS)
 5. Phase 7 task checkboxes in ROADMAP.md → all `[x]` (PASS)
-6. `.env.example` contains `VITE_SUPABASE_SERVICE_ROLE_KEY` with E2E explanation (PASS)
+6. `.env.example` contains `SUPABASE_SERVICE_ROLE_KEY` with E2E explanation (PASS)
 
 ## Self-Check: PASSED
 

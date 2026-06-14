@@ -24,12 +24,12 @@ key-files:
   modified: [playwright.config.ts, tests/rsvp.spec.ts, .env.example, package.json]
 
 key-decisions:
-  - "Graceful teardown skip when VITE_SUPABASE_SERVICE_ROLE_KEY is not configured"
+  - "Spec-level skip before RSVP submission when SUPABASE_SERVICE_ROLE_KEY is not configured"
   - "ESM-compatible __dirname via fileURLToPath instead of CommonJS __dirname"
   - "Chromium-only project config -- Firefox/WebKit removed for faster CI"
 
 patterns-established:
-  - "E2E teardown pattern: service role Supabase client in afterAll with graceful skip"
+  - "E2E teardown pattern: require service role credentials before writing, then delete via afterAll"
   - "Scroll guard pattern: scrollIntoViewIfNeeded before interacting with below-fold GSAP elements"
 
 requirements-completed: [E2E-01, E2E-02]
@@ -67,11 +67,11 @@ Each task was committed atomically:
 ## Files Created/Modified
 - `playwright.config.ts` - dotenv loading, ESM __dirname fix, Chromium-only projects
 - `tests/rsvp.spec.ts` - Full RSVP E2E test with dedicated dummy data and service-role teardown
-- `.env.example` - Documents VITE_SUPABASE_SERVICE_ROLE_KEY for developer setup
+- `.env.example` - Documents SUPABASE_SERVICE_ROLE_KEY for developer setup
 - `package.json` - Added dotenv devDependency
 
 ## Decisions Made
-- **Graceful teardown skip:** afterAll checks for service role key presence before creating Supabase client; logs warning and skips if missing. This prevents test failures when developers haven't configured the key yet.
+- **Fail-closed cleanup guard:** the spec checks for service role credentials before submission; if they are missing, Playwright skips before writing any RSVP data. When the spec runs, `afterAll` deletes the dummy row and fails the suite if deletion fails.
 - **ESM __dirname fix:** Used `fileURLToPath(import.meta.url)` instead of `__dirname` since the project uses ESM modules and `__dirname` is not available in ES module scope.
 - **Chromium-only:** Removed Firefox and WebKit from Playwright projects -- not needed for this project's E2E baseline and speeds up test runs.
 
@@ -87,7 +87,7 @@ Each task was committed atomically:
 - **Verification:** `npm run test:e2e` runs without config errors
 - **Committed in:** 675aace (Task 2 commit)
 
-**2. [Rule 1 - Bug] afterAll crashed when VITE_SUPABASE_SERVICE_ROLE_KEY missing**
+**2. [Rule 1 - Bug] afterAll crashed when SUPABASE_SERVICE_ROLE_KEY missing**
 - **Found during:** Task 2 (first test run)
 - **Issue:** `createClient()` throws if key argument is undefined; afterAll failure attributed to test case
 - **Fix:** Added guard checking both URL and service role key before creating client; skips teardown with warning if missing
@@ -95,7 +95,7 @@ Each task was committed atomically:
 - **Verification:** Test passes both with and without service role key configured
 - **Committed in:** 675aace (Task 2 commit)
 
-**3. [Rule 3 - Blocking] VITE_SUPABASE_SERVICE_ROLE_KEY not in .env.local**
+**3. [Rule 3 - Blocking] SUPABASE_SERVICE_ROLE_KEY not in .env.local**
 - **Found during:** Task 2 (teardown verification)
 - **Issue:** Service role key was not configured locally; teardown could not delete test data
 - **Fix:** Retrieved key via `npx supabase projects api-keys` and added to .env.local
@@ -112,9 +112,9 @@ Each task was committed atomically:
 None beyond the auto-fixed deviations above.
 
 ## User Setup Required
-Developers must add `VITE_SUPABASE_SERVICE_ROLE_KEY` to their `.env.local` file for teardown to work.
+Developers must add `SUPABASE_SERVICE_ROLE_KEY` to their `.env.local` file for teardown to work.
 Get the key from: Supabase Dashboard -> Project Settings -> API -> service_role key.
-Without this key, tests still pass but teardown is skipped (dummy data remains in DB).
+Without this key, the RSVP E2E spec is skipped before it writes any dummy data.
 
 ## Next Phase Readiness
 - E2E foundation is in place -- additional E2E tests can follow the same pattern

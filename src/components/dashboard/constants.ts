@@ -39,8 +39,8 @@ export const TEMPLATE_LABELS: Record<string, string> = Object.fromEntries(
 );
 
 export const MSG_STATUS_MAP = {
-  pending: { label: 'ממתין בתור', classes: 'bg-amber-100 text-amber-700 border-amber-200' },
-  sent:    { label: 'נשלח',       classes: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
-  failed:  { label: 'נכשל',       classes: 'bg-rose-100 text-rose-700 border-rose-200' },
-  none:    { label: 'טרם נשלח',   classes: 'bg-slate-100 text-slate-500 border-slate-200' },
+  pending: { label: 'ממתין בתור', classes: 'bg-apricot-soft text-apricot border-transparent' },
+  sent:    { label: 'נשלח',       classes: 'bg-sage-soft    text-sage    border-transparent' },
+  failed:  { label: 'נכשל',       classes: 'bg-clay-soft   text-clay    border-transparent' },
+  none:    { label: 'טרם נשלח',   classes: 'bg-paper-2 text-ink-mute border-line' },
 } as const;

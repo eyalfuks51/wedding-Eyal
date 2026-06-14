@@ -15,12 +15,12 @@ gaps:
       - "Human must run `npm run test:e2e` and confirm exit 0 on first and second consecutive run"
   - truth: "Re-running `npm run test:e2e` a second time produces the same result — no duplicate-row errors and no leftover rows"
     status: partial
-    reason: "Idempotency depends on the upsert constraint on arrival_permits and the afterAll teardown executing successfully. Teardown code is wired correctly but gracefully skips if VITE_SUPABASE_SERVICE_ROLE_KEY is absent. Developer must confirm key is configured and teardown actually runs."
+    reason: "Idempotency depends on the upsert constraint on arrival_permits and the afterAll teardown executing successfully. The spec now skips before submission if SUPABASE_SERVICE_ROLE_KEY is absent, so a missing key cannot leave dummy rows behind."
     artifacts:
       - path: "tests/rsvp.spec.ts"
-        issue: "Graceful skip means re-run idempotency is not guaranteed without the service role key"
+        issue: "Without the service role key, the spec skips before exercising the write-and-cleanup path"
     missing:
-      - "Human must confirm VITE_SUPABASE_SERVICE_ROLE_KEY is set in .env.local and teardown log appears"
+      - "Human must confirm SUPABASE_SERVICE_ROLE_KEY is set in .env.local before relying on the write-and-cleanup path"
   - truth: "REQUIREMENTS.md tracking table updated to Complete for E2E-01 and E2E-02"
     status: failed
     reason: "REQUIREMENTS.md lines 147-148 show 'Not Started' for E2E-01 and E2E-02 even though phase is complete and description lines 75-76 show [x] checked."
@@ -53,7 +53,7 @@ human_verification:
 |---|-------|--------|----------|
 | 1 | `npm run test:e2e` completes without errors | ✓ VERIFIED | 1 passed (3.0s), teardown log confirmed |
 | 2 | Test navigates to `/hagit-and-itai`, fills dummy data, submits, asserts `תודה רבה` | ✓ VERIFIED | `rsvp.spec.ts` lines 36-66: goto, scrollIntoView, fill, click, selectOption, submit, assert `.rsvp__success-title` = `תודה רבה` |
-| 3 | After suite completes, dummy row (event_id + phone 0509999999) is deleted | ✓ VERIFIED | `afterAll` at line 11 creates service-role Supabase client, calls `.delete().eq('event_id', TEST_EVENT_ID).eq('phone', DUMMY_PHONE)` with graceful skip guard |
+| 3 | After suite completes, dummy row (event_id + phone 0509999999) is deleted | ✓ VERIFIED | `afterAll` creates a service-role Supabase client and calls `.delete().eq('event_id', TEST_EVENT_ID).eq('phone', DUMMY_PHONE)`; missing credentials skip the spec before submission |
 | 4 | Re-running a second time produces same result — no duplicate-row errors | ✓ VERIFIED | 1 passed (2.3s) on second consecutive run, teardown confirmed |
 
 **Score:** 4/4 truths verified (2 programmatically, 2 via live execution)
@@ -64,7 +64,7 @@ human_verification:
 |----------|----------|--------|---------|
 | `tests/rsvp.spec.ts` | Playwright E2E test with dummy phone, scroll guard, and afterAll teardown | ✓ VERIFIED | 68 lines; contains `afterAll`, `scrollIntoViewIfNeeded`, dummy phone `0509999999`, success assertion |
 | `playwright.config.ts` | dotenv loading so `process.env` has Supabase env vars | ✓ VERIFIED | Line 9: `dotenv.config({ path: path.resolve(__dirname, '.env.local') })` — ESM-safe `__dirname` via `fileURLToPath` |
-| `.env.example` | Documents `VITE_SUPABASE_SERVICE_ROLE_KEY` for developer setup | ✓ VERIFIED | Line 8: `VITE_SUPABASE_SERVICE_ROLE_KEY=your-service-role-key` with explanatory comment |
+| `.env.example` | Documents `SUPABASE_SERVICE_ROLE_KEY` for developer setup | ✓ VERIFIED | Line 8: `SUPABASE_SERVICE_ROLE_KEY=your-service-role-key` with explanatory comment |
 
 ### Key Link Verification
 
@@ -106,7 +106,7 @@ No stubs, placeholders, empty implementations, or TODO comments found in test fi
 
 ### Notable Implementation Decisions
 
-1. **Graceful teardown skip:** `afterAll` checks for both `VITE_SUPABASE_URL` and `VITE_SUPABASE_SERVICE_ROLE_KEY` before creating the Supabase client. If either is absent, it logs a warning and skips deletion. This means tests still pass without the service role key, but teardown is silently skipped — developers must manually configure the key for clean state.
+1. **Fail-closed cleanup guard:** the spec checks for both `VITE_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` before submission. If either is absent, Playwright skips before writing data. If the spec runs and teardown deletion fails, the suite fails.
 
 2. **ESM `__dirname` fix:** `playwright.config.ts` uses `fileURLToPath(import.meta.url)` to compute `__dirname` since the project uses ESM modules. This is a deviation from the original plan (which used CommonJS `__dirname`) that was correctly auto-fixed.
 
@@ -118,7 +118,7 @@ No stubs, placeholders, empty implementations, or TODO comments found in test fi
 
 **Test:** From project root, run `npm run test:e2e`
 **Expected:** Exit code 0, 1 test passed (chromium), console output includes "Teardown: dummy arrival_permit deleted"
-**Why human:** Requires live dev server on port 5173, live Supabase connection, and `VITE_SUPABASE_SERVICE_ROLE_KEY` in `.env.local`
+**Why human:** Requires live dev server on port 5173, live Supabase connection, and `SUPABASE_SERVICE_ROLE_KEY` in `.env.local`
 
 #### 2. Second Consecutive E2E Run (Idempotency)
 
@@ -135,7 +135,7 @@ Two gaps require human execution to close (cannot verify programmatically):
 One gap requires a codebase fix:
 - REQUIREMENTS.md tracking table at lines 147-148 must be updated from "Not Started" to "Complete" for E2E-01 and E2E-02
 
-The code implementation itself is complete and correct. All test selectors match actual DOM elements. All key links are wired. The database teardown logic is substantive (not a stub). The graceful-skip behavior means the phase's primary goal — database cleanliness across runs — is only guaranteed when `VITE_SUPABASE_SERVICE_ROLE_KEY` is configured.
+The code implementation itself is complete and correct. All test selectors match actual DOM elements. All key links are wired. The database teardown logic is substantive (not a stub), and missing cleanup credentials now skip the spec before any RSVP data is written.
 
 ---
 
