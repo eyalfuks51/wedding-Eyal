@@ -250,20 +250,21 @@ export const submitRsvp = async (rsvpData, eventId) => {
     throw new Error('שירות האישורים אינו זמין כרגע');
   }
 
-  // Single write to arrival_permits. A DB trigger propagates the change to invitations.
-  const { error } = await supabase
-    .from('arrival_permits')
-    .upsert([{
-      event_id:      eventId,
-      full_name:     rsvpData.name,
-      phone:         rsvpData.phone,
-      attending:     rsvpData.attending,
-      guests_count:  rsvpData.guest_count,
-      needs_parking: rsvpData.needs_parking,
-    }], { onConflict: 'event_id,phone' });
+  // Public RSVP writes go through the submit_rsvp SECURITY DEFINER RPC, not a
+  // direct table write. Anon has no direct policy on arrival_permits — the RPC
+  // is the only public write path and is scoped to a single (event_id, phone)
+  // row for an active event. A DB trigger propagates the change to invitations.
+  const { error } = await supabase.rpc('submit_rsvp', {
+    p_event_id:      eventId,
+    p_full_name:     rsvpData.name,
+    p_phone:         rsvpData.phone,
+    p_attending:     rsvpData.attending,
+    p_guests_count:  rsvpData.guest_count,
+    p_needs_parking: rsvpData.needs_parking,
+  });
 
   if (error) {
-    console.error('Error upserting arrival_permits:', error);
+    console.error('Error submitting RSVP via submit_rsvp RPC:', error);
     throw new Error('אירעה שגיאה בשליחת האישור. אנא נסו שוב.');
   }
 };
