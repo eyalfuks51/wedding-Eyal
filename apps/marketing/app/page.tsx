@@ -1,3 +1,5 @@
+import { AnimatedTestimonials, type Testimonial } from "../components/ui/animated-testimonials";
+
 const ONBOARDING_PATH = "/onboarding";
 const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:5173";
 const inviteUrl = process.env.NEXT_PUBLIC_INVITE_URL ?? appUrl;
@@ -60,6 +62,45 @@ const advancedFeatures = [
   "אוטומציית וואטסאפ וציר זמן",
   "שליחת הודעות לקבוצות אורחים",
   "אורחים ללא הגבלת גרסת החינם",
+];
+
+// Placeholder reviews — swap for real couples + self-hosted photos before launch.
+const testimonials: Testimonial[] = [
+  {
+    name: "נועה ויואב",
+    designation: "התחתנו בספטמבר, תל אביב",
+    quote:
+      "הרכבנו את ההזמנה בערב אחד ושלחנו בווטסאפ למחרת. תוך יומיים היו לנו מאה אישורי הגעה, בלי אקסל אחד.",
+    src: "https://images.unsplash.com/photo-1636041293178-808a6762ab39?q=80&w=400&h=400&auto=format&fit=crop",
+  },
+  {
+    name: "שירה ועומר",
+    designation: "חתונה בכרם, יוני",
+    quote:
+      "הכי אהבנו שכל המשפחה פשוט לחצה על הקישור. אפילו אמא שלי, שלא מתחברת לשום אפליקציה, אישרה הגעה לבד.",
+    src: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=400&h=400&auto=format&fit=crop",
+  },
+  {
+    name: "מאיה ודניאל",
+    designation: "התארסו, מתכננים אביב",
+    quote:
+      "ניסינו שלושה כלים אחרים לפני זה. גסטו היה היחיד שבאמת נראה כמו ההזמנה שרצינו, בלי לשלם מראש.",
+    src: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=400&h=400&auto=format&fit=crop",
+  },
+  {
+    name: "טל ורון",
+    designation: "חתונה קטנה, חיפה",
+    quote:
+      "המעקב אחרי מי הגיע ומי עוד לא ענה חסך לנו ריבים שלמים. ראינו הכל במקום אחד ובזמן אמת.",
+    src: "https://images.unsplash.com/photo-1624561172888-ac93c696e10c?q=80&w=400&h=400&auto=format&fit=crop",
+  },
+  {
+    name: "ליאת ואסף",
+    designation: "התחתנו במרץ, ירושלים",
+    quote:
+      "שלחנו תזכורת אחת בוואטסאפ לכל מי שלא ענה, והרשימה נסגרה לבד. הרגיש כאילו יש לנו מפיק צמוד לאירוע.",
+    src: "https://images.unsplash.com/photo-1623582854588-d60de57fa33f?q=80&w=400&h=400&auto=format&fit=crop",
+  },
 ];
 
 export default function Home() {
@@ -233,6 +274,14 @@ export default function Home() {
             <span>נשלח</span>
           </div>
         </div>
+      </section>
+
+      <section className="testimonials-section" aria-labelledby="love-title">
+        <div className="section-heading">
+          <p className="eyebrow">זוגות שכבר שלחו</p>
+          <h2 id="love-title">מה שזוגות מספרים אחרי שההזמנה יצאה</h2>
+        </div>
+        <AnimatedTestimonials testimonials={testimonials} autoplay />
       </section>
 
       <section className="final-cta" aria-labelledby="final-title">
