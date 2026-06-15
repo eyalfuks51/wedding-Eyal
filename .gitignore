@@ -44,3 +44,8 @@ supabase/.temp/
 
 # Codex executor scratch output (slice-orchestrator transport)
 .codex-last.txt
+
+# Local agent tooling dirs — contain MCP configs with plaintext DB credentials.
+# NEVER commit: .codex/config.toml holds a live Supabase pooler connection string.
+.codex/
+.superpowers/
