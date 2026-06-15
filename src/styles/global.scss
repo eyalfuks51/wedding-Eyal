@@ -5,41 +5,45 @@
 
 // ── Dashboard Design Tokens ─────────────────────────────────────────────────
 :root {
-  --paper:            oklch(97.8% 0.014 75);
-  --paper-2:          oklch(95.2% 0.022 76);
-  --paper-3:          oklch(91.8% 0.03 76);
-  --ink:              oklch(25.5% 0.018 55);
-  --ink-soft:         oklch(45.5% 0.025 58);
-  --ink-mute:         oklch(66.8% 0.025 65);
-  --line:             oklch(89.6% 0.028 76);
+  // Brand palette migrated warm cream/tan → cool lavender/violet/ink (hue 286–292),
+  // aligned to the marketing landing page. Token NAMES preserved; only VALUES re-hued.
+  --paper:            oklch(97% 0.012 292);
+  --paper-2:          oklch(95% 0.02 292);
+  --paper-3:          oklch(93% 0.026 292);
+  --ink:              oklch(22% 0.04 286);
+  --ink-soft:         oklch(41% 0.035 286);
+  --ink-mute:         oklch(57% 0.03 286);
+  --line:             oklch(86% 0.025 292);
 
-  --violet-700:       oklch(49% 0.22 296);
-  --violet-600:       oklch(56% 0.205 296);
-  --violet-50:        oklch(96.4% 0.024 301);
+  --violet-700:       oklch(43% 0.21 292);
+  --violet-600:       oklch(52% 0.22 292);
+  --violet-50:        oklch(92% 0.045 292);
 
-  --champagne:        oklch(86.6% 0.055 78);
-  --champagne-soft:   oklch(93% 0.045 78);
-  --rose-gold:        oklch(58% 0.105 18);
-  --rose-gold-soft:   oklch(78% 0.07 20);
+  // Decorative accents → violet/lavender (champagne=soft line, rose-gold=brand highlight)
+  --champagne:        oklch(80% 0.05 292);
+  --champagne-soft:   oklch(92% 0.04 292);
+  --rose-gold:        oklch(52% 0.22 292);
+  --rose-gold-soft:   oklch(92% 0.045 292);
 
-  --sage:             oklch(54% 0.055 120);
-  --sage-soft:        oklch(88.5% 0.04 118);
-  --apricot:          oklch(62% 0.12 55);
-  --apricot-soft:     oklch(88.8% 0.062 61);
-  --clay:             oklch(54.5% 0.12 37);
-  --clay-soft:        oklch(84.8% 0.065 34);
+  // Semantic states stay distinct: success=green, warning=gold, error=rose
+  --sage:             oklch(52% 0.13 150);
+  --sage-soft:        oklch(91% 0.05 150);
+  --apricot:          oklch(58% 0.12 70);
+  --apricot-soft:     oklch(91% 0.055 75);
+  --clay:             oklch(55% 0.17 25);
+  --clay-soft:        oklch(91% 0.06 22);
 
-  --surface-solid:    oklch(99.7% 0.006 75);
-  --glass-bg:         oklch(99.9% 0.005 75 / 0.94);
+  --surface-solid:    oklch(99.7% 0.006 292);
+  --glass-bg:         oklch(99.9% 0.005 292 / 0.94);
   --glass-blur:       blur(34px) saturate(1.45);
-  --glass-card:       oklch(99.9% 0.004 75 / 0.97);
+  --glass-card:       oklch(99.9% 0.004 292 / 0.97);
   --glass-card-blur:  blur(28px) saturate(1.5);
-  --glass-card-border:oklch(96% 0.014 75 / 0.9);
-  --glass-line:       oklch(84.8% 0.036 76 / 0.82);
-  --shadow-soft:      0 22px 60px -34px oklch(36% 0.045 52 / 0.48);
-  --shadow-float:     0 30px 80px -40px oklch(36% 0.05 52 / 0.52);
-  --glow-violet:      oklch(68% 0.16 302 / 0.2);
-  --glow-rose:        oklch(72% 0.115 20 / 0.24);
+  --glass-card-border:oklch(96% 0.014 292 / 0.9);
+  --glass-line:       oklch(84.8% 0.036 292 / 0.82);
+  --shadow-soft:      0 22px 60px -34px oklch(36% 0.045 286 / 0.48);
+  --shadow-float:     0 30px 80px -40px oklch(36% 0.05 286 / 0.52);
+  --glow-violet:      oklch(68% 0.16 292 / 0.2);
+  --glow-rose:        oklch(68% 0.16 292 / 0.22);
 
   --r-xs:  6px;
   --r-sm:  10px;

@@ -56,7 +56,7 @@ export default function LivePreview({
         position:     'relative',
         width:        `${width}px`,
         height:       `${outerH}px`,
-        background:   'oklch(18% 0.012 52)',
+        background:   'oklch(18% 0.012 292)',
         borderRadius: '32px',
         padding:      '8px',
         boxShadow:    '0 0 0 1.5px rgba(109,40,217,0.15), 0 12px 36px -12px rgba(42,37,32,0.35)',
@@ -73,7 +73,7 @@ export default function LivePreview({
           transform:     'translateX(-50%)',
           width:         '100px',
           height:        '22px',
-          background:    'oklch(18% 0.012 52)',
+          background:    'oklch(18% 0.012 292)',
           borderRadius:  '999px',
           zIndex:        10,
           pointerEvents: 'none',
@@ -119,13 +119,13 @@ export default function LivePreview({
       <div
         style={{
           position:             'relative',
-          background:           'linear-gradient(135deg, oklch(100% 0.004 75 / 0.97), oklch(99.5% 0.008 76 / 0.88))',
+          background:           'linear-gradient(135deg, oklch(100% 0.004 292 / 0.97), oklch(99.5% 0.008 292 / 0.88))',
           backdropFilter:       'var(--glass-card-blur)',
           WebkitBackdropFilter: 'var(--glass-card-blur)',
           border:               '1px solid var(--glass-line)',
           borderRadius:         '26px',
           padding:              '18px',
-          boxShadow:            '0 1px 0 oklch(100% 0.005 75 / 0.82) inset, 0 18px 46px -32px oklch(36% 0.045 52 / 0.5)',
+          boxShadow:            '0 1px 0 oklch(100% 0.005 292 / 0.82) inset, 0 18px 46px -32px oklch(36% 0.045 292 / 0.5)',
           overflow:             'hidden',
         }}
       >
@@ -182,7 +182,7 @@ export default function LivePreview({
               gap:          '4px',
               marginBottom: '14px',
               padding:      '3px',
-              background:   'oklch(95% 0.02 76 / 0.58)',
+              background:   'oklch(95% 0.02 292 / 0.58)',
               border:       '1px solid var(--glass-line)',
               borderRadius: 'var(--r-sm, 10px)',
             }}
@@ -201,12 +201,12 @@ export default function LivePreview({
                     fontWeight:    700,
                     fontFamily:    'inherit',
                     color:         active ? 'var(--violet-700)' : 'var(--ink-soft)',
-                    background:    active ? 'oklch(100% 0.006 75 / 0.82)' : 'transparent',
+                    background:    active ? 'oklch(100% 0.006 292 / 0.82)' : 'transparent',
                     borderRadius:  'var(--r-xs, 6px)',
                     textAlign:     'center',
                     border:        'none',
                     cursor:        'pointer',
-                    boxShadow:     active ? '0 8px 20px -16px oklch(36% 0.045 52 / 0.38), 0 1px 0 oklch(100% 0.005 75 / 0.68) inset' : 'none',
+                    boxShadow:     active ? '0 8px 20px -16px oklch(36% 0.045 292 / 0.38), 0 1px 0 oklch(100% 0.005 292 / 0.68) inset' : 'none',
                     transition:    'background 200ms, color 200ms',
                   }}
                 >

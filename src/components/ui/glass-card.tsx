@@ -26,7 +26,7 @@ function GlassCard({ className, style, ...props }: React.ComponentProps<'div'>) 
         border: '1px solid var(--glass-line)',
         backdropFilter: 'var(--glass-card-blur)',
         WebkitBackdropFilter: 'var(--glass-card-blur)',
-        boxShadow: 'var(--shadow-float), 0 1px 0 oklch(100% 0.005 75 / 0.62) inset',
+        boxShadow: 'var(--shadow-float), 0 1px 0 oklch(100% 0.005 292 / 0.62) inset',
         ...style,
       }}
       {...props}

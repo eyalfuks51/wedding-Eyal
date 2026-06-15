@@ -76,36 +76,36 @@ export default function OnboardingPage() {
   return (
     <div
       dir="rtl"
-      className="min-h-screen font-brand text-[#2f251f]"
+      className="min-h-screen font-brand text-ink"
       style={{
         background:
-          'radial-gradient(circle at 24% 15%, rgba(125, 58, 237, 0.16), transparent 26rem), radial-gradient(circle at 74% 8%, rgba(250, 203, 185, 0.55), transparent 24rem), linear-gradient(180deg, #fffaf2 0%, #f7efe4 54%, #f3eadc 100%)',
+          'radial-gradient(circle at 24% 15%, oklch(52% 0.22 292 / 0.16), transparent 26rem), radial-gradient(circle at 74% 8%, oklch(82% 0.07 292 / 0.5), transparent 24rem), linear-gradient(180deg, oklch(97% 0.012 292) 0%, oklch(95% 0.02 292) 54%, oklch(93% 0.026 292) 100%)',
       }}
     >
       <TopBar />
 
       <main className="mx-auto w-full max-w-[1152px] px-4 py-7 sm:px-6 lg:px-8">
-        <section className="mb-6 rounded-[18px] border border-[#e4d2bc] bg-[#fffdf8]/85 px-5 py-6 shadow-[0_18px_55px_rgba(80,47,22,0.08)] sm:px-8 lg:px-10">
+        <section className="mb-6 rounded-[18px] border border-line bg-surface/85 px-5 py-6 shadow-[0_18px_55px_oklch(36%_0.05_286_/_0.1)] sm:px-8 lg:px-10">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-sm font-bold text-[#b7646b]">פתיחת אירוע חדש</p>
-              <h1 className="mt-1 font-danidin text-4xl leading-tight text-[#2f251f] sm:text-5xl">
+              <p className="text-sm font-bold text-rose-gold">פתיחת אירוע חדש</p>
+              <h1 className="mt-1 font-danidin text-4xl leading-tight text-ink sm:text-5xl">
                 יצירת הזמנה חדשה
               </h1>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-[#7f7064]">
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-ink-soft">
                 שלושה צעדים קצרים: בוחרים תבנית, מכניסים פרטים בסיסיים, וממשיכים לעריכת ההזמנה.
               </p>
             </div>
-            <div className="w-fit rounded-full border border-[#e1ceb7] bg-[#fff9ef] px-4 py-2 text-sm font-bold text-[#7f7064]">
+            <div className="w-fit rounded-full border border-line bg-surface px-4 py-2 text-sm font-bold text-ink-soft">
               חינם להתחלה
             </div>
           </div>
         </section>
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
-          <section className="rounded-[18px] border border-[#e4d2bc] bg-[#fffdf8]/92 shadow-[0_16px_45px_rgba(80,47,22,0.07)]">
-            <div className="border-b border-[#eadcca] px-4 py-4 sm:px-6">
-              <div className="inline-flex flex-wrap gap-2 rounded-[16px] border border-[#e4d2bc] bg-[#fff9ef] p-1">
+          <section className="rounded-[18px] border border-line bg-surface/92 shadow-[0_16px_45px_oklch(36%_0.05_286_/_0.09)]">
+            <div className="border-b border-line px-4 py-4 sm:px-6">
+              <div className="inline-flex flex-wrap gap-2 rounded-[16px] border border-line bg-surface p-1">
                 {ONBOARDING_STEPS.map(item => {
                   const active = item.id === step;
                   const done = step > item.id || step === 4;
@@ -115,16 +115,16 @@ export default function OnboardingPage() {
                       className={cx(
                         'inline-flex items-center gap-2 rounded-[12px] px-3 py-2 text-sm font-bold transition-colors',
                         active && 'bg-[#7c3aed] text-white shadow-[0_8px_18px_rgba(124,58,237,0.24)]',
-                        done && !active && 'bg-[#edf8ee] text-[#4e6b38]',
-                        !active && !done && 'text-[#897869]',
+                        done && !active && 'bg-sage-soft text-sage',
+                        !active && !done && 'text-ink-mute',
                       )}
                     >
                       <span
                         className={cx(
                           'grid h-5 w-5 place-items-center rounded-full text-[11px]',
                           active && 'bg-white/18 text-white',
-                          done && !active && 'bg-[#d7e7cd] text-[#4e6b38]',
-                          !active && !done && 'bg-white text-[#897869]',
+                          done && !active && 'bg-sage-soft text-sage',
+                          !active && !done && 'bg-white text-ink-mute',
                         )}
                       >
                         {done ? '✓' : item.id}
@@ -155,10 +155,10 @@ export default function OnboardingPage() {
                           onClick={() => setTemplateId(template.id)}
                           aria-pressed={selected}
                           className={cx(
-                            'rounded-[16px] border p-3 text-right transition focus:outline-none focus:ring-2 focus:ring-[#7c3aed] focus:ring-offset-2 focus:ring-offset-[#fffdf8]',
+                            'rounded-[16px] border p-3 text-right transition focus:outline-none focus:ring-2 focus:ring-[#7c3aed] focus:ring-offset-2 focus:ring-offset-paper',
                             selected
                               ? 'border-[#7c3aed] bg-[#f4edff] shadow-[0_12px_28px_rgba(124,58,237,0.13)]'
-                              : 'border-[#e4d2bc] bg-[#fffaf3] hover:border-[#cdb89d] hover:bg-white',
+                              : 'border-line bg-paper hover:border-champagne hover:bg-white',
                           )}
                         >
                           <div
@@ -167,30 +167,30 @@ export default function OnboardingPage() {
                               template.preview.bg,
                             )}
                           >
-                            <div className="flex h-full flex-col justify-between rounded-[10px] border border-white/60 bg-[#fffdf8]/82 p-3 shadow-sm">
+                            <div className="flex h-full flex-col justify-between rounded-[10px] border border-white/60 bg-surface/82 p-3 shadow-sm">
                               <div className={cx('h-2 w-12 rounded-full', template.preview.accent)} />
                               <div>
-                                <div className="font-danidin text-2xl text-[#2f251f]">{template.preview.title}</div>
-                                <div className="mt-1 h-1.5 w-20 rounded-full bg-[#e8d8c3]" />
+                                <div className="font-danidin text-2xl text-ink">{template.preview.title}</div>
+                                <div className="mt-1 h-1.5 w-20 rounded-full bg-line" />
                               </div>
                             </div>
                           </div>
 
                           <div className="flex items-start justify-between gap-3">
                             <div>
-                              <div className="text-base font-bold text-[#2f251f]">{template.label}</div>
-                              <div className="mt-1 text-sm text-[#7f7064]">{template.desc}</div>
+                              <div className="text-base font-bold text-ink">{template.label}</div>
+                              <div className="mt-1 text-sm text-ink-soft">{template.desc}</div>
                             </div>
                             <span
                               className={cx(
                                 'mt-1 grid h-5 w-5 place-items-center rounded-full border text-xs',
-                                selected ? 'border-[#7c3aed] bg-[#7c3aed] text-white' : 'border-[#d8c5ad] text-transparent',
+                                selected ? 'border-[#7c3aed] bg-[#7c3aed] text-white' : 'border-line text-transparent',
                               )}
                             >
                               ✓
                             </span>
                           </div>
-                          <p className="mt-3 text-xs leading-5 text-[#9a8a7a]">{template.tone}</p>
+                          <p className="mt-3 text-xs leading-5 text-ink-mute">{template.tone}</p>
                         </button>
                       );
                     })}
@@ -239,7 +239,7 @@ export default function OnboardingPage() {
                     />
                   </div>
 
-                  <p className="rounded-[14px] border border-[#ecdcc3] bg-[#fff8e6] px-4 py-3 text-sm leading-6 text-[#8a541c]">
+                  <p className="rounded-[14px] border border-line bg-[#f4edff] px-4 py-3 text-sm leading-6 text-ink-soft">
                     אחרי היצירה עוברים להגדרות, עורכים את תוכן ההזמנה ומתחילים לנהל אישורי הגעה.
                   </p>
 
@@ -260,7 +260,7 @@ export default function OnboardingPage() {
                     description="הפעולה תיצור אירוע חדש ותפתח קישור להזמנה. שום דבר עדיין לא נשלח לאורחים."
                   />
 
-                  <dl className="overflow-hidden rounded-[16px] border border-[#e4d2bc] bg-[#fffaf3]">
+                  <dl className="overflow-hidden rounded-[16px] border border-line bg-paper">
                     <ReviewRow label="עיצוב" value={selectedTemplate.label} />
                     <ReviewRow label="בני הזוג" value={`${form.partner1} & ${form.partner2}`} />
                     <ReviewRow label="תאריך" value={form.date || 'אפשר להוסיף אחר כך'} muted={!form.date} />
@@ -269,7 +269,7 @@ export default function OnboardingPage() {
                   </dl>
 
                   {error && (
-                    <div className="rounded-[14px] border border-[#efc7c0] bg-[#fff0ee] px-4 py-3 text-sm text-[#a84737]">
+                    <div className="rounded-[14px] border border-clay-soft bg-clay-soft px-4 py-3 text-sm text-clay">
                       {error}
                     </div>
                   )}
@@ -285,7 +285,7 @@ export default function OnboardingPage() {
 
               {step === 4 && createdSlug && (
                 <div className="mx-auto max-w-xl space-y-6 text-center">
-                  <div className="mx-auto grid h-16 w-16 place-items-center rounded-[18px] bg-[#e7f5df] text-2xl font-bold text-[#2f8b64]">
+                  <div className="mx-auto grid h-16 w-16 place-items-center rounded-[18px] bg-sage-soft text-2xl font-bold text-sage">
                     ✓
                   </div>
                   <StepHeader
@@ -294,7 +294,7 @@ export default function OnboardingPage() {
                     centered
                   />
 
-                  <div className="flex items-center gap-2 rounded-[16px] border border-[#ddc8af] bg-[#fff8ef] p-2">
+                  <div className="flex items-center gap-2 rounded-[16px] border border-line bg-paper p-2">
                     <a
                       href={`/${createdSlug}`}
                       target="_blank"
@@ -327,27 +327,27 @@ export default function OnboardingPage() {
             </div>
           </section>
 
-          <aside className="rounded-[18px] border border-[#e4d2bc] bg-[#fffdf8]/88 p-4 shadow-[0_16px_45px_rgba(80,47,22,0.07)]">
+          <aside className="rounded-[18px] border border-line bg-surface/88 p-4 shadow-[0_16px_45px_oklch(36%_0.05_286_/_0.09)]">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
-                <p className="text-sm font-bold text-[#b7646b]">תצוגה מקדימה</p>
-                <h2 className="font-danidin text-3xl text-[#2f251f]">מה ייווצר עכשיו</h2>
+                <p className="text-sm font-bold text-rose-gold">תצוגה מקדימה</p>
+                <h2 className="font-danidin text-3xl text-ink">מה ייווצר עכשיו</h2>
               </div>
-              <span className="rounded-full border border-[#e4d2bc] bg-[#fff9ef] px-3 py-1 text-xs font-bold text-[#8d7867]">
+              <span className="rounded-full border border-line bg-surface px-3 py-1 text-xs font-bold text-ink-mute">
                 טיוטה
               </span>
             </div>
 
-            <div className="rounded-[18px] border border-[#ddc8af] bg-[#fff8ef] p-3">
+            <div className="rounded-[18px] border border-line bg-paper p-3">
               <div className={cx('rounded-[14px] bg-gradient-to-br p-4', selectedTemplate.preview.bg)}>
-                <div className="rounded-[16px] border border-white/60 bg-[#fffdf8]/86 p-5 text-center shadow-[0_18px_35px_rgba(60,37,20,0.12)]">
+                <div className="rounded-[16px] border border-white/60 bg-surface/86 p-5 text-center shadow-[0_18px_35px_oklch(36%_0.05_286_/_0.14)]">
                   <div className={cx('mx-auto mb-5 h-2 w-16 rounded-full', selectedTemplate.preview.accent)} />
-                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#9a8a7a]">Wedding invite</p>
-                  <div className="mt-3 font-danidin text-4xl leading-none text-[#2f251f]">
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-ink-mute">Wedding invite</p>
+                  <div className="mt-3 font-danidin text-4xl leading-none text-ink">
                     {form.partner1 || 'שם'} & {form.partner2 || 'שם'}
                   </div>
-                  <div className="mx-auto mt-5 h-px w-20 bg-[#ddc8af]" />
-                  <div className="mt-5 space-y-2 text-sm text-[#7f7064]">
+                  <div className="mx-auto mt-5 h-px w-20 bg-line" />
+                  <div className="mt-5 space-y-2 text-sm text-ink-soft">
                     <p>{form.date || 'תאריך האירוע'}</p>
                     <p>{form.venue || 'שם האולם'}</p>
                   </div>
@@ -369,33 +369,33 @@ export default function OnboardingPage() {
 
 function TopBar() {
   return (
-    <header className="sticky top-0 z-30 border-b border-[#e5d4bf] bg-[#fff9ef]/88 backdrop-blur-md">
+    <header className="sticky top-0 z-30 border-b border-line bg-surface/88 backdrop-blur-md">
       <div className="mx-auto flex h-[60px] w-full max-w-[1880px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-2">
           <button
             type="button"
-            className="grid h-9 w-9 place-items-center rounded-[10px] border border-[#ddc8af] bg-[#fffdf8] text-[#2f251f] shadow-sm"
+            className="grid h-9 w-9 place-items-center rounded-[10px] border border-line bg-surface text-ink shadow-sm"
             aria-label="התראות"
           >
             <span className="text-base leading-none">⌂</span>
           </button>
           <button
             type="button"
-            className="rounded-[12px] border border-[#ddc8af] bg-[#fffdf8] px-4 py-2 text-sm font-bold text-[#7f7064] shadow-sm"
+            className="rounded-[12px] border border-line bg-surface px-4 py-2 text-sm font-bold text-ink-soft shadow-sm"
           >
             יצירה חדשה
           </button>
         </div>
 
         <div className="flex items-center gap-3">
-          <nav className="hidden rounded-[16px] border border-[#ddc8af] bg-[#fffdf8] p-1 sm:flex">
+          <nav className="hidden rounded-[16px] border border-line bg-surface p-1 sm:flex">
             <span className="rounded-[12px] bg-[#7c3aed] px-4 py-2 text-sm font-bold text-white">יצירה</span>
-            <span className="px-4 py-2 text-sm font-bold text-[#7f7064]">הגדרות</span>
-            <span className="px-4 py-2 text-sm font-bold text-[#7f7064]">אורחים</span>
+            <span className="px-4 py-2 text-sm font-bold text-ink-soft">הגדרות</span>
+            <span className="px-4 py-2 text-sm font-bold text-ink-soft">אורחים</span>
           </nav>
-          <div className="flex items-center gap-1 text-xl font-bold text-[#2f251f]">
+          <div className="flex items-center gap-1 text-xl font-bold text-ink">
             <span>Guesto</span>
-            <span className="h-2 w-2 rounded-full bg-[#b7646b]" />
+            <span className="h-2 w-2 rounded-full bg-rose-gold" />
           </div>
         </div>
       </div>
@@ -416,9 +416,9 @@ function StepHeader({
 }) {
   return (
     <div className={cx('max-w-2xl', centered && 'mx-auto text-center')}>
-      {eyebrow && <p className="mb-2 text-sm font-bold text-[#b7646b]">{eyebrow}</p>}
-      <h2 className="font-danidin text-3xl leading-tight text-[#2f251f] sm:text-4xl">{title}</h2>
-      <p className="mt-3 text-base leading-7 text-[#7f7064]">{description}</p>
+      {eyebrow && <p className="mb-2 text-sm font-bold text-rose-gold">{eyebrow}</p>}
+      <h2 className="font-danidin text-3xl leading-tight text-ink sm:text-4xl">{title}</h2>
+      <p className="mt-3 text-base leading-7 text-ink-soft">{description}</p>
     </div>
   );
 }
@@ -440,21 +440,21 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-sm font-bold text-[#5f5146]">{label}</span>
+      <span className="mb-2 block text-sm font-bold text-ink-soft">{label}</span>
       <input
         type={type}
         value={value}
         onChange={onChange}
         placeholder={placeholder}
         autoComplete={autoComplete}
-        className="w-full rounded-[14px] border border-[#ddc8af] bg-[#fffaf3] px-3 py-3 text-base text-[#2f251f] transition placeholder:text-[#a89887] focus:border-[#7c3aed] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#eadfff]"
+        className="w-full rounded-[14px] border border-line bg-paper px-3 py-3 text-base text-ink transition placeholder:text-ink-mute focus:border-[#7c3aed] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#eadfff]"
       />
     </label>
   );
 }
 
 function Actions({ children }: { children: ReactNode }) {
-  return <div className="flex flex-col-reverse gap-3 border-t border-[#eadcca] pt-5 sm:flex-row">{children}</div>;
+  return <div className="flex flex-col-reverse gap-3 border-t border-line pt-5 sm:flex-row">{children}</div>;
 }
 
 function PrimaryButton({
@@ -471,7 +471,7 @@ function PrimaryButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="flex-1 rounded-[14px] bg-[#7c3aed] px-5 py-3 text-sm font-bold text-white shadow-[0_10px_24px_rgba(124,58,237,0.22)] transition hover:bg-[#6d28d9] focus:outline-none focus:ring-2 focus:ring-[#7c3aed] focus:ring-offset-2 focus:ring-offset-[#fffdf8] disabled:cursor-not-allowed disabled:bg-[#d5c7b6] disabled:shadow-none"
+      className="flex-1 rounded-[14px] bg-[#7c3aed] px-5 py-3 text-sm font-bold text-white shadow-[0_10px_24px_rgba(124,58,237,0.22)] transition hover:bg-[#6d28d9] focus:outline-none focus:ring-2 focus:ring-[#7c3aed] focus:ring-offset-2 focus:ring-offset-paper disabled:cursor-not-allowed disabled:bg-line disabled:shadow-none"
     >
       {children}
     </button>
@@ -492,7 +492,7 @@ function SecondaryButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="flex-1 rounded-[14px] border border-[#2f251f] bg-[#fffdf8] px-5 py-3 text-sm font-bold text-[#2f251f] transition hover:bg-[#fff7ea] focus:outline-none focus:ring-2 focus:ring-[#7c3aed] focus:ring-offset-2 focus:ring-offset-[#fffdf8] disabled:cursor-not-allowed disabled:opacity-50"
+      className="flex-1 rounded-[14px] border border-ink bg-surface px-5 py-3 text-sm font-bold text-ink transition hover:bg-paper-2 focus:outline-none focus:ring-2 focus:ring-[#7c3aed] focus:ring-offset-2 focus:ring-offset-paper disabled:cursor-not-allowed disabled:opacity-50"
     >
       {children}
     </button>
@@ -501,9 +501,9 @@ function SecondaryButton({
 
 function ReviewRow({ label, value, muted = false, ltr = false }: { label: string; value: string; muted?: boolean; ltr?: boolean }) {
   return (
-    <div className="grid gap-1 border-b border-[#eadcca] px-4 py-3 last:border-b-0 sm:grid-cols-[140px_1fr]">
-      <dt className="text-sm font-bold text-[#8c7b6b]">{label}</dt>
-      <dd className={cx('text-sm font-bold text-[#2f251f]', muted && 'font-medium text-[#9a8a7a]', ltr && 'text-left')} dir={ltr ? 'ltr' : 'rtl'}>
+    <div className="grid gap-1 border-b border-line px-4 py-3 last:border-b-0 sm:grid-cols-[140px_1fr]">
+      <dt className="text-sm font-bold text-ink-mute">{label}</dt>
+      <dd className={cx('text-sm font-bold text-ink', muted && 'font-medium text-ink-mute', ltr && 'text-left')} dir={ltr ? 'ltr' : 'rtl'}>
         {value}
       </dd>
     </div>
@@ -512,9 +512,9 @@ function ReviewRow({ label, value, muted = false, ltr = false }: { label: string
 
 function SummaryItem({ label, value, ltr = false }: { label: string; value: string; ltr?: boolean }) {
   return (
-    <div className="rounded-[14px] border border-[#e4d2bc] bg-[#fff9ef] px-3 py-3">
-      <dt className="text-xs font-bold text-[#9a8a7a]">{label}</dt>
-      <dd className="mt-1 truncate text-sm font-bold text-[#2f251f]" dir={ltr ? 'ltr' : 'rtl'}>
+    <div className="rounded-[14px] border border-line bg-surface px-3 py-3">
+      <dt className="text-xs font-bold text-ink-mute">{label}</dt>
+      <dd className="mt-1 truncate text-sm font-bold text-ink" dir={ltr ? 'ltr' : 'rtl'}>
         {value}
       </dd>
     </div>

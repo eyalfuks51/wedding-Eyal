@@ -27,11 +27,11 @@ export default function DashboardNav() {
       dir="rtl"
       className="dashboard-nav sticky top-0 z-50 font-brand"
       style={{
-        background: 'linear-gradient(90deg, oklch(99.5% 0.012 75 / 0.82), oklch(98% 0.018 78 / 0.64))',
+        background: 'linear-gradient(90deg, oklch(99.5% 0.012 292 / 0.82), oklch(98% 0.018 292 / 0.64))',
         backdropFilter: 'var(--glass-blur)',
         WebkitBackdropFilter: 'var(--glass-blur)',
         borderBottom: '1px solid var(--glass-line)',
-        boxShadow: '0 1px 0 oklch(100% 0.005 75 / 0.55) inset, 0 14px 34px -32px oklch(32% 0.04 52 / 0.38)',
+        boxShadow: '0 1px 0 oklch(100% 0.005 292 / 0.55) inset, 0 14px 34px -32px oklch(32% 0.04 292 / 0.38)',
         height: '68px',
         display: 'flex',
         alignItems: 'center',
@@ -46,7 +46,7 @@ export default function DashboardNav() {
       >
         <span
           className="inline-block w-1.5 h-1.5 rounded-full shrink-0"
-          style={{ background: 'var(--rose-gold)', marginBottom: '2px', boxShadow: '0 0 0 4px oklch(72% 0.115 20 / 0.16)' }}
+          style={{ background: 'var(--rose-gold)', marginBottom: '2px', boxShadow: '0 0 0 4px oklch(72% 0.115 292 / 0.16)' }}
         />
         Guesto
       </div>
@@ -58,8 +58,8 @@ export default function DashboardNav() {
           padding: '4px',
           borderRadius: 'var(--r-md)',
           border: '1px solid var(--glass-line)',
-          background: 'oklch(100% 0.006 75 / 0.45)',
-          boxShadow: '0 1px 0 oklch(100% 0.005 75 / 0.55) inset',
+          background: 'oklch(100% 0.006 292 / 0.45)',
+          boxShadow: '0 1px 0 oklch(100% 0.005 292 / 0.55) inset',
         }}
       >
         {tabs.map(tab => {
@@ -71,9 +71,9 @@ export default function DashboardNav() {
               className="dashboard-nav-tab px-4 py-2 text-sm font-medium transition-all duration-200 rounded-xl"
               style={active ? {
                 color: 'var(--violet-700)',
-                background: 'linear-gradient(180deg, oklch(99% 0.015 301 / 0.92), var(--violet-50))',
-                border: '1px solid oklch(78% 0.09 300 / 0.34)',
-                boxShadow: '0 10px 24px -18px var(--violet-700), 0 1px 0 oklch(100% 0.005 75 / 0.8) inset',
+                background: 'linear-gradient(180deg, oklch(99% 0.015 292 / 0.92), var(--violet-50))',
+                border: '1px solid oklch(78% 0.09 292 / 0.34)',
+                boxShadow: '0 10px 24px -18px var(--violet-700), 0 1px 0 oklch(100% 0.005 292 / 0.8) inset',
               } : {
                 color: 'var(--ink-soft)',
                 background: 'transparent',
@@ -100,8 +100,8 @@ export default function DashboardNav() {
         style={{
           color: 'var(--ink-soft)',
           border: '1px solid var(--glass-line)',
-          background: 'oklch(100% 0.006 75 / 0.45)',
-          boxShadow: '0 1px 0 oklch(100% 0.005 75 / 0.56) inset',
+          background: 'oklch(100% 0.006 292 / 0.45)',
+          boxShadow: '0 1px 0 oklch(100% 0.005 292 / 0.56) inset',
         }}
         aria-label="התנתקות"
       >
@@ -116,8 +116,8 @@ export default function DashboardNav() {
           height: '38px',
           color: 'var(--ink-soft)',
           border: '1px solid var(--glass-line)',
-          background: 'oklch(100% 0.006 75 / 0.45)',
-          boxShadow: '0 1px 0 oklch(100% 0.005 75 / 0.56) inset',
+          background: 'oklch(100% 0.006 292 / 0.45)',
+          boxShadow: '0 1px 0 oklch(100% 0.005 292 / 0.56) inset',
         }}
         aria-label="התראות"
       >

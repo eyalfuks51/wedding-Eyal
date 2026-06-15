@@ -89,10 +89,10 @@ const SETTINGS_STYLES = `
   padding: 24px 28px;
   border-radius: var(--r-lg, 24px);
   border: 1px solid var(--glass-line);
-  background: linear-gradient(135deg, oklch(100% 0.004 75 / 0.96), oklch(99.5% 0.008 76 / 0.88));
+  background: linear-gradient(135deg, oklch(100% 0.004 292 / 0.96), oklch(99.5% 0.008 292 / 0.88));
   backdrop-filter: var(--glass-card-blur);
   -webkit-backdrop-filter: var(--glass-card-blur);
-  box-shadow: var(--shadow-soft), 0 1px 0 oklch(100% 0.005 75 / 0.78) inset;
+  box-shadow: var(--shadow-soft), 0 1px 0 oklch(100% 0.005 292 / 0.78) inset;
   overflow: hidden;
 }
 .gst-page .page-header::before {
@@ -129,14 +129,14 @@ const SETTINGS_STYLES = `
 .gst-page .ghost-btn {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 9px 14px; border-radius: var(--r-sm, 10px);
-  background: oklch(100% 0.006 75 / 0.48); border: 1px solid var(--glass-line);
+  background: oklch(100% 0.006 292 / 0.48); border: 1px solid var(--glass-line);
   font-size: 13px; font-weight: 600; color: var(--ink-soft);
   font-family: inherit; cursor: pointer;
   transition: background 200ms, color 200ms, border-color 200ms, transform 200ms;
-  box-shadow: 0 1px 0 oklch(100% 0.005 75 / 0.58) inset;
+  box-shadow: 0 1px 0 oklch(100% 0.005 292 / 0.58) inset;
 }
 .gst-page .ghost-btn:hover {
-  background: oklch(100% 0.006 75 / 0.72);
+  background: oklch(100% 0.006 292 / 0.72);
   color: var(--ink);
   border-color: var(--champagne);
   transform: translateY(-1px);
@@ -157,16 +157,16 @@ const SETTINGS_STYLES = `
 
 /* Section card */
 .gst-page .section {
-  background: linear-gradient(135deg, oklch(100% 0.004 75 / 0.98), oklch(99.5% 0.008 76 / 0.9));
+  background: linear-gradient(135deg, oklch(100% 0.004 292 / 0.98), oklch(99.5% 0.008 292 / 0.9));
   backdrop-filter: var(--glass-card-blur);
   -webkit-backdrop-filter: var(--glass-card-blur);
   border: 1px solid var(--glass-line);
   border-radius: var(--r-lg, 24px);
   overflow: hidden;
-  box-shadow: var(--shadow-soft), 0 1px 0 oklch(100% 0.005 75 / 0.78) inset;
+  box-shadow: var(--shadow-soft), 0 1px 0 oklch(100% 0.005 292 / 0.78) inset;
   transition: border-color 220ms, box-shadow 220ms, transform 220ms;
 }
-.gst-page .section:hover { border-color: var(--champagne); box-shadow: var(--shadow-float), 0 1px 0 oklch(100% 0.005 75 / 0.82) inset; transform: translateY(-1px); }
+.gst-page .section:hover { border-color: var(--champagne); box-shadow: var(--shadow-float), 0 1px 0 oklch(100% 0.005 292 / 0.82) inset; transform: translateY(-1px); }
 
 .gst-page .section-head {
   display: flex;
@@ -188,7 +188,7 @@ const SETTINGS_STYLES = `
   width: 38px; height: 38px;
   border-radius: 14px;
   display: flex; align-items: center; justify-content: center;
-  background: linear-gradient(135deg, var(--champagne-soft), oklch(97% 0.024 78 / 0.72));
+  background: linear-gradient(135deg, var(--champagne-soft), oklch(97% 0.024 292 / 0.72));
   color: var(--rose-gold);
   flex-shrink: 0;
   box-shadow: 0 14px 28px -24px var(--rose-gold);
@@ -228,7 +228,7 @@ const SETTINGS_STYLES = `
 .gst-page .section-body {
   padding: 20px 24px 24px;
   border-top: 1px solid var(--glass-line);
-  background: oklch(100% 0.004 75 / 0.72);
+  background: oklch(100% 0.004 292 / 0.72);
 }
 
 /* Field grid */
@@ -263,7 +263,7 @@ const SETTINGS_STYLES = `
   padding: 10px 12px;
   border: 1px solid var(--glass-line);
   border-radius: var(--r-sm, 10px);
-  background: oklch(100% 0.006 75 / 0.62);
+  background: oklch(100% 0.006 292 / 0.62);
   font-size: 14px;
   color: var(--ink);
   font-family: inherit;
@@ -278,8 +278,8 @@ const SETTINGS_STYLES = `
 .gst-page .field textarea:focus {
   outline: none;
   border-color: var(--violet-600);
-  box-shadow: 0 0 0 3px oklch(60% 0.17 296 / 0.12);
-  background: oklch(100% 0.006 75 / 0.86);
+  box-shadow: 0 0 0 3px oklch(60% 0.17 292 / 0.12);
+  background: oklch(100% 0.006 292 / 0.86);
 }
 .gst-page .field textarea { resize: vertical; min-height: 84px; line-height: 1.55; }
 .gst-page .field-help { font-size: 11.5px; color: var(--ink-mute); margin-top: 2px; line-height: 1.4; }
@@ -292,7 +292,7 @@ const SETTINGS_STYLES = `
   gap: 10px;
   align-items: center;
   padding: 8px 10px 8px 8px;
-  background: oklch(100% 0.004 75 / 0.9);
+  background: oklch(100% 0.004 292 / 0.9);
   border: 1px solid var(--glass-line);
   border-radius: var(--r-sm, 10px);
 }
@@ -302,7 +302,7 @@ const SETTINGS_STYLES = `
   font-size: 13px;
   border: 1px solid var(--glass-line);
   border-radius: var(--r-xs, 6px);
-  background: oklch(100% 0.006 75 / 0.64);
+  background: oklch(100% 0.006 292 / 0.64);
   color: var(--ink);
   font-family: inherit;
 }
@@ -331,7 +331,7 @@ const SETTINGS_STYLES = `
   padding: 9px 14px;
   border-radius: var(--r-sm, 10px);
   border: 1.5px dashed var(--champagne);
-  background: oklch(94% 0.04 78 / 0.42);
+  background: oklch(94% 0.04 292 / 0.42);
   color: var(--rose-gold);
   font-size: 13px;
   font-weight: 700;
@@ -340,7 +340,7 @@ const SETTINGS_STYLES = `
   transition: background 200ms, border-color 200ms;
 }
 .gst-page .add-row-btn:hover {
-  background: oklch(90% 0.055 78 / 0.46);
+  background: oklch(90% 0.055 292 / 0.46);
   border-color: var(--rose-gold);
 }
 
@@ -354,10 +354,10 @@ const SETTINGS_STYLES = `
   border: 1px solid var(--glass-line);
   background:
     radial-gradient(circle at 50% 12%, var(--glow-rose), transparent 36%),
-    linear-gradient(135deg, oklch(100% 0.004 75 / 0.97), oklch(99.5% 0.008 76 / 0.88));
+    linear-gradient(135deg, oklch(100% 0.004 292 / 0.97), oklch(99.5% 0.008 292 / 0.88));
   backdrop-filter: var(--glass-card-blur);
   -webkit-backdrop-filter: var(--glass-card-blur);
-  box-shadow: var(--shadow-float), 0 1px 0 oklch(100% 0.005 75 / 0.78) inset;
+  box-shadow: var(--shadow-float), 0 1px 0 oklch(100% 0.005 292 / 0.78) inset;
 }
 
 /* Save bar */
@@ -379,7 +379,7 @@ const SETTINGS_STYLES = `
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  box-shadow: var(--shadow-float), 0 1px 0 oklch(100% 0.005 75 / 0.82) inset;
+  box-shadow: var(--shadow-float), 0 1px 0 oklch(100% 0.005 292 / 0.82) inset;
   transition: opacity 200ms, transform 200ms;
 }
 .gst-page .save-bar.hidden {
@@ -413,7 +413,7 @@ const SETTINGS_STYLES = `
 .gst-page .btn-discard {
   padding: 9px 16px;
   border-radius: var(--r-sm, 10px);
-  background: oklch(100% 0.006 75 / 0.52);
+  background: oklch(100% 0.006 292 / 0.52);
   border: 1px solid var(--glass-line);
   font-size: 13px;
   font-weight: 700;
@@ -428,7 +428,7 @@ const SETTINGS_STYLES = `
   padding: 9px 18px;
   border-radius: var(--r-sm, 10px);
   background: var(--violet-700);
-  color: oklch(99% 0.006 75);
+  color: oklch(99% 0.006 292);
   font-size: 13px;
   font-weight: 700;
   font-family: inherit;
@@ -513,7 +513,7 @@ const SETTINGS_STYLES = `
   cursor: pointer;
   transition: background 200ms;
 }
-.gst-page .preview-overlay-close:hover { background: oklch(100% 0.006 75 / 0.82); }
+.gst-page .preview-overlay-close:hover { background: oklch(100% 0.006 292 / 0.82); }
 .gst-page .preview-overlay-inner {
   flex: 1;
   display: flex; flex-direction: column;
@@ -541,7 +541,7 @@ const SETTINGS_STYLES = `
   border-radius: var(--r-sm, 10px);
   font-size: 13px;
   font-weight: 600;
-  color: oklch(99% 0.006 75);
+  color: oklch(99% 0.006 292);
   box-shadow: 0 8px 24px -10px rgba(42, 37, 32, 0.3);
   display: inline-flex;
   align-items: center;
@@ -749,7 +749,7 @@ export default function DashboardSettings() {
           background: [
             'radial-gradient(circle at 84% 10%, var(--glow-rose) 0, transparent 30%)',
             'radial-gradient(circle at 18% 20%, var(--glow-violet) 0, transparent 28%)',
-            'linear-gradient(180deg, var(--paper) 0%, oklch(96.5% 0.018 78) 55%, var(--paper-2) 100%)',
+            'linear-gradient(180deg, var(--paper) 0%, oklch(96.5% 0.018 292) 55%, var(--paper-2) 100%)',
           ].join(', '),
         }}
       >
@@ -773,7 +773,7 @@ export default function DashboardSettings() {
         background: [
           'radial-gradient(circle at 84% 10%, var(--glow-rose) 0, transparent 30%)',
           'radial-gradient(circle at 18% 20%, var(--glow-violet) 0, transparent 28%)',
-          'linear-gradient(180deg, var(--paper) 0%, oklch(96.5% 0.018 78) 55%, var(--paper-2) 100%)',
+          'linear-gradient(180deg, var(--paper) 0%, oklch(96.5% 0.018 292) 55%, var(--paper-2) 100%)',
         ].join(', '),
       }}
     >

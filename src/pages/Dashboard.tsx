@@ -98,7 +98,7 @@ const COL_OPTIONS: Array<{ key: keyof ColVis; label: string }> = [
 // dot: Tailwind bg-* class for the coloured indicator dot inside the badge
 const STATUS_MAP: Record<string, { label: string; classes: string; dot: string }> = {
   attending: { label: 'מגיע',    classes: 'bg-sage-soft   text-sage',    dot: 'bg-sage'    },
-  pending:   { label: 'ממתין',   classes: 'bg-apricot-soft text-apricot', dot: 'bg-apricot' },
+  pending:   { label: 'ממתין',   classes: 'bg-paper-3 text-ink-soft',     dot: 'bg-rose-gold' },
   declined:  { label: 'לא מגיע', classes: 'bg-paper-2 text-ink-soft',    dot: 'bg-ink-mute' },
 };
 
@@ -1189,7 +1189,7 @@ export default function Dashboard() {
         background: [
           'radial-gradient(circle at 82% 9%, var(--glow-rose) 0, transparent 30%)',
           'radial-gradient(circle at 14% 22%, var(--glow-violet) 0, transparent 28%)',
-          'linear-gradient(180deg, var(--paper) 0%, oklch(96.5% 0.018 78) 52%, var(--paper-2) 100%)',
+          'linear-gradient(180deg, var(--paper) 0%, oklch(96.5% 0.018 292) 52%, var(--paper-2) 100%)',
         ].join(', '),
         color: 'var(--ink)',
       }}
@@ -1448,10 +1448,10 @@ export default function Dashboard() {
             padding: '24px 28px',
             borderRadius: 'var(--r-lg)',
             border: '1px solid var(--glass-line)',
-            background: 'linear-gradient(135deg, oklch(100% 0.004 75 / 0.96), oklch(99.5% 0.008 76 / 0.88))',
+            background: 'linear-gradient(135deg, oklch(100% 0.004 292 / 0.96), oklch(99.5% 0.008 292 / 0.88))',
             backdropFilter: 'var(--glass-card-blur)',
             WebkitBackdropFilter: 'var(--glass-card-blur)',
-            boxShadow: 'var(--shadow-soft), 0 1px 0 oklch(100% 0.005 75 / 0.78) inset',
+            boxShadow: 'var(--shadow-soft), 0 1px 0 oklch(100% 0.005 292 / 0.78) inset',
             overflow: 'hidden',
           }}
         >
@@ -1484,7 +1484,7 @@ export default function Dashboard() {
             background: 'radial-gradient(ellipse at 30% 50%, var(--glow-rose) 0%, transparent 65%), radial-gradient(ellipse at 80% 60%, var(--glow-violet) 0%, transparent 60%)',
             filter: 'blur(40px)', pointerEvents: 'none', zIndex: 0, borderRadius: '50%' }} />
           <div aria-hidden style={{ position: 'absolute', inset: 'auto auto -20px 10%', width: 280, height: 180,
-            background: 'radial-gradient(ellipse, oklch(86.6% 0.055 78 / 0.38) 0%, transparent 70%)',
+            background: 'radial-gradient(ellipse, oklch(86.6% 0.055 292 / 0.38) 0%, transparent 70%)',
             filter: 'blur(32px)', pointerEvents: 'none', zIndex: 0, borderRadius: '50%' }} />
 
           {/* HERO KPI — confirmed pax with SVG ring */}
@@ -1492,13 +1492,13 @@ export default function Dashboard() {
             className="relative"
             style={{
               zIndex: 1,
-              background: 'linear-gradient(135deg, oklch(100% 0.004 75 / 0.98), oklch(99.5% 0.008 76 / 0.9))',
+              background: 'linear-gradient(135deg, oklch(100% 0.004 292 / 0.98), oklch(99.5% 0.008 292 / 0.9))',
               backdropFilter: 'var(--glass-card-blur)',
               WebkitBackdropFilter: 'var(--glass-card-blur)',
               border: '1px solid var(--glass-line)',
               borderRadius: 'var(--r-lg)',
               padding: '24px 28px',
-              boxShadow: 'var(--shadow-soft), 0 1px 0 oklch(100% 0.005 75 / 0.82) inset',
+              boxShadow: 'var(--shadow-soft), 0 1px 0 oklch(100% 0.005 292 / 0.82) inset',
               display: 'flex',
               alignItems: 'center',
               gap: '28px',
@@ -1542,7 +1542,7 @@ export default function Dashboard() {
                 <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full" style={{ background: 'var(--sage-soft)', color: 'var(--sage)' }}>
                   <span className="w-1.5 h-1.5 rounded-full bg-current" />{kpi.confirmedFamilies} אישרו
                 </span>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full" style={{ background: 'var(--apricot-soft)', color: 'var(--apricot)' }}>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full" style={{ background: 'var(--paper-3)', color: 'var(--ink-soft)' }}>
                   <span className="w-1.5 h-1.5 rounded-full bg-current" />{kpi.pending} ממתינים
                 </span>
                 <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full" style={{ background: 'var(--paper-2)', color: 'var(--ink-soft)' }}>
@@ -1557,13 +1557,13 @@ export default function Dashboard() {
             className="relative overflow-hidden cursor-pointer transition-all duration-200 hover:-translate-y-0.5"
             style={{
               zIndex: 1,
-              background: 'linear-gradient(135deg, oklch(99% 0.014 302 / 0.96) 0%, oklch(99.8% 0.004 75 / 0.9) 100%)',
+              background: 'linear-gradient(135deg, oklch(99% 0.014 292 / 0.96) 0%, oklch(99.8% 0.004 292 / 0.9) 100%)',
               backdropFilter: 'var(--glass-card-blur)',
               WebkitBackdropFilter: 'var(--glass-card-blur)',
-              border: '1px solid oklch(83% 0.068 300 / 0.62)',
+              border: '1px solid oklch(83% 0.068 292 / 0.62)',
               borderRadius: 'var(--r-lg)',
               padding: '24px 28px',
-              boxShadow: 'var(--shadow-soft), 0 1px 0 oklch(100% 0.005 75 / 0.82) inset',
+              boxShadow: 'var(--shadow-soft), 0 1px 0 oklch(100% 0.005 292 / 0.82) inset',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'center',
@@ -1591,7 +1591,7 @@ export default function Dashboard() {
               )}
               <button
                 className="dashboard-kpi-cta inline-flex items-center gap-2 font-bold mt-4 transition-all duration-200 hover:-translate-x-0.5"
-                style={{ padding: '10px 18px', borderRadius: 'var(--r-pill)', background: 'var(--violet-700)', color: 'oklch(99% 0.006 75)', fontSize: '13px', letterSpacing: '0.01em', border: '1px solid oklch(63% 0.16 296 / 0.55)', boxShadow: '0 14px 26px -18px var(--violet-700)' }}
+                style={{ padding: '10px 18px', borderRadius: 'var(--r-pill)', background: 'var(--violet-700)', color: 'oklch(99% 0.006 292)', fontSize: '13px', letterSpacing: '0.01em', border: '1px solid oklch(63% 0.16 292 / 0.55)', boxShadow: '0 14px 26px -18px var(--violet-700)' }}
                 onClick={e => { e.stopPropagation(); setStatusFilter('pending'); }}
               >
                 צפייה ושליחת תזכורת
@@ -1611,13 +1611,13 @@ export default function Dashboard() {
         <section
           className="dashboard-filter-bar flex flex-wrap items-center gap-2.5 mb-4"
           style={{
-            background: 'linear-gradient(135deg, oklch(100% 0.004 75 / 0.97), oklch(99.7% 0.006 75 / 0.88))',
+            background: 'linear-gradient(135deg, oklch(100% 0.004 292 / 0.97), oklch(99.7% 0.006 292 / 0.88))',
             backdropFilter: 'var(--glass-card-blur)',
             WebkitBackdropFilter: 'var(--glass-card-blur)',
             border: '1px solid var(--glass-line)',
             borderRadius: 'var(--r-md)',
             padding: '14px 16px',
-            boxShadow: 'var(--shadow-soft), 0 1px 0 oklch(100% 0.005 75 / 0.78) inset',
+            boxShadow: 'var(--shadow-soft), 0 1px 0 oklch(100% 0.005 292 / 0.78) inset',
           }}
         >
           {/* Search */}
@@ -1703,14 +1703,14 @@ export default function Dashboard() {
         <section
           className="dashboard-table-shell"
           style={{
-            background: 'oklch(100% 0.004 75 / 0.98)',
+            background: 'oklch(100% 0.004 292 / 0.98)',
             backdropFilter: 'var(--glass-card-blur)',
             WebkitBackdropFilter: 'var(--glass-card-blur)',
             border: '1px solid var(--glass-line)',
             borderRadius: 'var(--r-lg)',
             overflow: 'hidden',
             marginBottom: '24px',
-            boxShadow: 'var(--shadow-soft), 0 1px 0 oklch(100% 0.005 75 / 0.78) inset',
+            boxShadow: 'var(--shadow-soft), 0 1px 0 oklch(100% 0.005 292 / 0.78) inset',
           }}
         >
 
@@ -1719,7 +1719,7 @@ export default function Dashboard() {
             className="dashboard-table-header flex items-center justify-between px-5 py-4"
             style={{
               borderBottom: '1px solid var(--glass-line)',
-              background: 'linear-gradient(90deg, oklch(100% 0.004 75 / 0.96), oklch(99.5% 0.008 77 / 0.88))',
+              background: 'linear-gradient(90deg, oklch(100% 0.004 292 / 0.96), oklch(99.5% 0.008 292 / 0.88))',
             }}
           >
             <span className="dashboard-table-summary text-sm font-brand" style={{ color: 'var(--ink-soft)' }}>
@@ -1731,25 +1731,25 @@ export default function Dashboard() {
               <button
                 onClick={() => canExportGuests ? handleExportAll() : setUpgradeOpen(true)}
                 className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium font-brand transition-colors"
-                style={{ background: 'oklch(100% 0.006 75 / 0.45)', border: '1px solid var(--glass-line)', borderRadius: 'var(--r-sm)', color: 'var(--ink-soft)', boxShadow: '0 1px 0 oklch(100% 0.005 75 / 0.56) inset' }}
+                style={{ background: 'oklch(100% 0.006 292 / 0.45)', border: '1px solid var(--glass-line)', borderRadius: 'var(--r-sm)', color: 'var(--ink-soft)', boxShadow: '0 1px 0 oklch(100% 0.005 292 / 0.56) inset' }}
                 onMouseEnter={e => { e.currentTarget.style.background = 'var(--paper-2)'; e.currentTarget.style.color = 'var(--ink)'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'oklch(100% 0.006 75 / 0.45)'; e.currentTarget.style.color = 'var(--ink-soft)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'oklch(100% 0.006 292 / 0.45)'; e.currentTarget.style.color = 'var(--ink-soft)'; }}
               >
                 <Download className="w-3.5 h-3.5" /> ייצוא
               </button>
               <button
                 onClick={() => canImportGuests ? setIsUploadOpen(true) : setUpgradeOpen(true)}
                 className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium font-brand transition-colors"
-                style={{ background: 'oklch(100% 0.006 75 / 0.45)', border: '1px solid var(--glass-line)', borderRadius: 'var(--r-sm)', color: 'var(--ink-soft)', boxShadow: '0 1px 0 oklch(100% 0.005 75 / 0.56) inset' }}
+                style={{ background: 'oklch(100% 0.006 292 / 0.45)', border: '1px solid var(--glass-line)', borderRadius: 'var(--r-sm)', color: 'var(--ink-soft)', boxShadow: '0 1px 0 oklch(100% 0.005 292 / 0.56) inset' }}
                 onMouseEnter={e => { e.currentTarget.style.background = 'var(--paper-2)'; e.currentTarget.style.color = 'var(--ink)'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'oklch(100% 0.006 75 / 0.45)'; e.currentTarget.style.color = 'var(--ink-soft)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'oklch(100% 0.006 292 / 0.45)'; e.currentTarget.style.color = 'var(--ink-soft)'; }}
               >
                 <Upload className="w-3.5 h-3.5" /> ייבוא
               </button>
               <button
                 onClick={() => isAtGuestLimit ? setUpgradeOpen(true) : openModal()}
                 className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold font-brand transition-colors"
-                style={{ background: 'var(--violet-700)', color: 'oklch(99% 0.006 75)', borderRadius: 'var(--r-sm)', border: '1px solid oklch(63% 0.16 296 / 0.55)', boxShadow: '0 14px 26px -20px var(--violet-700)' }}
+                style={{ background: 'var(--violet-700)', color: 'oklch(99% 0.006 292)', borderRadius: 'var(--r-sm)', border: '1px solid oklch(63% 0.16 292 / 0.55)', boxShadow: '0 14px 26px -20px var(--violet-700)' }}
                 onMouseEnter={e => (e.currentTarget.style.background = 'var(--violet-600)')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'var(--violet-700)')}
               >
@@ -1761,7 +1761,7 @@ export default function Dashboard() {
           <div className="dashboard-table-scroll overflow-x-auto">
             <table className="w-full min-w-[640px]" style={{ fontSize: '13.5px', borderCollapse: 'collapse' }}>
               <thead>
-                <tr style={{ background: 'linear-gradient(90deg, var(--paper) 0%, oklch(96.8% 0.018 77) 100%)', borderBottom: '1px solid var(--line)' }}>
+                <tr style={{ background: 'linear-gradient(90deg, var(--paper) 0%, oklch(96.8% 0.018 292) 100%)', borderBottom: '1px solid var(--line)' }}>
                   <th className="w-10 px-4 py-3 text-right">
                     <input
                       ref={selectAllRef}
@@ -1800,9 +1800,9 @@ export default function Dashboard() {
                           maxWidth: 460,
                           padding: '30px 28px',
                           borderRadius: 'var(--r-lg)',
-                          background: 'linear-gradient(135deg, oklch(100% 0.004 75 / 0.96), oklch(99.5% 0.008 77 / 0.86))',
+                          background: 'linear-gradient(135deg, oklch(100% 0.004 292 / 0.96), oklch(99.5% 0.008 292 / 0.86))',
                           border: '1px solid var(--glass-line)',
-                          boxShadow: '0 1px 0 oklch(100% 0.005 75 / 0.82) inset',
+                          boxShadow: '0 1px 0 oklch(100% 0.005 292 / 0.82) inset',
                         }}
                       >
                         <div
@@ -1832,7 +1832,7 @@ export default function Dashboard() {
                               type="button"
                               onClick={() => canImportGuests ? setIsUploadOpen(true) : setUpgradeOpen(true)}
                               className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold font-brand transition-colors"
-                              style={{ background: 'var(--violet-700)', color: 'oklch(99% 0.006 75)', borderRadius: 'var(--r-pill)', border: '1px solid oklch(63% 0.16 296 / 0.55)' }}
+                              style={{ background: 'var(--violet-700)', color: 'oklch(99% 0.006 292)', borderRadius: 'var(--r-pill)', border: '1px solid oklch(63% 0.16 292 / 0.55)' }}
                             >
                               <Upload className="w-3.5 h-3.5" />
                               ייבוא מוזמנים
@@ -1841,7 +1841,7 @@ export default function Dashboard() {
                               type="button"
                               onClick={() => isAtGuestLimit ? setUpgradeOpen(true) : openModal()}
                               className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold font-brand transition-colors"
-                              style={{ background: 'oklch(100% 0.006 75 / 0.56)', color: 'var(--ink)', borderRadius: 'var(--r-pill)', border: '1px solid var(--glass-line)' }}
+                              style={{ background: 'oklch(100% 0.006 292 / 0.56)', color: 'var(--ink)', borderRadius: 'var(--r-pill)', border: '1px solid var(--glass-line)' }}
                             >
                               <UserPlus className="w-3.5 h-3.5" />
                               הזמנה ידנית

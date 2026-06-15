@@ -49,10 +49,10 @@ export default function EventSwitcher() {
         style={{
           color: 'var(--ink-soft)',
           border: '1px solid var(--glass-line)',
-          background: open ? 'oklch(100% 0.006 75 / 0.78)' : 'oklch(100% 0.006 75 / 0.46)',
+          background: open ? 'oklch(100% 0.006 292 / 0.78)' : 'oklch(100% 0.006 292 / 0.46)',
           boxShadow: open
-            ? '0 12px 28px -22px oklch(36% 0.045 52 / 0.42), 0 1px 0 oklch(100% 0.005 75 / 0.7) inset'
-            : '0 1px 0 oklch(100% 0.005 75 / 0.55) inset',
+            ? '0 12px 28px -22px oklch(36% 0.045 292 / 0.42), 0 1px 0 oklch(100% 0.005 292 / 0.7) inset'
+            : '0 1px 0 oklch(100% 0.005 292 / 0.55) inset',
         }}
       >
         <span>{currentEvent ? eventLabel(currentEvent) : 'בחר אירוע'}</span>
