@@ -46,6 +46,7 @@ fontFamily: {
 **Files:** `src/pages/Dashboard.tsx`, `src/pages/AutomationTimeline.tsx`, `src/pages/DashboardSettings.tsx`
 **Shared tab navigation:** `DashboardNav` component sits at the top of both pages.
 **Event slug hardcoded:** `'hagit-and-itai'` (fetches that event's invitations from Supabase).
+**Sign out:** `DashboardNav` includes a minimal `התנתקות` button wired to `useAuth().signOut()`; the existing `ProtectedRoute` redirect returns signed-out users to `/login`.
 
 **Features:**
 - 4 KPI cards: הזמנות (families), סה"כ אורחים (pax), ממתינים, שגיאות/ביטולים

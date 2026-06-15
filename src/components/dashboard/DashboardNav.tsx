@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Bell } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 import { useFeatureAccess } from '@/hooks/useFeatureAccess';
 import EventSwitcher from './EventSwitcher';
 
@@ -13,8 +14,13 @@ export default function DashboardNav() {
   const location = useLocation();
   const navigate = useNavigate();
   const access   = useFeatureAccess();
+  const { signOut } = useAuth();
 
   const tabs = ALL_TABS.filter(tab => !tab.gateKey || access[tab.gateKey]);
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
 
   return (
     <header
@@ -85,6 +91,22 @@ export default function DashboardNav() {
 
       {/* Event switcher */}
       <EventSwitcher />
+
+      {/* Sign out */}
+      <button
+        type="button"
+        onClick={handleSignOut}
+        className="dashboard-nav-signout px-4 py-2 text-sm font-medium transition-all duration-200 rounded-lg"
+        style={{
+          color: 'var(--ink-soft)',
+          border: '1px solid var(--glass-line)',
+          background: 'oklch(100% 0.006 75 / 0.45)',
+          boxShadow: '0 1px 0 oklch(100% 0.005 75 / 0.56) inset',
+        }}
+        aria-label="התנתקות"
+      >
+        התנתקות
+      </button>
 
       {/* Notification bell */}
       <button
