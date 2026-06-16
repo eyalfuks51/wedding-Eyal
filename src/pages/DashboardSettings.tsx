@@ -8,6 +8,7 @@ import { useEventContext } from '@/contexts/EventContext';
 import { useFeatureAccess } from '@/hooks/useFeatureAccess';
 import { updateEventContentConfig } from '@/lib/supabase';
 import DashboardNav from '@/components/dashboard/DashboardNav';
+import SiteFooter from '@/components/brand/SiteFooter';
 import LivePreview from '@/components/dashboard/LivePreview';
 
 // ───── Types ─────
@@ -1186,6 +1187,8 @@ export default function DashboardSettings() {
           </div>
         ))}
       </div>
+
+      <SiteFooter />
     </div>
   );
 }

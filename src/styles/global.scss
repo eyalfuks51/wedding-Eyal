@@ -260,3 +260,17 @@ input, select, textarea {
     max-width: calc(100vw - 122px);
   }
 }
+
+/* Mobile (< 921px): clear the flush bottom tab bar so page content and the
+   SiteFooter (a sibling after <main> on every dashboard page) aren't hidden
+   behind it. The bar is 64px tall (+ safe-area); 84px leaves a ~20px gap above
+   it. Padding sits on the page roots, not <main> (the footer is a root sibling
+   after <main>). `!important` defeats the inline shorthand paddings these roots
+   ship with. */
+@media (max-width: 920px) {
+  .dashboard-shell,
+  .gtl-page,
+  .gst-page {
+    padding-bottom: calc(84px + env(safe-area-inset-bottom)) !important;
+  }
+}

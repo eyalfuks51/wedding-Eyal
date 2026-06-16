@@ -22,6 +22,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import RsvpForm from '../../components/RsvpForm/RsvpForm';
 import Logo from '../../white_logo.png';
+import PoweredByGuesto from '../../components/brand/PoweredByGuesto';
 import './ElegantTemplate.scss';
 
 import danceSVG from '../../timeline/dance.svg';
@@ -279,6 +280,7 @@ function ElegantTemplate({ event, config = {} }) {
               <img src={Logo} alt="Moriz Studio" className="el__footer-logo" />
             </a>
           </p>
+          <PoweredByGuesto />
         </div>
 
       </footer>

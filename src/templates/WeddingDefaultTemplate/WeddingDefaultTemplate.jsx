@@ -2,6 +2,7 @@ import Hero from '../../components/Hero/Hero';
 import RsvpForm from '../../components/RsvpForm/RsvpForm';
 import Map from '../../components/Map/Map';
 import Logo from '../../white_logo.png';
+import PoweredByGuesto from '../../components/brand/PoweredByGuesto';
 import '../../App.scss';
 
 function WeddingDefaultTemplate({ event, config }) {
@@ -16,6 +17,7 @@ function WeddingDefaultTemplate({ event, config }) {
             <img src={Logo} alt="logo" className="app__footer-logo" />
           </a>
         </p>
+        <PoweredByGuesto />
       </footer>
     </div>
   );

@@ -22,6 +22,7 @@ import {
   type StageName,
 } from '@/components/dashboard/constants';
 import DashboardNav from '@/components/dashboard/DashboardNav';
+import SiteFooter from '@/components/brand/SiteFooter';
 import { GlassCard } from '@/components/ui/glass-card';
 import UpgradeModal from '@/components/ui/UpgradeModal';
 import StageEditModal from '@/components/dashboard/StageEditModal';
@@ -1097,6 +1098,8 @@ export default function AutomationTimeline() {
       )}
 
       <ToastContainer toasts={toasts} />
+
+      <SiteFooter />
     </div>
   );
 }

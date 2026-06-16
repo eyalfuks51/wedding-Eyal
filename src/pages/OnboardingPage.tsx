@@ -11,6 +11,8 @@ import {
   buildSlugPreview,
   getTemplateById,
 } from './onboarding-model';
+import Logo from '@/components/brand/Logo';
+import SiteFooter from '@/components/brand/SiteFooter';
 
 const initialForm: OnboardingFormState = {
   partner1: '',
@@ -363,6 +365,8 @@ export default function OnboardingPage() {
           </aside>
         </div>
       </main>
+
+      <SiteFooter />
     </div>
   );
 }
@@ -393,9 +397,8 @@ function TopBar() {
             <span className="px-4 py-2 text-sm font-bold text-ink-soft">הגדרות</span>
             <span className="px-4 py-2 text-sm font-bold text-ink-soft">אורחים</span>
           </nav>
-          <div className="flex items-center gap-1 text-xl font-bold text-ink">
-            <span>Guesto</span>
-            <span className="h-2 w-2 rounded-full bg-rose-gold" />
+          <div className="flex items-center">
+            <Logo variant="onLight" height={30} />
           </div>
         </div>
       </div>

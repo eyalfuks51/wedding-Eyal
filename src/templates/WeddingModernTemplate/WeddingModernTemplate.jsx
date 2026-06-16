@@ -13,6 +13,7 @@
 
 import RsvpForm from '../../components/RsvpForm/RsvpForm';
 import Logo from '../../white_logo.png';
+import PoweredByGuesto from '../../components/brand/PoweredByGuesto';
 import './WeddingModernTemplate.scss';
 
 import danceSVG from '../../timeline/dance.svg';
@@ -304,6 +305,7 @@ function WeddingModernTemplate({ event, config = {} }) {
             <img src={Logo} alt="Moriz Studio" className="wm__footer-logo" />
           </a>
         </p>
+        <PoweredByGuesto />
       </footer>
 
     </div>

@@ -34,6 +34,7 @@ import {
 import { type Invitation, type RsvpStatus, EditGuestSheet } from '@/components/dashboard/EditGuestSheet';
 import { TEMPLATE_LABELS, MSG_STATUS_MAP } from '@/components/dashboard/constants';
 import DashboardNav from '@/components/dashboard/DashboardNav';
+import SiteFooter from '@/components/brand/SiteFooter';
 import GuestUploadModal from '@/components/dashboard/GuestUploadModal';
 import UnmatchedBanner from '@/components/dashboard/UnmatchedBanner';
 import UnmatchedResolutionSheet from '@/components/dashboard/UnmatchedResolutionSheet';
@@ -2041,6 +2042,7 @@ export default function Dashboard() {
         </div>
       </div>
 
+      <SiteFooter />
     </div>
   );
 }

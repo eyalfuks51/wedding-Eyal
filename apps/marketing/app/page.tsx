@@ -1,6 +1,7 @@
 import { AnimatedTestimonials, type Testimonial } from "../components/ui/animated-testimonials";
 import { FeatureCarousel, type TemplateSlide } from "../components/ui/feature-carousel";
 import { PricingCard, type PricingPlan } from "../components/ui/pricing-card";
+import Logo from "../components/Logo";
 
 const ONBOARDING_PATH = "/onboarding";
 const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:5173";
@@ -138,8 +139,7 @@ export default function Home() {
     <main className="site-shell">
       <nav className="topbar" aria-label="ניווט ראשי">
         <a className="brand-mark" href="#top" aria-label="Guesto">
-          <span className="brand-mark__glyph">G</span>
-          <span>Guesto</span>
+          <Logo variant="onLight" height={30} />
         </a>
         <div className="topbar__links">
           <a href="#how">איך זה עובד</a>
