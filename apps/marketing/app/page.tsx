@@ -1,4 +1,6 @@
 import { AnimatedTestimonials, type Testimonial } from "../components/ui/animated-testimonials";
+import { FeatureCarousel, type TemplateSlide } from "../components/ui/feature-carousel";
+import { PricingCard, type PricingPlan } from "../components/ui/pricing-card";
 
 const ONBOARDING_PATH = "/onboarding";
 const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:5173";
@@ -29,39 +31,67 @@ const steps = [
   },
 ];
 
-const templates = [
+// Screenshots drop into apps/marketing/public/templates/<id>.png (see README there).
+// Until a file exists the carousel renders a branded placeholder, so the section
+// looks intentional now and swaps to the real screenshot with zero code change.
+const templates: TemplateSlide[] = [
   {
     id: "wedding-modern",
     name: "Modern",
     tone: "רטרו צבעוני",
-    description: "ירוק, חרדל וכתום עם כרטיס RSVP בולט, מבוסס על WeddingModernTemplate.",
+    description: "ירוק, חרדל וכתום עם כרטיס RSVP בולט. הזמנה שנראית כמו מותג, לא כמו טופס.",
+    src: "/templates/wedding-modern.png",
+    alt: "תצוגה מקדימה של עיצוב Modern להזמנת חתונה",
   },
   {
     id: "elegant",
     name: "Elegant",
     tone: "בוהו אלגנטי",
-    description: "קרם, ירוק עמוק וזהב שמפניה, מבוסס על ElegantTemplate.",
+    description: "קרם, ירוק עמוק וזהב שמפניה. שקט, מוקפד, ומרגיש יוקרתי בלי להתאמץ.",
+    src: "/templates/elegant.png",
+    alt: "תצוגה מקדימה של עיצוב Elegant להזמנת חתונה",
   },
   {
     id: "wedding-default",
     name: "Default",
     tone: "קלאסי חם",
-    description: "בורדו וקרם עם פרחים ודקורציה, מבוסס על WeddingDefaultTemplate.",
+    description: "בורדו וקרם עם פרחים ודקורציה. הקלאסיקה שמתאימה כמעט לכל אולם.",
+    src: "/templates/wedding-default.png",
+    alt: "תצוגה מקדימה של עיצוב Default להזמנת חתונה",
   },
 ];
 
-const freeFeatures = [
-  "יצירת הזמנה דיגיטלית",
-  "שיתוף קישור בווטסאפ",
-  "ניהול פרטי אירוע ועיצוב",
-  "מעקב RSVP בסיסי עד 20 אורחים",
-];
-
-const advancedFeatures = [
-  "ייבוא וייצוא אורחים באקסל",
-  "אוטומציית וואטסאפ וציר זמן",
-  "שליחת הודעות לקבוצות אורחים",
-  "אורחים ללא הגבלת גרסת החינם",
+const plans: PricingPlan[] = [
+  {
+    title: "חינם",
+    price: "₪0",
+    priceDescription: "בלי כרטיס אשראי, בלי תפוגה",
+    description: "כל מה שצריך כדי להקים הזמנה יפה ולשלוח אותה לכל המוזמנים.",
+    features: [
+      "יצירת הזמנה דיגיטלית",
+      "שיתוף קישור בווטסאפ",
+      "ניהול פרטי אירוע ועיצוב",
+      "מעקב RSVP בסיסי עד 20 אורחים",
+    ],
+    buttonText: "צרו הזמנה בחינם",
+    buttonHref: ctaHref,
+    badge: "זמין עכשיו",
+  },
+  {
+    title: "מתקדם",
+    priceDescription: "התמחור ייפתח בהמשך — בינתיים הכול פתוח בחינם",
+    description: "כשהרשימה גדלה: ייבוא אקסל, אוטומציית וואטסאפ והודעות לקבוצות.",
+    features: [
+      "ייבוא וייצוא אורחים באקסל",
+      "אוטומציית וואטסאפ וציר זמן",
+      "שליחת הודעות לקבוצות אורחים",
+      "אורחים ללא הגבלת גרסת החינם",
+    ],
+    buttonText: "להתחיל בחינם ולשדרג בהמשך",
+    buttonHref: ctaHref,
+    badge: "Pro",
+    highlighted: true,
+  },
 ];
 
 // Placeholder reviews — swap for real couples + self-hosted photos before launch.
@@ -125,7 +155,14 @@ export default function Home() {
         <div className="hero-copy">
           <p className="eyebrow">Guesto לחתונות בישראל</p>
           <h1 id="hero-title">
-            הזמנה דיגיטלית לחתונה, מוכנה לשליחה תוך כמה דקות
+            <span className="hero-title__full">
+              הזמנה דיגיטלית לחתונה, מוכנה לשליחה תוך כמה דקות
+            </span>
+            <span className="hero-title__short">
+              הזמנה לחתונה
+              <br />
+              שמוכנה בדקות
+            </span>
           </h1>
           <p className="hero-copy__sub">
             יוצרים הזמנה יפה בחינם, משתפים בווטסאפ, ומנהלים אישורי הגעה בלי אקסלים מבולגנים.
@@ -138,6 +175,11 @@ export default function Home() {
               ראו עיצובים אמיתיים
             </a>
           </div>
+          <ul className="hero-trust" aria-label="למה Guesto">
+            <li>ללא אקסלים</li>
+            <li>RSVP בזמן אמת</li>
+            <li>רשימת אורחים</li>
+          </ul>
           <p className="route-note">
             ההזמנות עצמן נשארות בקישור ציבורי לפי אירוע, למשל{" "}
             <span dir="ltr">{inviteUrl.replace(/\/$/, "")}/your-slug</span>.
@@ -161,6 +203,12 @@ export default function Home() {
                 </div>
               </div>
             </div>
+          </div>
+
+          <div className="phone-status" aria-hidden="true">
+            <span className="phone-status__dot" />
+            <b>124</b>
+            <span>אישרו הגעה</span>
           </div>
 
           <div className="dashboard-slice">
@@ -191,12 +239,12 @@ export default function Home() {
         </div>
         <ol className="steps-list">
           {steps.map((step, index) => (
-            <li key={step.label}>
-              <span className="step-index">{index + 1}</span>
-              <div>
-                <h3>{step.label}</h3>
-                <p>{step.detail}</p>
-              </div>
+            <li className="step-card" key={step.label}>
+              <span className="step-card__num" aria-hidden="true">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <h3 className="step-card__title">{step.label}</h3>
+              <p className="step-card__detail">{step.detail}</p>
             </li>
           ))}
         </ol>
@@ -205,53 +253,25 @@ export default function Home() {
       <section className="templates-section" id="templates" aria-labelledby="templates-title">
         <div className="section-heading section-heading--split">
           <div>
-            <p className="eyebrow">תבניות אמיתיות</p>
-            <h2 id="templates-title">מה שמוצג כאן כבר קיים בקוד המוצר</h2>
+            <p className="eyebrow">עיצובים מוכנים לשליחה</p>
+            <h2 id="templates-title">העיצוב שלכם כבר קיים — רק צריך את השמות שלכם</h2>
           </div>
           <p>
-            התצוגה לא מבטיחה קטלוג אינסופי. היא משקפת את שלוש משפחות העיצוב הרשומות היום במערכת.
+            כל תבנית כאן היא עיצוב חי שרץ על אירוע אמיתי, לא תמונת מוקאפ. בוחרים, ממלאים פרטים, ותוך דקות ההזמנה מוכנה לשליחה בווטסאפ.
           </p>
         </div>
-        <div className="template-showcase">
-          {templates.map((template) => (
-            <article className={`template-ticket template-ticket--${template.id}`} key={template.id}>
-              <div className="template-ticket__visual">
-                <span>{template.tone}</span>
-                <strong>{template.name}</strong>
-              </div>
-              <div className="template-ticket__copy">
-                <h3>{template.name}</h3>
-                <p>{template.description}</p>
-              </div>
-            </article>
-          ))}
-        </div>
+        <FeatureCarousel items={templates} autoplay />
       </section>
 
       <section className="plans-section" aria-labelledby="plans-title">
         <div className="section-heading">
           <p className="eyebrow">חינם עכשיו, מתקדם כשצריך</p>
-          <h2 id="plans-title">אותו מוצר, בלי להעמיד פנים שהכל כבר בתשלום</h2>
+          <h2 id="plans-title">מתחילים בחינם, משדרגים רק כשהרשימה גדלה</h2>
         </div>
-        <div className="feature-lanes">
-          <article className="feature-lane feature-lane--free">
-            <span className="lane-label">חינם</span>
-            <h3>להקים הזמנה ולשלוח אותה</h3>
-            <ul>
-              {freeFeatures.map((feature) => (
-                <li key={feature}>{feature}</li>
-              ))}
-            </ul>
-          </article>
-          <article className="feature-lane feature-lane--advanced">
-            <span className="lane-label">מתקדם</span>
-            <h3>לנהל רשימה גדולה ולהפעיל הודעות</h3>
-            <ul>
-              {advancedFeatures.map((feature) => (
-                <li key={feature}>{feature}</li>
-              ))}
-            </ul>
-          </article>
+        <div className="pricing-grid">
+          {plans.map((plan) => (
+            <PricingCard key={plan.title} {...plan} />
+          ))}
         </div>
       </section>
 

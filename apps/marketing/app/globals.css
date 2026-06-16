@@ -187,6 +187,7 @@ h1 {
   line-height: 0.92;
   margin-bottom: 1.2rem;
   max-width: 10ch;
+  text-wrap: balance;
 }
 
 .hero-copy__sub {
@@ -195,6 +196,7 @@ h1 {
   line-height: 1.75;
   margin-bottom: 1.8rem;
   max-width: 38rem;
+  text-wrap: balance;
 }
 
 .hero-actions {
@@ -246,6 +248,80 @@ h1 {
   color: var(--ink-soft);
   display: inline-block;
   padding: 0.05rem 0.35rem;
+}
+
+/* Short headline span is mobile-only; the long one carries desktop. */
+.hero-title__short {
+  display: none;
+}
+
+/* Capability chips. Phone-only (see the <=560 media query); they sit in the
+   CTA cluster so the value proof reads inside the first viewport. */
+.hero-trust {
+  display: none;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.4rem;
+  justify-content: center;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.hero-trust li {
+  background: oklch(0.99 0.005 292 / 0.7);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink-soft);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.27rem 0.62rem;
+}
+
+.hero-trust li::before {
+  background: var(--violet);
+  border-radius: 999px;
+  content: "";
+  display: inline-block;
+  height: 0.34rem;
+  margin-inline-end: 0.35rem;
+  vertical-align: middle;
+  width: 0.34rem;
+}
+
+/* Live RSVP-count proof pill. Phone-only (the full dashboard card is hidden
+   there). Sits BELOW the phone frame in normal flow — never overlaps the
+   invitation screen. Supporting accent on the product, not the main visual. */
+.phone-status {
+  align-items: center;
+  background: oklch(0.99 0.005 292);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  box-shadow: 0 10px 24px oklch(0.22 0.04 286 / 0.12);
+  display: none;
+  gap: 0.4rem;
+  padding: 0.42rem 0.8rem;
+  width: fit-content;
+}
+
+.phone-status__dot {
+  background: var(--green);
+  border-radius: 999px;
+  box-shadow: 0 0 0 3px oklch(0.8 0.15 150 / 0.22);
+  flex-shrink: 0;
+  height: 0.5rem;
+  width: 0.5rem;
+}
+
+.phone-status b {
+  color: var(--violet-deep);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.phone-status span:last-child {
+  color: var(--ink-soft);
+  font-size: 0.78rem;
+  font-weight: 600;
 }
 
 .proof-board {
@@ -476,99 +552,146 @@ h1 {
 
 .steps-list {
   display: grid;
-  gap: 0.9rem;
+  gap: clamp(1rem, 2.4vw, 1.5rem);
+  grid-template-columns: repeat(4, 1fr);
   list-style: none;
-  margin: 2.2rem 0 0;
+  margin: 2.6rem 0 0;
   padding: 0;
 }
 
-.steps-list li {
-  align-items: start;
-  background: oklch(0.99 0.005 292 / 0.76);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
+/* Liquid-glass step cards: soft translucent panel, light border, a subtle
+   violet accent on the zero-padded step number, restrained hover (no
+   motion-heavy effects). RTL-safe — pure logical flow, no directional offsets. */
+.step-card {
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  background: oklch(0.99 0.005 292 / 0.55);
+  border: 1px solid oklch(0.84 0.025 292 / 0.7);
+  border-radius: 18px;
   display: grid;
-  gap: 1rem;
-  grid-template-columns: auto 1fr;
-  padding: 1.1rem;
+  gap: 0.45rem;
+  padding: 1.5rem 1.4rem;
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease;
 }
 
-.steps-list li:nth-child(even) {
-  margin-inline-start: clamp(0rem, 7vw, 8rem);
+.step-card:hover {
+  background: oklch(0.99 0.005 292 / 0.8);
+  border-color: oklch(0.52 0.22 292 / 0.4);
 }
 
-.step-index {
-  align-items: center;
-  background: var(--ink);
-  border-radius: 14px;
-  color: var(--gold);
-  display: inline-flex;
+.step-card__num {
+  color: var(--violet-deep);
   font-family: "Danidin", "Polin", sans-serif;
-  font-size: 1.75rem;
-  height: 3rem;
-  justify-content: center;
-  width: 3rem;
+  font-size: 1.45rem;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  margin-bottom: 0.55rem;
 }
 
-.steps-list h3,
-.feature-lane h3,
-.template-ticket h3 {
+.step-card__title {
   color: var(--ink);
   font-family: "Polin", "Heebo", sans-serif;
-  font-size: 1.1rem;
-  margin-bottom: 0.25rem;
+  font-size: 1.12rem;
+  font-weight: 700;
 }
 
-.steps-list p,
-.template-ticket p,
-.feature-lane li,
+.step-card__detail {
+  color: var(--ink-soft);
+}
+
 .whatsapp-copy p {
   color: var(--ink-soft);
 }
 
-.template-showcase {
-  display: grid;
-  gap: 1rem;
-  margin-top: 2rem;
+/* Template coverflow carousel (feature-carousel.tsx). Plain-CSS adaptation;
+   per-card transforms are applied inline since they depend on the active index. */
+.fc-root {
+  margin-top: 2.5rem;
 }
 
-.template-ticket {
-  align-items: stretch;
-  border: 1px solid var(--line);
-  border-radius: 22px;
-  display: grid;
-  grid-template-columns: 240px 1fr;
+.fc-stage {
+  align-items: center;
+  display: flex;
+  height: clamp(22rem, 54vw, 30rem);
+  justify-content: center;
+  margin-inline: auto;
+  max-width: 760px;
+  perspective: 1200px;
+  position: relative;
+}
+
+.fc-track {
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  width: 100%;
+}
+
+.fc-card {
+  border-radius: 26px;
+  bottom: 0;
+  box-shadow: 0 28px 60px oklch(0.22 0.04 286 / 0.22);
+  inset-inline: 0;
+  margin-inline: auto;
   overflow: hidden;
+  position: absolute;
+  top: 0;
+  transition: transform 520ms cubic-bezier(0.22, 1, 0.36, 1), opacity 520ms ease,
+    filter 520ms ease;
+  width: clamp(13rem, 32vw, 17rem);
+  will-change: transform, opacity;
 }
 
-.template-ticket__visual {
+.fc-card.is-active {
+  border: 1px solid var(--line);
+}
+
+.fc-shot {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  width: 100%;
+}
+
+.fc-placeholder {
   align-items: center;
   display: flex;
   flex-direction: column;
+  height: 100%;
   justify-content: center;
-  min-height: 170px;
-  padding: 1rem;
+  padding: 1.25rem;
   text-align: center;
+  width: 100%;
 }
 
-.template-ticket__visual span {
-  font-size: 0.8rem;
+.fc-placeholder__stamp {
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 0.7rem;
   font-weight: 700;
-  margin-bottom: 0.45rem;
+  letter-spacing: 0.12em;
+  margin-bottom: 1.1rem;
+  opacity: 0.7;
+  padding: 0.25rem 0.7rem;
 }
 
-.template-ticket__visual strong {
+.fc-placeholder__tone {
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+  opacity: 0.85;
+}
+
+.fc-placeholder__name {
   font-family: "Danidin", "Polin", sans-serif;
-  font-size: 3.4rem;
+  font-size: clamp(2.6rem, 7vw, 3.6rem);
   line-height: 0.9;
 }
 
-.template-ticket__copy {
-  background: oklch(0.99 0.005 292);
-  padding: clamp(1.1rem, 3vw, 2rem);
-}
-
-.template-ticket--wedding-modern .template-ticket__visual {
+.fc-card--wedding-modern .fc-placeholder {
   background-color: var(--green);
   background-image:
     linear-gradient(oklch(0.23 0.05 286 / 0.11) 1px, transparent 1px),
@@ -577,44 +700,153 @@ h1 {
   color: var(--ink);
 }
 
-.template-ticket--elegant .template-ticket__visual {
+.fc-card--elegant .fc-placeholder {
   background: oklch(0.94 0.028 86);
   color: oklch(0.31 0.055 154);
 }
 
-.template-ticket--wedding-default .template-ticket__visual {
+.fc-card--wedding-default .fc-placeholder {
   background: oklch(0.93 0.03 22);
   color: oklch(0.38 0.12 22);
 }
 
-.feature-lanes {
+.fc-btn {
+  align-items: center;
+  background: var(--paper-deep);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink);
+  cursor: pointer;
+  display: inline-flex;
+  height: 2.8rem;
+  justify-content: center;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: background 180ms ease-out, color 180ms ease-out;
+  width: 2.8rem;
+  z-index: 40;
+}
+
+.fc-btn:hover {
+  background: var(--violet-soft);
+  color: var(--violet-deep);
+}
+
+.fc-btn--prev {
+  inset-inline-start: 0;
+}
+
+.fc-btn--next {
+  inset-inline-end: 0;
+}
+
+.fc-icon {
+  height: 1.3rem;
+  width: 1.3rem;
+}
+
+.fc-caption {
+  animation: fc-rise 360ms ease-out both;
+  margin-inline: auto;
+  margin-top: 2rem;
+  max-width: 520px;
+  text-align: center;
+}
+
+.fc-caption__tone {
+  color: var(--violet-deep);
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+
+.fc-caption__name {
+  color: var(--ink);
+  font-family: "Danidin", "Polin", sans-serif;
+  font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+  line-height: 1.05;
+  margin-bottom: 0.6rem;
+}
+
+.fc-caption__desc {
+  color: var(--ink-soft);
+  font-size: clamp(1rem, 2vw, 1.15rem);
+  line-height: 1.7;
+}
+
+.fc-dots {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 1.6rem;
+}
+
+.fc-dot {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  cursor: pointer;
+  height: 0.6rem;
+  padding: 0;
+  transition: background 180ms ease, border-color 180ms ease, width 220ms ease;
+  width: 0.6rem;
+}
+
+.fc-dot.is-active {
+  background: var(--violet);
+  border-color: var(--violet);
+  width: 1.5rem;
+}
+
+@keyframes fc-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fc-card {
+    transition: none;
+  }
+
+  .fc-caption {
+    animation: none;
+  }
+}
+
+/* Pricing tiers (pricing-card.tsx). framer-motion handles the hover lift;
+   static chrome lives here. */
+.pricing-grid {
   display: grid;
   gap: 1rem;
-  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   margin-top: 2rem;
 }
 
-.feature-lane {
-  border-radius: 24px;
-  padding: clamp(1.2rem, 3vw, 2rem);
-}
-
-.feature-lane--free {
+.pc-card {
   background: oklch(0.99 0.005 292);
   border: 1px solid var(--line);
+  border-radius: 24px;
+  box-shadow: 0 6px 18px oklch(0.22 0.04 286 / 0.06);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(1.4rem, 3vw, 2.2rem);
 }
 
-.feature-lane--advanced {
+.pc-card--highlight {
   background: var(--ink);
+  border-color: transparent;
   color: var(--paper);
 }
 
-.feature-lane--advanced h3,
-.feature-lane--advanced li {
-  color: var(--paper);
-}
-
-.lane-label {
+.pc-badge {
   background: var(--violet-soft);
   border-radius: 999px;
   color: var(--violet-deep);
@@ -625,28 +857,85 @@ h1 {
   padding: 0.35rem 0.65rem;
 }
 
-.feature-lane--advanced .lane-label {
+.pc-card--highlight .pc-badge {
   background: var(--gold);
   color: var(--ink);
 }
 
-.feature-lane ul {
+.pc-title {
+  font-family: "Danidin", "Polin", sans-serif;
+  font-size: clamp(1.5rem, 3vw, 1.9rem);
+  line-height: 1;
+}
+
+.pc-price {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+
+.pc-price__amount {
+  font-family: "Danidin", "Polin", sans-serif;
+  font-size: clamp(2.4rem, 6vw, 3.2rem);
+  line-height: 0.9;
+}
+
+.pc-price__desc {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.pc-price__desc--solo {
+  margin-top: 0.7rem;
+}
+
+.pc-card--highlight .pc-price__desc {
+  color: oklch(0.82 0.02 292);
+}
+
+.pc-desc {
+  color: var(--ink-soft);
+  margin-top: 1rem;
+}
+
+.pc-card--highlight .pc-desc {
+  color: oklch(0.87 0.02 292);
+}
+
+.pc-features {
   display: grid;
   gap: 0.7rem;
   list-style: none;
-  margin: 1.1rem 0 0;
+  margin: 1.4rem 0 0;
   padding: 0;
 }
 
-.feature-lane li::before {
-  color: var(--violet);
-  content: "✓";
-  font-weight: 700;
-  margin-inline-end: 0.45rem;
+.pc-feature {
+  align-items: center;
+  display: flex;
+  font-size: 0.95rem;
+  gap: 0.55rem;
 }
 
-.feature-lane--advanced li::before {
+.pc-diamond {
+  color: var(--violet);
+  flex-shrink: 0;
+  height: 0.85rem;
+  width: 0.85rem;
+}
+
+.pc-card--highlight .pc-diamond {
   color: var(--gold);
+}
+
+.pc-foot {
+  margin-top: 1.8rem;
+}
+
+.pc-cta {
+  width: 100%;
 }
 
 .whatsapp-section {
@@ -735,7 +1024,7 @@ h1 {
 
   .hero-section,
   .section-heading--split,
-  .feature-lanes,
+  .pricing-grid,
   .whatsapp-section {
     grid-template-columns: 1fr;
   }
@@ -762,12 +1051,12 @@ h1 {
     margin: -1.5rem 0 0;
   }
 
-  .steps-list li:nth-child(even) {
-    margin-inline-start: 0;
+  .steps-list {
+    grid-template-columns: repeat(2, 1fr);
   }
 
-  .template-ticket {
-    grid-template-columns: 1fr;
+  .fc-stage {
+    height: clamp(20rem, 64vw, 26rem);
   }
 }
 
@@ -785,24 +1074,112 @@ h1 {
     padding-inline: 0.8rem;
   }
 
+  .hero-title__full {
+    display: none;
+  }
+
+  .hero-title__short {
+    display: block;
+  }
+
+  /* Center the whole mobile cluster so copy, CTA, proof and phone share one
+     axis — an intentional composition, not stacked fragments. */
+  .hero-copy {
+    text-align: center;
+  }
+
   h1 {
-    font-size: clamp(3.15rem, 18vw, 5rem);
+    font-size: clamp(2.4rem, 11vw, 3.3rem);
+    line-height: 1.03;
+    margin-bottom: 0.7rem;
+    max-width: none;
   }
 
+  .hero-copy__sub {
+    font-size: 1rem;
+    line-height: 1.5;
+    margin: 0 auto 0.95rem;
+  }
+
+  /* Tighten the gaps so text -> CTA -> proof -> phone read as one unit. */
   .hero-section {
-    padding-top: 1.4rem;
+    gap: 1rem;
+    padding-top: 1rem;
   }
 
-  .hero-actions .button {
+  /* One dominant primary, a light inline secondary — no twin full-width bars. */
+  .hero-actions {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0.55rem;
+    margin-bottom: 0.7rem;
+  }
+
+  .hero-actions .button--primary {
     width: 100%;
   }
 
-  .steps-list li {
+  .hero-actions .button--quiet {
+    align-self: center;
+    background: transparent;
+    border: none;
+    color: var(--violet-deep);
+    font-size: 0.92rem;
+    min-height: auto;
+    padding: 0.15rem 0.4rem;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    width: auto;
+  }
+
+  .route-note {
+    display: none;
+  }
+
+  /* Phone is the hero visual on mobile: scale it down, drop the heavy
+     floating dashboard card, surface the lightweight status chip instead. */
+  .invite-phone {
+    width: min(208px, 62vw);
+  }
+
+  /* Narrow mobile screen: scale the mock invitation down so the couple name
+     fits cleanly and clears the corner RSVP stamp — no internal overlap. */
+  .mini-template {
+    min-height: 200px;
+  }
+
+  .mini-template strong {
+    font-size: 2.3rem;
+    padding: 0.7rem 0.6rem 0.5rem;
+  }
+
+  .mini-template__stamp {
+    font-size: 0.66rem;
+    left: 0.55rem;
+    padding: 0.26rem 0.44rem;
+    top: 0.55rem;
+  }
+
+  .dashboard-slice {
+    display: none;
+  }
+
+  .phone-status {
+    display: flex;
+    margin-top: 0.85rem;
+  }
+
+  .hero-trust {
+    display: flex;
+  }
+
+  .steps-list {
     grid-template-columns: 1fr;
   }
 
-  .template-ticket__visual {
-    min-height: 140px;
+  .fc-btn {
+    height: 2.4rem;
+    width: 2.4rem;
   }
 }
 
