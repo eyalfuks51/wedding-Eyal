@@ -24,6 +24,7 @@ function App() {
   return (
     <Routes>
       {/* Public */}
+      <Route path="/"              element={<Navigate to="/login" replace />} />
       <Route path="/login"         element={<LoginPage />} />
       <Route path="/preview/:slug" element={<EventPage isPreview={true} />} />
       <Route path="/:slug"         element={<EventPage />} />
