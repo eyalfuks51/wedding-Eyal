@@ -17,6 +17,11 @@ Templates are **not** generic renderers that swap image paths from the DB. Each 
 This split means swapping a template never breaks layout from mismatched image aspect ratios or contrast — images are baked into the template.
 
 ## Workflow for adding a template
+**Fast path:** run `/guesto-template <style description>` — the skill at
+`.claude/skills/guesto-template/` automates clone → Smart Adaptation → impeccable
+design → register → test → preview. The manual steps below are what it does under
+the hood (and the fallback if you're hand-rolling one).
+
 1. Eyal drops assets into `public/templates/<template-name>/` (e.g. `boho-bg.jpg`, `boho-flower.png`)
 2. Eyal writes a prompt describing the aesthetic (fonts, palette, layout, asset placement)
 3. Claude clones the closest existing template (`ElegantTemplate` for minimal, `WeddingDefaultTemplate` for decorative)
@@ -29,6 +34,8 @@ This split means swapping a template never breaks layout from mismatched image a
 | `wedding-default` | `WeddingDefaultTemplate` | `public/` (shared) | Warm burgundy/cream, decorative flowers, frame-border images, GSAP scroll animations |
 | `elegant` | `ElegantTemplate` | none (CSS-only decor) | Deep navy + gold, Gravitas One / Dancing Script, minimal — no decorative images |
 | `wedding-modern` | `WeddingModernTemplate` | `public/templates/` (`refGREEN.png` ref) | "Zine / Retro Bold" — vivid kelly green / mustard / burnt orange, hard zero-blur shadows, grid overlay, jagged ticket clip-paths, inline SVG daisies. BEM namespace `.wm` |
+| `constructivist` | `ConstructivistTemplate` | none (CSS-only decor) | "Japanese Constructivist / Bauhaus poster" — strict cream / red / ink, geometric red circle+rect + black semicircle, giant `&` focal glyph, vertical venue rail, hard zero-blur shadows, Futurism-Black/Manhattan + Danidin/Polin. Smart-Adapted from a whisky poster. BEM namespace `.ct` |
+| `synesthesia` | `SynesthesiaTemplate` | none (CSS-only decor) | "Synaesthetic spray-art zine" — cream/electric-blue/ink, electric-blue spray blob full of line-art eyes, flanking speakers, wavy wave dividers, condensed-black couple lockup + "+" motif, blue-drenched directions. Smart-Adapted from a SIGHT+SOUND synesthesia poster. BEM namespace `.sy` |
 
 > **The live active event `hagit-and-itai` (the hardcoded dashboard tenant, CLAUDE.md rule 4) runs `template_id='wedding-modern'`** — edit `WeddingModernTemplate` when changing the production wedding's look. (`src/templates/WeddingTemplate/` exists but is NOT registered — dead code, ignore it.)
 
