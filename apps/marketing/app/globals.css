@@ -137,7 +137,7 @@ input {
   grid-template-columns: minmax(0, 1.03fr) minmax(340px, 0.97fr);
   margin: 0 auto;
   max-width: var(--max);
-  padding: clamp(2.25rem, 6vw, 5.5rem) clamp(1rem, 4vw, 2rem) 5rem;
+  padding: clamp(1rem, 2.4vw, 2.25rem) clamp(1rem, 4vw, 2rem) clamp(2rem, 4vw, 3rem);
 }
 
 .hero-copy {
@@ -169,10 +169,10 @@ h2 {
 }
 
 h1 {
-  font-size: clamp(3rem, 7.5vw, 6.8rem);
-  line-height: 0.92;
-  margin-bottom: 1.2rem;
-  max-width: 10ch;
+  font-size: clamp(2.75rem, 6vw, 5.6rem);
+  line-height: 0.94;
+  margin-bottom: 1.1rem;
+  max-width: 11ch;
   text-wrap: balance;
 }
 
@@ -615,23 +615,48 @@ h1 {
   width: 100%;
 }
 
+/* Each card is a phone, mirroring the dashboard live-preview chrome:
+   dark bezel + notch wrapping a rounded screen that holds the template shot. */
 .fc-card {
-  border-radius: 26px;
-  bottom: 0;
-  box-shadow: 0 28px 60px oklch(0.22 0.04 286 / 0.22);
+  aspect-ratio: 9 / 19.2;
+  background: oklch(18% 0.012 292);
+  border-radius: 40px;
+  box-shadow: 0 0 0 1.5px oklch(45% 0.18 292 / 0.18),
+    0 28px 60px oklch(0.22 0.04 286 / 0.28);
+  height: 100%;
   inset-inline: 0;
   margin-inline: auto;
   overflow: hidden;
+  padding: 7px;
   position: absolute;
   top: 0;
   transition: transform 520ms cubic-bezier(0.22, 1, 0.36, 1), opacity 520ms ease,
     filter 520ms ease;
-  width: clamp(13rem, 32vw, 17rem);
+  width: auto;
   will-change: transform, opacity;
 }
 
-.fc-card.is-active {
-  border: 1px solid var(--line);
+.fc-notch {
+  background: oklch(18% 0.012 292);
+  border-radius: 999px;
+  height: 18px;
+  inset-inline: 0;
+  margin-inline: auto;
+  pointer-events: none;
+  position: absolute;
+  top: 13px;
+  width: 33%;
+  max-width: 104px;
+  z-index: 5;
+}
+
+.fc-screen {
+  background: linear-gradient(180deg, #2a1f3d 0%, #4a2c5a 50%, #6b3e6e 100%);
+  border-radius: 32px;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
 }
 
 .fc-shot {
@@ -684,11 +709,6 @@ h1 {
     linear-gradient(90deg, oklch(0.23 0.05 286 / 0.11) 1px, transparent 1px);
   background-size: 24px 24px;
   color: var(--ink);
-}
-
-.fc-card--elegant .fc-placeholder {
-  background: oklch(0.94 0.028 86);
-  color: oklch(0.31 0.055 154);
 }
 
 .fc-card--wedding-default .fc-placeholder {

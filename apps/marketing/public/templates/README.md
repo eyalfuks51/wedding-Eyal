@@ -8,8 +8,8 @@ automatically — no code change needed.
 
 | File | Template |
 |---|---|
-| `wedding-modern.png` | Modern — רטרו צבעוני |
-| `elegant.png` | Elegant — בוהו אלגנטי |
+| `punk-poster.png` | Punk — פוסטר הופעה |
+| `wedding-modern.png` | Modern — מודרני גרפי |
 | `wedding-default.png` | Default — קלאסי חם |
 
 ## Format

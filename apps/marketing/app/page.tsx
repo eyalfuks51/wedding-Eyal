@@ -5,7 +5,6 @@ import Logo from "../components/Logo";
 
 const ONBOARDING_PATH = "/onboarding";
 const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:5173";
-const inviteUrl = process.env.NEXT_PUBLIC_INVITE_URL ?? appUrl;
 
 function absoluteUrl(base: string, path: string) {
   return new URL(path, base.endsWith("/") ? base : `${base}/`).toString();
@@ -32,25 +31,27 @@ const steps = [
   },
 ];
 
-// Screenshots drop into apps/marketing/public/templates/<id>.png (see README there).
-// Until a file exists the carousel renders a branded placeholder, so the section
-// looks intentional now and swaps to the real screenshot with zero code change.
+// Each slide centers on a LIVE event page (previewUrl) so the real invite
+// animates in-frame, exactly like the dashboard mobile preview. The screenshot
+// (src) is the cheap fallback for the blurred side cards / slow loads.
 const templates: TemplateSlide[] = [
+  {
+    id: "punk-poster",
+    name: "Punk",
+    tone: "פוסטר הופעה",
+    description: "שחור, ורוד לוהט וטיפוגרפיה של פוסטר רוק קרוע. נועז, קולני ובלתי נשכח.",
+    src: "/templates/punk-poster.png",
+    alt: "תצוגה מקדימה של עיצוב Punk להזמנת חתונה",
+    previewUrl: absoluteUrl(appUrl, "hagit-and-itai"),
+  },
   {
     id: "wedding-modern",
     name: "Modern",
-    tone: "רטרו צבעוני",
-    description: "ירוק, חרדל וכתום עם כרטיס RSVP בולט. הזמנה שנראית כמו מותג, לא כמו טופס.",
+    tone: "מודרני גרפי",
+    description: "קרם, אדום עז וטיפוגרפיה ענקית בהשראת עריכה גרפית. מינימליסטי, חד ובטוח בעצמו.",
     src: "/templates/wedding-modern.png",
     alt: "תצוגה מקדימה של עיצוב Modern להזמנת חתונה",
-  },
-  {
-    id: "elegant",
-    name: "Elegant",
-    tone: "בוהו אלגנטי",
-    description: "קרם, ירוק עמוק וזהב שמפניה. שקט, מוקפד, ומרגיש יוקרתי בלי להתאמץ.",
-    src: "/templates/elegant.png",
-    alt: "תצוגה מקדימה של עיצוב Elegant להזמנת חתונה",
+    previewUrl: absoluteUrl(appUrl, "הדר-and-ניר-rymizj"),
   },
   {
     id: "wedding-default",
@@ -59,6 +60,7 @@ const templates: TemplateSlide[] = [
     description: "בורדו וקרם עם פרחים ודקורציה. הקלאסיקה שמתאימה כמעט לכל אולם.",
     src: "/templates/wedding-default.png",
     alt: "תצוגה מקדימה של עיצוב Default להזמנת חתונה",
+    previewUrl: absoluteUrl(appUrl, "mor-and-eyal"),
   },
 ];
 
@@ -95,42 +97,36 @@ const plans: PricingPlan[] = [
   },
 ];
 
-// Placeholder reviews — swap for real couples + self-hosted photos before launch.
+// Placeholder reviews — swap quotes/names for real couples before launch.
+// Photos are self-hosted in public/testimonials/ (couple-1..4.jpg).
 const testimonials: Testimonial[] = [
   {
     name: "נועה ויואב",
     designation: "התחתנו בספטמבר, תל אביב",
     quote:
       "הרכבנו את ההזמנה בערב אחד ושלחנו בווטסאפ למחרת. תוך יומיים היו לנו מאה אישורי הגעה, בלי אקסל אחד.",
-    src: "https://images.unsplash.com/photo-1636041293178-808a6762ab39?q=80&w=400&h=400&auto=format&fit=crop",
+    src: "/testimonials/couple-1.jpg",
   },
   {
     name: "שירה ועומר",
     designation: "חתונה בכרם, יוני",
     quote:
       "הכי אהבנו שכל המשפחה פשוט לחצה על הקישור. אפילו אמא שלי, שלא מתחברת לשום אפליקציה, אישרה הגעה לבד.",
-    src: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=400&h=400&auto=format&fit=crop",
+    src: "/testimonials/couple-2.jpg",
   },
   {
     name: "מאיה ודניאל",
     designation: "התארסו, מתכננים אביב",
     quote:
       "ניסינו שלושה כלים אחרים לפני זה. גסטו היה היחיד שבאמת נראה כמו ההזמנה שרצינו, בלי לשלם מראש.",
-    src: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=400&h=400&auto=format&fit=crop",
+    src: "/testimonials/couple-3.jpg",
   },
   {
     name: "טל ורון",
     designation: "חתונה קטנה, חיפה",
     quote:
       "המעקב אחרי מי הגיע ומי עוד לא ענה חסך לנו ריבים שלמים. ראינו הכל במקום אחד ובזמן אמת.",
-    src: "https://images.unsplash.com/photo-1624561172888-ac93c696e10c?q=80&w=400&h=400&auto=format&fit=crop",
-  },
-  {
-    name: "ליאת ואסף",
-    designation: "התחתנו במרץ, ירושלים",
-    quote:
-      "שלחנו תזכורת אחת בוואטסאפ לכל מי שלא ענה, והרשימה נסגרה לבד. הרגיש כאילו יש לנו מפיק צמוד לאירוע.",
-    src: "https://images.unsplash.com/photo-1623582854588-d60de57fa33f?q=80&w=400&h=400&auto=format&fit=crop",
+    src: "/testimonials/couple-4.jpg",
   },
 ];
 
@@ -153,7 +149,6 @@ export default function Home() {
 
       <section className="hero-section" id="top" aria-labelledby="hero-title">
         <div className="hero-copy">
-          <p className="eyebrow">Guesto לחתונות בישראל</p>
           <h1 id="hero-title">
             <span className="hero-title__full">
               הזמנה דיגיטלית לחתונה, מוכנה לשליחה תוך כמה דקות
@@ -182,7 +177,7 @@ export default function Home() {
           </ul>
           <p className="route-note">
             ההזמנות עצמן נשארות בקישור ציבורי לפי אירוע, למשל{" "}
-            <span dir="ltr">{inviteUrl.replace(/\/$/, "")}/your-slug</span>.
+            <span dir="ltr">guesto.co.il/your-name</span>.
           </p>
         </div>
 
@@ -254,13 +249,13 @@ export default function Home() {
         <div className="section-heading section-heading--split">
           <div>
             <p className="eyebrow">עיצובים מוכנים לשליחה</p>
-            <h2 id="templates-title">העיצוב שלכם כבר קיים — רק צריך את השמות שלכם</h2>
+            <h2 id="templates-title">העיצוב שלכם כבר קיים רק צריך את השמות שלכם</h2>
           </div>
           <p>
             כל תבנית כאן היא עיצוב חי שרץ על אירוע אמיתי, לא תמונת מוקאפ. בוחרים, ממלאים פרטים, ותוך דקות ההזמנה מוכנה לשליחה בווטסאפ.
           </p>
         </div>
-        <FeatureCarousel items={templates} autoplay />
+        <FeatureCarousel items={templates} />
       </section>
 
       <section className="plans-section" aria-labelledby="plans-title">
