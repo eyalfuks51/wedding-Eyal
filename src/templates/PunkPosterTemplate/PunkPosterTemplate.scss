@@ -1,0 +1,677 @@
+// ─────────────────────────────────────────────────────────────────────────
+// PunkPosterTemplate — "Punk indie-rock gig poster"
+//
+// Local fonts (woff2 in src\styles\fonts\):
+//   Futurism-Black → numerals / Latin display        (declared below)
+//   Manhattan-650  → Latin micro-labels              (declared below)
+//   Danidin        → Hebrew headliner / headings      (declared globally in global.scss)
+//   Polin          → Hebrew body / labels             (declared globally in global.scss)
+//
+// Three-colour system ONLY: ink / hot-pink / warm-white (OKLCH-tuned, tinted).
+// BEM namespace: .pk  (never leaks — every selector scoped under .pk)
+// ─────────────────────────────────────────────────────────────────────────
+
+@font-face {
+  font-family: 'Futurism';
+  src: url('../../styles/fonts/Futurism-Black.woff2') format('woff2');
+  font-weight: 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Manhattan';
+  src: url('../../styles/fonts/Manhattan-650.woff2') format('woff2');
+  font-weight: 600;
+  font-display: swap;
+}
+
+.pk {
+  // ── Palette (3 colours, tinted toward the pink hue) ──
+  --ink:       oklch(0.17 0.02 350);
+  --ink-2:     oklch(0.225 0.03 350);   // lifted panels / ticket
+  --pink:      oklch(0.67 0.25 352);
+  --pink-deep: oklch(0.56 0.22 352);
+  --paper:     oklch(0.97 0.012 340);
+  --paper-dim: oklch(0.97 0.012 340 / 0.6);
+
+  position: relative;
+  overflow-x: hidden;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: 'Polin', sans-serif;
+  direction: rtl;
+  text-align: right;
+  -webkit-font-smoothing: antialiased;
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  // ── Screen-print grain — fixed overlay, CSS-only, never blocks input ──
+  .pk__grain {
+    position: fixed;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+    opacity: 0.13;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  // ── Sparkle star ──
+  .pk__star {
+    width: clamp(1.5rem, 4vw, 2.75rem);
+    height: clamp(1.5rem, 4vw, 2.75rem);
+    color: var(--pink);
+    position: absolute;
+    z-index: 2;
+  }
+}
+
+// ════════════════════════════════════════════════════════════════════════
+// HERO
+// ════════════════════════════════════════════════════════════════════════
+.pk__hero {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(1.25rem, 4vh, 2.75rem);
+  padding: clamp(4rem, 9vh, 7rem) clamp(1.5rem, 5vw, 4rem);
+  overflow: hidden;
+
+  // ── Printed-poster ground: halftone dot field + aged-paper edge vignette.
+  //    Sits behind everything (z0); meta text rides on top in solid paper. ──
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(circle, color-mix(in oklab, var(--pink), transparent 78%) 1.15px, transparent 1.6px) 0 0 / 8px 8px,
+      radial-gradient(ellipse 84% 74% at 50% 44%, transparent 42%, rgb(0 0 0 / 0.55) 100%);
+  }
+
+  .pk__star--tl { top: 5%;  inset-inline-start: 7%; }
+  .pk__star--tr { top: 8%;  inset-inline-end: 9%; }
+  .pk__star--bl { bottom: 12%; inset-inline-start: 11%; }
+}
+
+// ── Torn aged-paper poster border ──────────────────────────────────────────
+// A paper-coloured ring; an inline-SVG turbulence displacement chews its edges
+// into torn stock. ponytail: Safari that ignores data-URI filter refs degrades
+// to a clean thick mat border — still reads as poster paper, no JS fallback.
+.pk__poster-frame {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  border: clamp(9px, 2.6vw, 24px) solid var(--paper);
+  filter: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='t'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012 0.04' numOctaves='3' seed='8' result='n'/%3E%3CfeDisplacementMap in='SourceGraphic' in2='n' scale='18'/%3E%3C/filter%3E%3C/svg%3E#t");
+}
+
+// ── Wall-tacked tape strips at the top corners ──
+.pk__tape {
+  position: absolute;
+  z-index: 5;
+  top: clamp(0.4rem, 2vw, 1.1rem);
+  width: clamp(46px, 12vw, 92px);
+  height: clamp(18px, 4vw, 28px);
+  background: color-mix(in oklab, var(--paper), transparent 38%);
+  box-shadow: 0 1px 3px color-mix(in oklab, var(--ink), transparent 50%);
+
+  &--tl { inset-inline-start: clamp(0.5rem, 4vw, 2.5rem); transform: rotate(-7deg); }
+  &--tr { inset-inline-end:   clamp(0.5rem, 4vw, 2.5rem); transform: rotate(6deg); }
+}
+
+.pk__catalog {
+  position: absolute;
+  top: clamp(1rem, 3vh, 1.75rem);
+  inset-inline-end: clamp(1.25rem, 5vw, 3rem);
+  z-index: 2;
+  font-family: 'Manhattan', sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--pink);
+}
+
+// ── Flying-V guitar — decorative focal behind the headliner ──
+// Wrapper owns centring (GSAP never touches it); inner svg gets the tweens.
+.pk__guitar {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: clamp(190px, 42vw, 460px);
+  z-index: 1;
+  color: var(--pink);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.pk__guitar-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.pk__hero-decor {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.5rem, 2.5vw, 2rem);
+  width: 100%;
+}
+
+// ── Chevron framing arrows (clip-path shapes, NOT borders) ──
+.pk__chev {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.18rem, 0.6vw, 0.4rem);
+  flex: 0 0 auto;
+  width: clamp(1.4rem, 5vw, 3.75rem);
+
+  .pk__chev-bar {
+    width: 100%;
+    height: clamp(0.85rem, 2.6vw, 1.85rem);
+    background: var(--pink);
+    clip-path: polygon(0 0, 55% 0, 100% 50%, 55% 100%, 0 100%, 45% 50%);
+  }
+
+  &.pk__chev--right { transform: scaleX(-1); }   // mirror so it points inward
+}
+
+// Hero flank chevrons — fat 4-stack, the poster's giant framing arrows
+.pk__chev--left,
+.pk__chev--right {
+  width: clamp(1.9rem, 7.5vw, 5.25rem);
+  gap: clamp(0.22rem, 0.8vw, 0.55rem);
+
+  .pk__chev-bar { height: clamp(1.05rem, 3.4vw, 2.5rem); }
+}
+
+.pk__names {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 0 1 auto;
+  min-width: 0;
+  line-height: 0.82;
+}
+
+.pk__name-line {
+  font-family: 'Danidin', sans-serif;
+  font-weight: 700;
+  font-size: clamp(3.5rem, 15vw, 8.75rem);
+  color: var(--pink);
+  letter-spacing: -0.01em;
+  display: block;
+  // Screen-print sticker: hard warm-white misregistration + ink depth drop
+  text-shadow:
+    0.018em -0.012em 0 var(--paper),
+    0.05em 0.055em 0 var(--ink-2),
+    0.085em 0.09em 0 color-mix(in oklab, var(--ink), black 40%);
+
+  &--a { transform: rotate(-2.5deg); }
+  &--b { transform: rotate(1.75deg); margin-top: -0.06em; }
+}
+
+.pk__hero-meta {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(0.9rem, 2.4vh, 1.5rem);
+  text-align: center;
+}
+
+.pk__tourdate {
+  display: inline-flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.55em;
+
+  .pk__dow {
+    font-family: 'Polin', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0.04em;
+    color: var(--paper);
+  }
+  .pk__date {
+    font-family: 'Futurism', sans-serif;
+    font-size: clamp(1.6rem, 5vw, 2.4rem);
+    color: var(--paper);
+    border-bottom: 4px solid var(--pink);
+    padding-bottom: 0.05em;
+    line-height: 1;
+  }
+}
+
+.pk__venue {
+  font-family: 'Polin', sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.05rem, 3.5vw, 1.4rem);
+  color: var(--paper);
+
+  .pk__venue-city {
+    display: block;
+    margin-top: 0.2em;
+    font-weight: 400;
+    font-size: 0.85em;
+    color: var(--paper-dim);
+  }
+}
+
+// ── In-hero RSVP entry (Product Hierarchy Gate) ──
+.pk__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  margin-top: 0.4rem;
+  padding: 0.7em 1.8em;
+  font-family: 'Danidin', sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.15rem, 4vw, 1.6rem);
+  color: var(--ink);
+  background: var(--pink);
+  border: none;
+  transform: rotate(-1.2deg);
+  box-shadow: 5px 5px 0 var(--paper);
+  transition: transform 0.18s ease-out, box-shadow 0.18s ease-out;
+
+  &::after {
+    content: '←';
+    font-size: 0.9em;
+  }
+  &:hover,
+  &:focus-visible {
+    text-decoration: none;
+    transform: rotate(-1.2deg) translate(-2px, -2px);
+    box-shadow: 8px 8px 0 var(--paper);
+  }
+  &:active { transform: rotate(-1.2deg) translate(2px, 2px); box-shadow: 2px 2px 0 var(--paper); }
+}
+
+// ════════════════════════════════════════════════════════════════════════
+// LINER NOTES (quote / invitation)
+// ════════════════════════════════════════════════════════════════════════
+.pk__liner {
+  max-width: 60ch;
+  margin-inline: auto;
+  padding: clamp(3rem, 9vh, 5.5rem) clamp(1.5rem, 6vw, 3rem);
+  text-align: center;
+}
+
+.pk__quote {
+  position: relative;
+  font-family: 'Polin', sans-serif;
+  font-size: clamp(1.25rem, 4.2vw, 1.85rem);
+  line-height: 1.4;
+  color: var(--paper);
+
+  .pk__quote-mark {
+    color: var(--pink);
+    font-family: 'Futurism', sans-serif;
+    font-size: 1.4em;
+    margin-inline-end: 0.1em;
+    vertical-align: -0.2em;
+  }
+}
+
+.pk__invitation {
+  margin-top: 1.4rem;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--paper-dim);
+}
+
+// ════════════════════════════════════════════════════════════════════════
+// SETLIST (schedule)
+// ════════════════════════════════════════════════════════════════════════
+.pk__setlist-section {
+  padding: clamp(2.5rem, 7vh, 4.5rem) clamp(1.25rem, 5vw, 3rem);
+}
+
+.pk__setlist-inner {
+  max-width: 640px;
+  margin-inline: auto;
+}
+
+.pk__section-label {
+  font-family: 'Danidin', sans-serif;
+  font-weight: 700;
+  font-size: clamp(2.25rem, 8vw, 3.5rem);
+  color: var(--pink);
+  text-align: center;
+  margin-bottom: clamp(1.5rem, 4vh, 2.5rem);
+  text-shadow: 0.02em 0.03em 0 var(--ink-2);
+}
+
+.pk__setlist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.pk__set-row {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.7rem, 3vw, 1.3rem);
+  padding-block: clamp(0.9rem, 2.6vh, 1.35rem);
+  border-bottom: 2px dashed var(--pink-deep);   // full bottom rule (ticket perf), not a side-stripe
+
+  &:first-child { border-top: 2px dashed var(--pink-deep); }
+
+  .pk__set-chev {
+    width: clamp(1rem, 3vw, 1.5rem);
+    gap: 0.12rem;
+    flex: 0 0 auto;
+    .pk__chev-bar { height: clamp(0.32rem, 1vw, 0.5rem); }
+  }
+  .pk__set-time {
+    font-family: 'Futurism', sans-serif;
+    font-size: clamp(1.35rem, 5vw, 1.9rem);
+    color: var(--pink);
+    flex: 0 0 auto;
+    min-width: 2.6em;
+    line-height: 1;
+  }
+  .pk__set-icon {
+    width: clamp(1.4rem, 4vw, 1.9rem);
+    height: clamp(1.4rem, 4vw, 1.9rem);
+    object-fit: contain;
+    filter: brightness(0) invert(1);   // force any opaque SVG to warm-white
+    opacity: 0.85;
+    flex: 0 0 auto;
+  }
+  .pk__set-label {
+    font-family: 'Polin', sans-serif;
+    font-weight: 700;
+    font-size: clamp(1.05rem, 4vw, 1.35rem);
+    color: var(--paper);
+    flex: 1 1 auto;
+  }
+}
+
+.pk__closing-block {
+  margin-top: clamp(2.5rem, 7vh, 4rem);
+  text-align: center;
+
+  .pk__closing-star {
+    position: static;
+    display: block;
+    margin: 0 auto 1rem;
+  }
+  .pk__footer-note {
+    font-family: 'Polin', sans-serif;
+    font-size: 1.05rem;
+    color: var(--paper-dim);
+    margin-bottom: 0.6rem;
+  }
+  .pk__closing {
+    font-family: 'Danidin', sans-serif;
+    font-size: clamp(1.6rem, 6vw, 2.4rem);
+    color: var(--pink);
+  }
+}
+
+// ════════════════════════════════════════════════════════════════════════
+// RSVP — ticket stub
+// ════════════════════════════════════════════════════════════════════════
+.pk__rsvp-wrapper {
+  padding: clamp(2rem, 6vh, 4rem) clamp(1rem, 5vw, 3rem);
+  background: var(--ink);
+}
+
+.pk__ticket {
+  position: relative;
+  max-width: 580px;
+  margin-inline: auto;
+  padding: clamp(2.25rem, 6vw, 3rem) clamp(1.1rem, 4vw, 2rem) clamp(1.5rem, 4vw, 2rem);
+  background: var(--ink-2);
+  border: 2px dashed var(--pink);
+}
+
+.pk__ticket-kicker {
+  position: absolute;
+  top: -0.85em;
+  inset-inline-start: 50%;
+  transform: translateX(50%);   // RTL-safe centering of the absolute kicker
+  padding: 0.25em 0.9em;
+  background: var(--pink);
+  color: var(--ink);
+  font-family: 'Manhattan', sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.24em;
+  white-space: nowrap;
+}
+
+// ── RsvpForm override — the shared form ships with wedding-default chrome
+//    (frame.png borders, flower/disco images, burgundy palette, light card).
+//    Strip it and repaint to the 3-colour punk system inside the ticket stub. ──
+.pk__rsvp-wrapper {
+  .frame-border-top,
+  .frame-border-bottom,
+  .rsvp__decoration { display: none; }
+
+  .rsvp.red-border {
+    border: none;
+    background: transparent;
+    max-width: none;
+    width: 100%;
+    padding: 0;
+  }
+
+  .rsvp__container { max-width: none; }
+
+  .rsvp__title {
+    font-family: 'Danidin', sans-serif;
+    font-weight: 700;
+    color: var(--pink);
+    text-shadow: 0.02em 0.025em 0 var(--ink);
+  }
+
+  .rsvp__explanation { color: var(--paper-dim); }
+
+  .rsvp__label { color: var(--paper); }
+
+  .rsvp__input,
+  .rsvp__select {
+    border-radius: 0;
+    background: var(--ink);
+    color: var(--paper);
+    border: 2px solid color-mix(in oklab, var(--pink), transparent 55%);
+    &::placeholder { color: var(--paper-dim); }
+    &:focus { border-color: var(--pink); outline: none; }
+  }
+  .rsvp__select { color-scheme: dark; }   // dark native dropdown chrome
+
+  .rsvp__button {
+    border-radius: 0;
+    background: transparent;
+    border: 2px solid var(--pink);
+    color: var(--paper);
+
+    &:hover { background: color-mix(in oklab, var(--pink), transparent 85%); }
+
+    &--active {
+      background: var(--pink);
+      border-color: var(--pink);
+      color: var(--ink);
+      box-shadow: 4px 4px 0 var(--paper);
+      &:hover { background: var(--pink-deep); }
+    }
+    &--decline.rsvp__button--active {
+      background: var(--paper);
+      border-color: var(--paper);
+      color: var(--ink);
+      box-shadow: 4px 4px 0 var(--pink);
+    }
+  }
+
+  .rsvp__conditional {
+    border-radius: 0;
+    background: color-mix(in oklab, var(--pink), transparent 90%);
+    border: 2px dashed color-mix(in oklab, var(--pink), transparent 55%);
+  }
+
+  .rsvp__checkbox-custom {
+    border-radius: 0;
+    border-color: color-mix(in oklab, var(--pink), transparent 45%);
+  }
+  .rsvp__checkbox:checked + .rsvp__checkbox-custom {
+    background: var(--pink);
+    border-color: var(--pink);
+    &::after { color: var(--ink); }
+  }
+
+  .rsvp__error {
+    border-radius: 0;
+    color: var(--pink);
+    background: color-mix(in oklab, var(--pink), transparent 88%);
+  }
+
+  .rsvp__submit {
+    border-radius: 0;
+    font-family: 'Danidin', sans-serif;
+    font-weight: 700;
+    background: var(--pink);
+    color: var(--ink);
+    box-shadow: 6px 6px 0 var(--paper);
+    &:hover:not(:disabled) { background: var(--pink-deep); }
+    &:disabled { background: color-mix(in oklab, var(--paper), transparent 70%); color: var(--ink); }
+  }
+
+  .rsvp__success {
+    background: transparent;
+    .rsvp__success-icon  { background: var(--pink); color: var(--ink); }
+    .rsvp__success-title { color: var(--pink); }
+    .rsvp__success-text  { color: var(--paper-dim); }
+  }
+}
+
+// ════════════════════════════════════════════════════════════════════════
+// DIRECTIONS — pink-drenched inverse block
+// ════════════════════════════════════════════════════════════════════════
+.pk__directions {
+  background: var(--pink);
+  color: var(--ink);
+  padding: clamp(3rem, 9vh, 5.5rem) clamp(1.25rem, 5vw, 3rem);
+}
+
+.pk__directions-inner {
+  max-width: 640px;
+  margin-inline: auto;
+}
+
+.pk__directions-title {
+  font-family: 'Danidin', sans-serif;
+  font-weight: 700;
+  font-size: clamp(2.25rem, 8vw, 3.5rem);
+  color: var(--ink);
+  text-align: center;
+  margin-bottom: clamp(1.5rem, 4vh, 2.5rem);
+}
+
+.pk__transport-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding-block: 1.1rem;
+  border-bottom: 2px solid var(--ink);
+
+  .pk__transport-label {
+    font-family: 'Polin', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    color: var(--ink);
+    opacity: 0.7;
+  }
+  .pk__transport-value {
+    font-family: 'Polin', sans-serif;
+    font-size: 1.1rem;
+    color: var(--ink);
+  }
+}
+
+.pk__address {
+  margin-top: 1.5rem;
+  font-family: 'Polin', sans-serif;
+  font-size: 1rem;
+  color: var(--ink);
+  text-align: center;
+  opacity: 0.85;
+}
+
+.pk__nav-btn {
+  display: block;
+  width: fit-content;
+  margin: clamp(1.75rem, 5vh, 2.5rem) auto 0;
+  padding: 0.75em 2.2em;
+  font-family: 'Danidin', sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.15rem, 4vw, 1.5rem);
+  color: var(--paper);
+  background: var(--ink);
+  transform: rotate(-1deg);
+  box-shadow: 5px 5px 0 var(--ink-2);
+  transition: transform 0.18s ease-out, box-shadow 0.18s ease-out, color 0.18s, background 0.18s;
+
+  &:hover,
+  &:focus-visible {
+    text-decoration: none;
+    transform: rotate(-1deg) translate(-2px, -2px);
+    box-shadow: 8px 8px 0 var(--ink-2);
+  }
+  &:active { transform: rotate(-1deg) translate(2px, 2px); box-shadow: 2px 2px 0 var(--ink-2); }
+}
+
+// ════════════════════════════════════════════════════════════════════════
+// FOOTER
+// ════════════════════════════════════════════════════════════════════════
+.pk__footer {
+  background: var(--ink);
+  padding: clamp(2.5rem, 7vh, 4rem) 1.5rem clamp(2rem, 5vh, 3rem);
+  text-align: center;
+}
+
+.pk__footer-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.pk__developed-by {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: 'Polin', sans-serif;
+  font-size: 0.9rem;
+  color: var(--paper-dim);
+}
+
+.pk__footer-logo {
+  height: 34px;
+  width: auto;
+  opacity: 0.9;
+}
+
+// ── Reduced-motion: kill the playful rotations for vestibular safety ──
+@media (prefers-reduced-motion: reduce) {
+  .pk__name-line--a,
+  .pk__name-line--b,
+  .pk__cta,
+  .pk__nav-btn { transform: none; }
+}

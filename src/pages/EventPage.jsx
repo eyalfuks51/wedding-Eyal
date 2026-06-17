@@ -6,6 +6,7 @@ import ElegantTemplate from '../templates/ElegantTemplate/ElegantTemplate';
 import WeddingModernTemplate from '../templates/WeddingModernTemplate/WeddingModernTemplate';
 import ConstructivistTemplate from '../templates/ConstructivistTemplate/ConstructivistTemplate';
 import SynesthesiaTemplate from '../templates/SynesthesiaTemplate/SynesthesiaTemplate';
+import PunkPosterTemplate from '../templates/PunkPosterTemplate/PunkPosterTemplate';
 import NotFoundPage from './NotFoundPage';
 
 // Register new templates here. The key must match event.template_id in the DB.
@@ -15,6 +16,7 @@ const TEMPLATES = {
   'wedding-modern':  WeddingModernTemplate,
   'constructivist':  ConstructivistTemplate,
   'synesthesia':     SynesthesiaTemplate,
+  'punk-poster':     PunkPosterTemplate,
 };
 
 function LoadingSpinner() {

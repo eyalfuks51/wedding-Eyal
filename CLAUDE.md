@@ -33,5 +33,6 @@ React frontend (Vite + React Router) + Supabase backend. Multi-tenant: each wedd
 
 ## Tooling notes
 - **TypeScript LSP** plugin is on — fix type/lint diagnostics as you code.
+- **DB writes**: `supabase-db` MCP is read-only. For ad-hoc writes (data flips, fixes) use the CLI: `supabase db query --linked "<sql>"` (add `returning ...` to confirm). Project is linked; creds in `.env.local`.
 - **Superpowers** plugin available for structured dev (`/superpowers:brainstorm`, `/superpowers:write-plan`) on larger features.
 - Regenerate context after schema changes: run `scripts/gen-context.sql` through the `supabase-db` MCP, paste into `docs/SCHEMA.md`, bump its "Generated" date.
