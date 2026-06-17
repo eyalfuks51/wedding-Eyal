@@ -35,10 +35,10 @@ export default function LivePreview({
 
   const sendConfig = useCallback(() => {
     iframeRef.current?.contentWindow?.postMessage(
-      { type: 'preview-config', config: latestConfig.current },
+      { type: 'preview-config', config: latestConfig.current, event },
       window.location.origin,
     );
-  }, []);
+  }, [event]);
 
   // Resend on every config change
   useEffect(() => { sendConfig(); }, [config, sendConfig]);
