@@ -93,7 +93,7 @@
     }
   }
 
-  // ── English cursive quote ──
+  // ── Quote ──
   &__quote {
     font-family: 'Dancing Script', cursive;
     font-size: $font-size-xl;
@@ -139,7 +139,7 @@
     }
 
     @include mobile {
-      font-size: 5rem;
+      font-size: clamp(4rem, 13vw, 6rem);
     }
   }
 
@@ -197,7 +197,7 @@
     text-shadow: 2px 2px 0px #ffc1c2;
 
     @include mobile {
-      font-size: $font-size-2xl;
+      font-size: 2.6rem;
       margin-bottom: 0;
     }
   }

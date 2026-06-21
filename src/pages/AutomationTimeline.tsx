@@ -532,7 +532,7 @@ const TIMELINE_STYLES = `
 .gtl-page .pipeline-scroll::-webkit-scrollbar-track { background: transparent; }
 .gtl-page .pipeline-scroll::-webkit-scrollbar-thumb { background: var(--champagne); border-radius: 3px; }
 
-.gtl-page .pipeline-track { display: flex; flex-direction: row-reverse; gap: 0; align-items: stretch; min-width: max-content; position: relative; padding-top: 44px; }
+.gtl-page .pipeline-track { display: flex; flex-direction: row; gap: 0; align-items: stretch; min-width: max-content; position: relative; padding-top: 44px; }
 .gtl-page .pipeline-track::before { content: ''; position: absolute; top: 38px; left: 0; right: 0; height: 3px; background: linear-gradient(to left, var(--violet-600) 0%, var(--rose-gold) 34%, var(--champagne) 70%, var(--ink-mute) 100%); opacity: 0.76; z-index: 0; border-radius: 999px; box-shadow: 0 0 18px var(--glow-rose); -webkit-mask-image: linear-gradient(to right, transparent 0, rgb(0 0 0) 112px, rgb(0 0 0) calc(100% - 112px), transparent 100%); mask-image: linear-gradient(to right, transparent 0, rgb(0 0 0) 112px, rgb(0 0 0) calc(100% - 112px), transparent 100%); }
 
 .gtl-page .stage { width: 268px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; padding: 0 18px; position: relative; z-index: 1; overflow: visible; }

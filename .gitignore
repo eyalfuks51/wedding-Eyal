@@ -45,6 +45,10 @@ supabase/.temp/
 # Codex executor scratch output (slice-orchestrator transport)
 .codex-last.txt
 
+# Landing-page capture artifacts (OBS demo stills/video) — not source
+captures/landing/desktop/screenshots/
+captures/landing/mobile/screenshots/
+
 # Local agent tooling dirs — contain MCP configs with plaintext DB credentials.
 # NEVER commit: .codex/config.toml holds a live Supabase pooler connection string.
 .codex/

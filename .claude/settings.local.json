@@ -56,7 +56,8 @@
       "mcp__supabase-db__query",
       "Bash(bash \"C:/Users/Eyal/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.4/scripts/start-server.sh\" --project-dir \"C:/dev/github/personal/Wedding-Eyal\")",
       "Bash(bash \"C:/Users/Eyal/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.4/skills/brainstorming/scripts/start-server.sh\" --project-dir \"C:/dev/github/personal/Wedding-Eyal\")",
-      "Skill(gsd:audit-milestone)"
+      "Skill(gsd:audit-milestone)",
+      "mcp__visualize__read_me"
     ],
     "additionalDirectories": [
       "C:\\dev\\github\\personal\\the-grind-fantasy\\src\\pages",

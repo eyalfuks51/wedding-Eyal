@@ -1,0 +1,40 @@
+-- P0 hardening: remove the client INSERT path on public.user_events
+-- (prevents authenticated users from self-granting event ownership).
+--
+-- Problem (verified live 2026-06-15 against the target DB): the
+-- "Users can insert own event memberships" policy on public.user_events is
+-- FOR INSERT TO authenticated with WITH CHECK (user_id = auth.uid()) -- it checks
+-- only that the row's user_id is the caller, NOT that the caller is authorized to
+-- join THAT event. Combined with an `authenticated` INSERT table grant, any
+-- authenticated user can run:
+--     INSERT INTO public.user_events (user_id, event_id) VALUES (auth.uid(), <any_event_id>);
+-- thereby forging "ownership" of ANY event. Because every ownership-scoped policy
+-- in the schema resolves ownership via
+--     EXISTS (SELECT 1 FROM public.user_events ue WHERE ue.event_id = X AND ue.user_id = auth.uid())
+-- this single forge defeats: automation_settings SELECT/UPDATE/INSERT, the
+-- arrival_permits owner policies (cross-tenant RSVP PII: guest names, phones,
+-- attendance), and the user_can_manage_event() guard used by the P0 RPCs. This is
+-- the authorization-root P0 that makes the other ownership fixes (incl. the
+-- automation_settings INSERT fix) necessary-but-insufficient on their own.
+--
+-- Live vs. defense-in-depth (both revoked here):
+--   * authenticated INSERT -> LIVE exploit (above).
+--   * anon INSERT          -> INERT today (no anon policy exists on user_events,
+--       so RLS default-denies anon row access despite the blanket Supabase grant)
+--       -- revoked so a future stray anon policy cannot reactivate it.
+--
+-- Fix: drop the client INSERT policy AND revoke the INSERT table grant from anon
+-- and authenticated. The app NEVER inserts user_events directly from the client
+-- (verified: src/lib/supabase.js only SELECTs user_events; membership is created
+-- exclusively by the SECURITY DEFINER create_onboarding_event RPC, which runs as
+-- table owner and bypasses RLS). Removing this client INSERT path therefore breaks
+-- no legitimate flow. The SELECT policy "Users can view own event memberships" is
+-- left intact (the dashboard's event list depends on it).
+--
+-- Out of scope (tracked separately as P2 defense-in-depth, NOT bundled here):
+-- anon/authenticated also hold inert UPDATE/DELETE table grants on user_events
+-- (no UPDATE/DELETE policy exists, so RLS default-denies them today). They are a
+-- different vector from the self-grant INSERT hole and are left for a follow-up.
+
+DROP POLICY IF EXISTS "Users can insert own event memberships" ON public.user_events;
+REVOKE INSERT ON public.user_events FROM anon, authenticated;

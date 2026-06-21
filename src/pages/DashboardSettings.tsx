@@ -617,7 +617,7 @@ function Section({
 // ───── Main component ─────
 
 export default function DashboardSettings() {
-  const { currentEvent, isLoading: eventLoading } = useEventContext();
+  const { currentEvent, isLoading: eventLoading, patchCurrentEvent } = useEventContext();
   const { canAccessTimeline } = useFeatureAccess();
 
   const [draft, setDraft]       = useState<ContentConfig>({});
@@ -708,13 +708,14 @@ export default function DashboardSettings() {
       }
       await updateEventContentConfig(currentEvent.id, toSave);
       setOriginal({ ...toSave });
+      patchCurrentEvent({ content_config: toSave });
       showToast('ההגדרות נשמרו בהצלחה');
     } catch (err: unknown) {
       showToast(err instanceof Error ? err.message : 'שגיאה בשמירה', 'error');
     } finally {
       setSaving(false);
     }
-  }, [currentEvent, draft, original, isDirty, showToast]);
+  }, [currentEvent, draft, original, isDirty, showToast, patchCurrentEvent]);
 
   const toggleSection = useCallback((key: SectionKey) => {
     setOpenMap(prev => ({ ...prev, [key]: !prev[key] }));

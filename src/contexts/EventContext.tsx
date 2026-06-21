@@ -15,12 +15,13 @@ export interface EventData {
 }
 
 interface EventContextValue {
-  events:       EventData[];
-  currentEvent: EventData | null;
-  isActive:     boolean;
-  isLoading:    boolean;
-  switchEvent:  (id: string) => void;
-  refetch:      () => void;
+  events:             EventData[];
+  currentEvent:       EventData | null;
+  isActive:           boolean;
+  isLoading:          boolean;
+  switchEvent:        (id: string) => void;
+  refetch:            () => void;
+  patchCurrentEvent:  (patch: Partial<EventData>) => void;
 }
 
 const STORAGE_KEY = 'currentEventId';
@@ -101,6 +102,13 @@ export function EventProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(STORAGE_KEY, id);
   }, [events]);
 
+  const patchCurrentEvent = useCallback((patch: Partial<EventData>) => {
+    setCurrentEvent(prev => prev ? { ...prev, ...patch } : prev);
+    setEvents(prev => prev.map(e =>
+      e.id === currentEvent?.id ? { ...e, ...patch } : e,
+    ));
+  }, [currentEvent?.id]);
+
   // Synchronous readiness gate. The loaded events belong to `dataOwnerId`; until
   // that matches the currently authenticated user (and both auth + fetch have
   // settled), the data is stale or not yet fetched. This closes the one-render
@@ -114,12 +122,13 @@ export function EventProvider({ children }: { children: ReactNode }) {
 
   return (
     <EventContext.Provider value={{
-      events:       isReady ? events : [],
-      currentEvent: isReady ? currentEvent : null,
-      isActive:     isReady && currentEvent?.status === 'active',
-      isLoading:    !isReady,
+      events:            isReady ? events : [],
+      currentEvent:      isReady ? currentEvent : null,
+      isActive:          isReady && currentEvent?.status === 'active',
+      isLoading:         !isReady,
       switchEvent,
-      refetch: () => setTick(t => t + 1),
+      refetch:           () => setTick(t => t + 1),
+      patchCurrentEvent,
     }}>
       {children}
     </EventContext.Provider>

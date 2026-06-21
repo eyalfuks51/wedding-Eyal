@@ -17,7 +17,11 @@
     "marketing:dev": "npm run dev --workspace @guesto/marketing",
     "marketing:build": "npm run build --workspace @guesto/marketing",
     "marketing:start": "npm run start --workspace @guesto/marketing",
-    "marketing:typecheck": "npm run typecheck --workspace @guesto/marketing"
+    "marketing:typecheck": "npm run typecheck --workspace @guesto/marketing",
+    "capture:desktop": "node scripts/capture-landing.mjs --device desktop",
+    "capture:mobile": "node scripts/capture-landing.mjs --device mobile",
+    "capture:screenshots": "node scripts/capture-landing.mjs --device desktop --screenshots-only && node scripts/capture-landing.mjs --device mobile --screenshots-only",
+    "capture:all": "node scripts/capture-landing.mjs --device desktop && node scripts/capture-landing.mjs --device mobile"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",

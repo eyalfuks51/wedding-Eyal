@@ -1,0 +1,47 @@
+-- P0 hardening: remove client-role write access to public.users
+-- (prevents authenticated users from self-promoting to super-admin).
+--
+-- Problem (verified live 2026-06-15 against the target DB): the "Users can update
+-- own profile" policy on public.users is FOR UPDATE TO authenticated with
+-- USING (id = auth.uid()) and NO WITH CHECK clause, and the `authenticated` role
+-- holds a TABLE-level UPDATE privilege on public.users (Supabase's default
+-- `GRANT ALL ON ALL TABLES IN SCHEMA public TO authenticated`). Together, any
+-- logged-in user can run:
+--     UPDATE public.users SET is_super_admin = true WHERE id = auth.uid();
+-- which passes the row policy (id = self) and the table grant, granting the
+-- attacker every "Super admins can ..." policy across the schema (full cross-tenant
+-- CRUD). This is a privilege-escalation P0.
+--
+-- WHY A TABLE-LEVEL REVOKE (not a column-level one): in PostgreSQL, column-level
+-- privileges are ADDITIVE to table-level ones -- a table-level UPDATE grant
+-- authorizes writing EVERY column, and `REVOKE UPDATE (is_super_admin)` does NOT
+-- create a deny override against it. Both anon and authenticated hold table-level
+-- UPDATE (and INSERT) on public.users (confirmed via information_schema.role_table_grants),
+-- so the privilege column can only be protected by removing the table-level write
+-- grants from the client roles. (Cross-review caught that a column-only revoke
+-- would have left the exploit fully open.)
+--
+-- Live vs. defense-in-depth (both revoked here):
+--   * authenticated UPDATE -> LIVE exploit (self-promote, above).
+--   * anon UPDATE          -> INERT today (no anon policy on public.users; RLS
+--       default-denies anon row access) -- revoked so a future stray anon policy
+--       cannot reactivate it.
+--   * INSERT for both roles -> INERT today (no INSERT policy on public.users; rows
+--       are created by the SECURITY DEFINER handle_new_auth_user trigger as table
+--       owner) -- revoked so no client DML path can ever write the table.
+--
+-- Safety: there is NO client-role write path to public.users (verified:
+-- src/contexts/AuthContext.tsx only SELECTs is_super_admin; the only UPDATE to
+-- public.users in the repo is the test harness using an admin role; profile
+-- editing is not implemented). SELECT, REFERENCES, etc. are retained, so reads
+-- (super-admin UI, profile display) and signup (SECURITY DEFINER trigger as owner)
+-- are unaffected. The now-grantless "Users can update own profile" UPDATE policy
+-- becomes inert and is left in place; when client profile editing is built, that
+-- slice must GRANT UPDATE (full_name, avatar_url) -- never is_super_admin/email/id
+-- -- to authenticated and add a WITH CHECK (id = auth.uid()) to that policy.
+--
+-- Out of scope (P2, NOT bundled): anon/authenticated also hold an inert table-level
+-- DELETE grant on public.users (no DELETE policy exists). Different vector; left
+-- for a follow-up.
+
+REVOKE INSERT, UPDATE ON public.users FROM anon, authenticated;
