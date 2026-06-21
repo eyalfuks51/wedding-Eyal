@@ -53,3 +53,6 @@ captures/landing/mobile/screenshots/
 # NEVER commit: .codex/config.toml holds a live Supabase pooler connection string.
 .codex/
 .superpowers/
+
+# Local Claude Code skills (machine-specific, not shared)
+.claude/skills/
