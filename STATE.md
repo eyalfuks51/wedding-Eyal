@@ -3,23 +3,22 @@
 > Short, current, disposable. The "what's happening right now" an agent needs that code/git can't show.
 > Update when focus shifts. Not a changelog — keep it to the present.
 
-**Updated:** 2026-06-16
+**Updated:** 2026-06-21
 
 ## Current focus
-- Context-system refactor: slim `CLAUDE.md` into a router + `docs/` split, auto-gen `docs/SCHEMA.md`, this `STATE.md`. (in progress, this branch)
+- Single-branch workflow restored: all stale feature/backup branches consolidated into `main` (2026-06-21). The last unmerged P0 migrations (`drop_broad_anon_events_select`, `automation_settings_insert_ownership`) were cherry-picked from the old `feature/p0-rls-apply` — already live in the DB, now also in git.
+- Next per roadmap: **Phase 2** — WhatsApp automation & scheduler.
 
 ## In flight
-- Branch `feature/palette-cool-migration` — warm cream → cool lavender/violet palette migration (product + marketing). Uncommitted: marketing `globals.css`, `page.tsx`, new `feature-carousel.tsx` / `pricing-card.tsx`, `public/templates/`.
-- Uncommitted P0 security migrations: `users_revoke_self_super_admin`, `user_events_revoke_self_grant` (+ rollbacks) — under Codex cross-review (see `process/prompts/`).
-- `.planning/*` GSD artifacts renamed to `*.bak` (stale, last real update 2026-03-18) — staged, not committed.
+- Nothing mid-flight. Working tree clean except untracked local tooling (`.claude/skills/`, `captures/`).
 
 ## Deployment (live)
 - Two Vercel projects from this repo: `guesto-marketing` (Next.js, `apps/marketing`) → guesto-marketing-eyalfuks51s-projects.vercel.app; `guesto` (Vite SPA, repo root) → guesto-xi.vercel.app. Production branch = `main`. Detail in memory `vercel-two-project-monorepo-deploy`.
 
 ## Next 3
-1. Land the context refactor; commit the `.bak` renames + new structure.
-2. Resolve the P0 revoke-self migrations after Codex review clears.
-3. `guesto.co.il` domain wiring when purchased (apex+www → marketing, `app.` → app).
+1. Phase 2: WhatsApp automation & scheduler (see `docs/AUTOMATION.md`).
+2. `guesto.co.il` domain wiring when purchased (apex+www → marketing, `app.` → app).
+3. Push `main` to origin — local has 3 unpushed commits (2 P0 cherry-picks + this STATE refresh); triggers prod deploy.
 
 ## Landmines (read before touching)
 - Marketing prod build is **skipped on empty commits** — needs a real change under `apps/marketing/`.
