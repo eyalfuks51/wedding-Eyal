@@ -96,6 +96,7 @@ Central configuration for each wedding.
 - `content_config` (jsonb) — UI text, maps, and `whatsapp_templates` (singular/plural variants)
 - `template_id` (text) — Renders the specific React template
 - `automation_config` (jsonb) — Settings for reminders and limits
+- `status` (text, default `'draft'`) — `'draft'` | `'active'`; gates public visibility. Anon & authenticated can SELECT only `status='active'` (see RLS Policies below).
 
 **Table: `invitations`**
 The source of truth for the Admin Dashboard. Represents a family/group invited to the event.
@@ -117,6 +118,7 @@ The actual RSVP submissions from the frontend form.
 - `phone` (text) — Unique per event (Constraint: `arrival_permits_event_phone_unique`)
 - `attending` (boolean), `needs_parking` (boolean)
 - `guests_count` (smallint) — Actual number of attending guests
+- **RLS (hardened, migration `20260614120000`):** anon has NO direct table access. Authenticated access is scoped to event owners via `user_events` (SELECT/INSERT/UPDATE) plus a super-admin mirror (`users.is_super_admin`, incl. DELETE). The public RSVP write goes only through the `submit_rsvp` RPC.
 
 **Database Triggers & Edge Functions**
 - `sheets_sync_trigger`: Fires on `INSERT` or `UPDATE` on `arrival_permits`. Sends a webhook to the `sync-to-sheets` edge function to update Google Sheets.
@@ -132,6 +134,7 @@ The central queue and historical log for all WhatsApp messages.
 - `error_log` (text)
 - `scheduled_for` (timestamptz) — When it should be sent
 - `sent_at` (timestamptz) — Exact time of successful send
+- `processing_started_at` (timestamptz) — When a row was atomically claimed by `claim_pending_messages` (observability; migration `20260614120200`)
 
 **Table: `automation_settings`**
 One row per funnel stage per event. Controls the automated WhatsApp pipeline.
@@ -143,28 +146,46 @@ One row per funnel stage per event. Controls the automated WhatsApp pipeline.
 - `is_active` (boolean) — admin toggle
 - `created_at` (timestamptz)
 
-**RLS on `automation_settings`** (migration `20260226100000`):
-- `Allow anon select automation_settings` — anon can read all rows (USING true)
-- `Allow anon update automation_settings` — anon can update rows (USING true, WITH CHECK true)
+**RLS on `automation_settings`** (current live state — the original `20260226100000` anon policies were superseded by the multi-tenant migration):
+- SELECT / UPDATE / INSERT (stage whitelist) scoped to event owners via `user_events`, plus a super-admin mirror (`users.is_super_admin`, incl. DELETE). **No anon policies** — the dashboard mutates these rows as the authenticated owner.
 
 **Postgres RPC: `update_whatsapp_template(p_event_id, p_stage_name, p_singular, p_plural)`**
 - `SECURITY DEFINER` + `SET search_path = public` — runs with table-owner privileges, prevents search_path hijacking
 - Whitelists `p_stage_name` against `['icebreaker','nudge','nudge_1','nudge_2','nudge_3','ultimatum','logistics','hangover']`
 - Uses `jsonb_set` to atomically patch only `content_config → whatsapp_templates → <stage>` — no full-row replacement, no race conditions, no broad anon UPDATE on `events`
-- `GRANT EXECUTE TO anon` — callable via `supabase.rpc('update_whatsapp_template', {...})`
+- **Grant/auth (migration `20260614120100`):** `REVOKE FROM PUBLIC, anon`; `GRANT TO authenticated`; ownership-guarded (see "P0 launch-safety RPCs & grants" below). Callable via `supabase.rpc('update_whatsapp_template', {...})` by an authenticated owner only.
 - Raises exception for unknown event_id or invalid stage_name
 
 **Postgres RPC: `toggle_auto_pilot(p_event_id, p_enabled)`**
 - `SECURITY DEFINER` — atomically sets `events.automation_config.auto_pilot` via `jsonb_set`
 - Soft pause semantics: already-queued `pending` messages still send; only new stage evaluations are paused
+- **Grant/auth (migration `20260614120100`):** `REVOKE FROM PUBLIC, anon`; `GRANT TO authenticated`; ownership-guarded.
 
 **Postgres RPC: `delete_dynamic_nudge(p_setting_id)`**
 - `SECURITY DEFINER` — deletes an `automation_settings` row and cleans up its `whatsapp_templates` key
 - Guards: only `nudge_1/2/3` can be deleted (not canonical stages), and only if zero `message_logs` exist for that stage
 - Raises exception if messages exist or if the stage is canonical
+- **Grant/auth (migration `20260614120100`):** `REVOKE FROM PUBLIC, anon`; `GRANT TO authenticated`; ownership-guarded.
 
-**RLS on `automation_settings`** (migration `20260226200000`):
-- `Allow anon insert automation_settings` — with stage_name whitelist check
+### P0 launch-safety RPCs & grants (migrations `20260614120000`–`20260614120200`)
+
+> Postgres grants `EXECUTE` to `PUBLIC` by default — that was the root anon-exec
+> hole. All P0 fixes `REVOKE ... FROM PUBLIC` (not only from `anon`).
+
+**Postgres RPC: `submit_rsvp(p_event_id, p_full_name, p_phone, p_attending, p_guests_count, p_needs_parking)`**
+- `SECURITY DEFINER SET search_path = public` — the ONLY public RSVP write path (anon has no direct `arrival_permits` access).
+- Requires the event to exist and be `status = 'active'`; rejects draft/missing events. Upserts the single `(event_id, phone)` row on `arrival_permits_event_phone_unique`.
+- `REVOKE FROM PUBLIC`; `GRANT EXECUTE TO anon, authenticated`. Called by `submitRsvp()` in `src/lib/supabase.js`.
+
+**Postgres RPC: `user_can_manage_event(p_event_id) → boolean`**
+- `SECURITY DEFINER STABLE` — true if caller is in `user_events` for the event OR `users.is_super_admin`. `REVOKE FROM PUBLIC, anon`; `GRANT TO authenticated`.
+- Used as the ownership guard inside the config mutators.
+
+**Mutator hardening:** `toggle_auto_pilot`, `update_whatsapp_template`, `delete_dynamic_nudge`, `create_invitation_from_permit`, `link_permit_to_invitation`, `create_onboarding_event` are now `REVOKE FROM PUBLIC, anon` + `GRANT TO authenticated`, and each (except self-authorizing `create_onboarding_event`) guards with `IF auth.uid() IS NULL OR NOT public.user_can_manage_event(<eid>) THEN RAISE EXCEPTION ... ERRCODE 42501`. `link_permit_to_invitation` also requires the target invitation's `event_id` to match the permit's event. Internal-only `handle_new_auth_user`, `sync_arrival_to_invitation`, `phone_core` are revoked from all client roles.
+
+**Postgres RPC: `claim_pending_messages(p_limit int DEFAULT 15) → SETOF message_logs`**
+- `SECURITY DEFINER` — atomic queue claim: `UPDATE ... SET status='processing' ... WHERE id IN (SELECT ... WHERE status='pending' AND due ... FOR UPDATE SKIP LOCKED) RETURNING *`. Overlapping runs get disjoint rows → at-most-once send.
+- **At-most-once by design:** no auto-reclaim of stuck `processing` rows (Green API not idempotent); stuck rows need manual requeue. `REVOKE FROM PUBLIC, anon, authenticated`; `GRANT TO service_role`. Called by `whatsapp-scheduler/index.ts`.
 
 ## Template Strategy — AI-Assisted Template Generation
 
@@ -275,9 +296,10 @@ src/
 ```
 
 ## RLS Policies (`arrival_permits`)
-- Allow anon INSERT (WITH CHECK true)
-- Allow anon UPDATE (USING true, WITH CHECK true)
-- Allow anon SELECT (USING true)
+**Hardened in migration `20260614120000` (was: broad anon INSERT/UPDATE/SELECT — removed).**
+- No anon policies — anon has zero direct table access; public writes go through the `submit_rsvp` RPC only.
+- Owners (`user_events` membership): SELECT / INSERT / UPDATE for their own event's rows.
+- Super admins (`users.is_super_admin`): SELECT / INSERT / UPDATE / DELETE.
 
 ## Google Sheets Sync (Edge Function: `sync-to-sheets`)
 - Reads `event_id` from webhook record
